@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude for Beginners · A Private Module</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  /* ============================
+     CONFIG — change in one place
+     ============================ */
+  /* Access code is set in JS at the bottom of this file */
+
+  :root {
+    --bg: #FAFAF6;
+    --bg-warm: #F5F2EA;
+    --surface: #FFFFFF;
+    --surface-soft: #F1EEE6;
+    --border: #DCD7CB;
+    --border-soft: #E8E3D7;
+    --text: #2F332E;
+    --text-soft: #5A5E55;
+    --text-muted: #8A8E83;
+    --heading: #20231F;
+    --sage: #6E8B7A;
+    --sage-deep: #4F6B5C;
+    --sage-soft: #DFE7E0;
+    --sage-whisper: #EEF2EC;
+    --moss: #3D544A;
+    --accent-warm: #B8A37E;
+    --shadow-soft: 0 1px 2px rgba(48, 56, 49, 0.04), 0 4px 12px rgba(48, 56, 49, 0.04);
+    --shadow-lift: 0 4px 16px rgba(48, 56, 49, 0.06), 0 12px 32px rgba(48, 56, 49, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 17px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* Anti-copy: disable text selection by default */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow selection on prompt/copyable elements */
+  .copyable, .copyable * {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Background paper texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(110, 139, 122, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(184, 163, 126, 0.03) 0%, transparent 40%);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.18 0 0 0 0 0.20 0 0 0 0 0.18 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ============================
+     ACCESS GATE
+     ============================ */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #F5F2EA 0%, #EEF2EC 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .gate-card {
+    max-width: 460px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 56px 44px;
+    box-shadow: var(--shadow-lift);
+    text-align: center;
+    position: relative;
+  }
+
+  .gate-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--sage);
+  }
+
+  .gate-mark {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .gate-card h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 28px;
+    color: var(--heading);
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  .gate-card p {
+    color: var(--text-soft);
+    margin-bottom: 32px;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .gate-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 14px;
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 0.05em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .gate-input:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-whisper);
+  }
+
+  .gate-button {
+    width: 100%;
+    padding: 14px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .gate-button:hover { background: var(--moss); }
+  .gate-button:active { transform: translateY(1px); }
+
+  .gate-error {
+    color: #A0524F;
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 12px;
+    min-height: 18px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .gate-error.show { opacity: 1; }
+
+  .gate-footer {
+    margin-top: 28px;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ============================
+     LAYOUT
+     ============================ */
+  .app {
+    display: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  .app.unlocked { display: block; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ============================
+     SIDEBAR
+     ============================ */
+  .sidebar {
+    background: var(--bg-warm);
+    border-right: 1px solid var(--border-soft);
+    padding: 40px 28px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  .brand {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .module-title {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--heading);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .module-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .nav-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .nav { list-style: none; margin-bottom: 32px; }
+
+  .nav li { margin-bottom: 2px; }
+
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: var(--text-soft);
+    font-size: 14px;
+    border-left: 2px solid transparent;
+    border-radius: 0 2px 2px 0;
+    transition: all 0.2s ease;
+    font-family: 'Fraunces', serif;
+  }
+
+  .nav a:hover {
+    background: var(--sage-whisper);
+    color: var(--moss);
+    border-left-color: var(--sage);
+  }
+
+  .nav a.active {
+    background: var(--sage-whisper);
+    color: var(--moss);
+    border-left-color: var(--sage-deep);
+    font-weight: 500;
+  }
+
+  .nav-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 18px;
+    letter-spacing: 0.05em;
+  }
+
+  .nav a.active .nav-num { color: var(--sage-deep); }
+
+  .nav-time {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .sidebar-meta {
+    padding-top: 24px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .sidebar-meta strong {
+    font-weight: 500;
+    color: var(--text-soft);
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* ============================
+     MAIN CONTENT
+     ============================ */
+  .main {
+    padding: 64px 72px 120px;
+    max-width: 880px;
+  }
+
+  .header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 44px;
+    color: var(--heading);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin-bottom: 18px;
+  }
+
+  .header .lede {
+    font-size: 19px;
+    color: var(--text-soft);
+    font-style: italic;
+    line-height: 1.6;
+    max-width: 640px;
+  }
+
+  /* Sections */
+  section {
+    margin-bottom: 80px;
+    scroll-margin-top: 40px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .section-num {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--sage);
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  .section-time {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  section h2 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 30px;
+    color: var(--heading);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+
+  .section-deck {
+    font-size: 17px;
+    color: var(--text-soft);
+    font-style: italic;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  section h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--heading);
+    margin: 32px 0 14px;
+    letter-spacing: 0.04em;
+  }
+
+  section p {
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  section p strong { color: var(--heading); font-weight: 500; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    padding: 28px 32px;
+    margin: 24px 0;
+    border-radius: 3px;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  .card-sage {
+    background: var(--sage-whisper);
+    border-color: var(--sage-soft);
+  }
+
+  .card-warm {
+    background: var(--bg-warm);
+    border-color: var(--border-soft);
+  }
+
+  .card-mark {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Two-column comparison */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .compare > div {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    padding: 24px;
+    border-radius: 3px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .compare h4 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--heading);
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .compare ul, .compare ol { margin-left: 18px; font-size: 15px; color: var(--text-soft); }
+  .compare li { margin-bottom: 6px; }
+
+  /* Cheat sheet table */
+  .cheat-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 14px;
+    table-layout: auto;
+  }
+
+  .cheat-table thead th {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1.5px solid var(--border);
+    background: transparent;
+    transition: color 0.3s, background 0.3s;
+  }
+
+  .cheat-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+    color: var(--text);
+    transition: background 0.3s;
+  }
+
+  .cheat-table tbody td:first-child {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--heading);
+    width: 38%;
+  }
+
+  .cheat-table tbody tr:last-child td { border-bottom: none; }
+
+  .cheat-table.detect-mac .col-mac,
+  .cheat-table.detect-pc .col-pc {
+    background: var(--sage-whisper);
+  }
+
+  .cheat-table.detect-mac thead .col-mac,
+  .cheat-table.detect-pc thead .col-pc {
+    color: var(--sage-deep);
+    font-weight: 600;
+  }
+
+  .cheat-table.detect-mac thead .col-mac::after,
+  .cheat-table.detect-pc thead .col-pc::after {
+    content: ' · YOU';
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--sage);
+  }
+
+  kbd {
+    display: inline-block;
+    background: var(--bg-warm);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--moss);
+    white-space: nowrap;
+    margin: 0 1px;
+  }
+
+  /* Section locking */
+  section.lockable.locked > *:not(.section-head):not(h2):not(.lock-card) {
+    display: none;
+  }
+  section.lockable .lock-card {
+    display: none;
+  }
+  section.lockable.locked .lock-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--bg-warm);
+    border: 1px dashed var(--border);
+    padding: 48px 32px;
+    border-radius: 3px;
+    margin-top: 28px;
+    animation: rise 0.5s ease-out;
+  }
+
+  .lock-icon {
+    color: var(--sage-deep);
+    margin-bottom: 16px;
+    opacity: 0.85;
+  }
+
+  .lock-title {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--heading);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 10px !important;
+  }
+
+  .lock-sub {
+    font-style: italic;
+    color: var(--text-soft);
+    font-size: 15px;
+    max-width: 420px;
+    margin-bottom: 24px !important;
+    line-height: 1.5;
+  }
+
+  .lock-input-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .lock-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--text);
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .lock-input:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-whisper);
+  }
+
+  .lock-button {
+    padding: 12px 22px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .lock-button:hover { background: var(--moss); }
+  .lock-button:active { transform: translateY(1px); }
+
+  .lock-error {
+    color: #A0524F;
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 14px !important;
+    min-height: 18px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .lock-error.show { opacity: 1; }
+
+  /* Sidebar lock indicators */
+  .nav a.is-locked .nav-num::before {
+    content: '·';
+    color: var(--sage);
+    margin-right: 4px;
+    opacity: 0.6;
+  }
+  .nav a.is-unlocked .nav-num::before {
+    content: '◦';
+    color: var(--sage);
+    margin-right: 4px;
+  }
+
+  /* Setup checklist */
+  .checklist {
+    background: var(--sage-whisper);
+    border: 1px solid var(--sage-soft);
+    border-left: 3px solid var(--sage);
+    padding: 24px 28px;
+    margin: 24px 0 32px;
+    border-radius: 3px;
+  }
+
+  .checklist-mark {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .checklist ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    padding: 8px 0 8px 32px;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.2s;
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  .checklist li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--sage);
+    border-radius: 2px;
+    background: var(--surface);
+    transition: all 0.15s;
+  }
+
+  .checklist li.checked {
+    color: var(--text-muted);
+  }
+
+  .checklist li.checked::before {
+    background: var(--sage-deep);
+    border-color: var(--sage-deep);
+  }
+
+  .checklist li.checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 14px;
+    width: 8px;
+    height: 4px;
+    border-left: 2px solid var(--bg);
+    border-bottom: 2px solid var(--bg);
+    transform: rotate(-45deg);
+  }
+
+  .checklist li small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* Session summary */
+  .session-summary {
+    margin-top: 64px;
+    padding: 36px 40px;
+    background: linear-gradient(135deg, var(--sage-whisper) 0%, var(--bg-warm) 100%);
+    border: 1px solid var(--sage-soft);
+    border-radius: 3px;
+    display: none;
+  }
+
+  .session-summary.show {
+    display: block;
+    animation: rise 0.6s ease-out;
+  }
+
+  .session-summary .card-mark {
+    margin-bottom: 16px;
+  }
+
+  .session-summary h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--heading);
+    margin-top: 0 !important;
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  .session-summary p {
+    color: var(--text-soft);
+    font-size: 15px;
+  }
+
+  .session-log-preview {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    max-height: 280px;
+    overflow-y: auto;
+    border-radius: 2px;
+    white-space: pre-wrap;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .session-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .session-button {
+    padding: 12px 22px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+
+  .session-button:hover { background: var(--moss); }
+
+  .session-button.copied {
+    background: var(--moss);
+  }
+
+  .session-button.secondary {
+    background: transparent;
+    color: var(--sage-deep);
+    border: 1px solid var(--sage);
+  }
+
+  .session-button.secondary:hover {
+    background: var(--sage-whisper);
+  }
+
+  /* Lists */
+  .styled-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+
+  .styled-list li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .styled-list li:last-child { border-bottom: none; }
+
+  .styled-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 19px;
+    width: 14px;
+    height: 1px;
+    background: var(--sage);
+  }
+
+  .styled-list li strong {
+    font-weight: 500;
+    color: var(--heading);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Pull quote / wisdom */
+  .wisdom {
+    margin: 32px 0;
+    padding: 24px 32px;
+    border-left: 2px solid var(--sage);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--moss);
+    line-height: 1.6;
+    background: var(--sage-whisper);
+  }
+
+  .wisdom::before {
+    content: '"';
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    color: var(--sage);
+    line-height: 0;
+    position: relative;
+    top: 12px;
+    margin-right: 4px;
+  }
+
+  /* Prompt blocks */
+  .prompt-block {
+    background: var(--bg-warm);
+    border: 1px dashed var(--sage);
+    padding: 22px 26px;
+    margin: 16px 0;
+    border-radius: 3px;
+    position: relative;
+  }
+
+  .prompt-block::before {
+    content: 'TRY THIS';
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+  }
+
+  .prompt-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .prompt-text .fill {
+    background: rgba(110, 139, 122, 0.12);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--moss);
+    font-style: normal;
+    font-size: 14px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.04em;
+  }
+
+  .copy-btn {
+    margin-top: 16px;
+    background: transparent;
+    border: 1px solid var(--sage);
+    color: var(--sage-deep);
+    padding: 8px 16px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .copy-btn:hover {
+    background: var(--sage);
+    color: var(--bg);
+  }
+
+  .copy-btn.copied {
+    background: var(--sage-deep);
+    color: var(--bg);
+    border-color: var(--sage-deep);
+  }
+
+  /* Steps */
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    margin: 24px 0;
+  }
+
+  .steps li {
+    counter-increment: step;
+    padding: 20px 24px 20px 64px;
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 3px;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .steps li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 22px;
+    top: 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--sage-deep);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .steps li strong {
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    color: var(--heading);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Glossary terms */
+  dl.glossary {
+    margin: 24px 0;
+  }
+
+  .glossary dt {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    color: var(--heading);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .glossary dt:first-child { padding-top: 0; border-top: none; }
+
+  .glossary dd {
+    color: var(--text-soft);
+    margin-left: 0;
+    font-size: 15px;
+  }
+
+  /* Divider */
+  .ornament {
+    text-align: center;
+    margin: 64px 0 48px;
+    font-family: 'Cinzel', serif;
+    color: var(--sage);
+    letter-spacing: 0.4em;
+    font-size: 14px;
+  }
+
+  /* Footer */
+  .footer-note {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Watermark */
+  .watermark {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(110, 139, 122, 0.55);
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 100;
+    background: rgba(250, 250, 246, 0.7);
+    padding: 4px 10px;
+    border-radius: 2px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar {
+      position: relative;
+      height: auto;
+      padding: 24px;
+    }
+    .nav { columns: 1; }
+    .main { padding: 32px 24px 80px; }
+    .header h1 { font-size: 32px; }
+    section h2 { font-size: 24px; }
+    .compare { grid-template-columns: 1fr; }
+  }
+
+  /* Print blocking */
+  @media print {
+    body * { display: none !important; }
+    body::after {
+      content: 'Printing not permitted. This is a licensed module.';
+      display: block !important;
+      font-family: serif;
+      padding: 40px;
+      font-size: 18px;
+    }
+  }
+
+  /* Subtle entrance animation */
+  .app.unlocked .header,
+  .app.unlocked section {
+    animation: rise 0.8s ease-out backwards;
+  }
+
+  .app.unlocked section:nth-child(2) { animation-delay: 0.1s; }
+  .app.unlocked section:nth-child(3) { animation-delay: 0.15s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===========================
+     ACCESS GATE
+     =========================== -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-mark">A Private Module</div>
+    <h1>Welcome</h1>
+    <p>Please enter your access code and name to begin.</p>
+    <input id="codeInput" class="gate-input" type="password" placeholder="Access code" autocomplete="off" />
+    <input id="nameInput" class="gate-input" type="text" placeholder="Your name" autocomplete="off" />
+    <button id="unlockBtn" class="gate-button">Enter</button>
+    <div id="gateError" class="gate-error">That code isn't quite right. Try again.</div>
+    <div class="gate-footer">Quinta &amp; Co. · Licensed Content</div>
+  </div>
+</div>
+
+<!-- ===========================
+     APP
+     =========================== -->
+<div id="app" class="app">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">Quinta &amp; Co.</div>
+      <h2 class="module-title">Claude for Beginners</h2>
+      <p class="module-sub">A 60-minute private module</p>
+
+      <div class="nav-label">The Module</div>
+      <ul class="nav" id="navList">
+        <li><a href="#welcome"><span class="nav-num">01</span> Welcome <span class="nav-time">5m</span></a></li>
+        <li><a href="#how-it-works"><span class="nav-num">02</span> How Claude Works <span class="nav-time">5m</span></a></li>
+        <li><a href="#cheat-sheet"><span class="nav-num">03</span> Mac &amp; PC Cheat Sheet <span class="nav-time">3m</span></a></li>
+        <li><a href="#home-screen"><span class="nav-num">04</span> The Home Screen <span class="nav-time">10m</span></a></li>
+        <li><a href="#capabilities"><span class="nav-num">05</span> Coding Capabilities <span class="nav-time">10m</span></a></li>
+        <li><a href="#where-it-lives"><span class="nav-num">06</span> Where Builds Live <span class="nav-time">10m</span></a></li>
+        <li><a href="#practice"><span class="nav-num">07</span> Hands-On Practice <span class="nav-time">15m</span></a></li>
+        <li><a href="#beyond"><span class="nav-num">08</span> Beyond Basics <span class="nav-time">5m</span></a></li>
+      </ul>
+
+      <div class="sidebar-meta">
+        <strong>Licensed To</strong>
+        <span id="licenseName">—</span><br>
+        <span id="licenseDate" style="font-size: 11px;"></span>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <header class="header">
+        <div class="eyebrow">Quinta &amp; Co. · Module One</div>
+        <h1>Claude for Beginners</h1>
+        <p class="lede">A grounded, peaceful introduction to building with Claude — for women who have been impressed by what's possible and are ready to try it themselves. No prior coding required.</p>
+      </header>
+
+      <!-- ============ 01 WELCOME ============ -->
+      <section id="welcome">
+        <div class="section-head">
+          <span class="section-num">01</span>
+          <span class="section-time">~ 5 minutes</span>
+        </div>
+        <h2>Welcome — Why Claude?</h2>
+        <p class="section-deck">Before we open anything, a quick word on why we're using Claude specifically and not one of the other AI tools you've heard of. And a quick check that you're set up.</p>
+
+        <div class="checklist" id="setupChecklist">
+          <div class="checklist-mark">Before We Begin · Tap each as you confirm</div>
+          <ul>
+            <li data-check="account">
+              I have a Claude account
+              <small>If not — open a new tab, go to <strong>claude.ai</strong>, click <em>Sign up</em>. Free is enough for everything we'll do today.</small>
+            </li>
+            <li data-check="loggedin">
+              I'm logged in to claude.ai
+              <small>You should see your name or initial in the top corner.</small>
+            </li>
+            <li data-check="browser">
+              I'm using a modern browser
+              <small>Chrome, Safari, Firefox, or Edge are all fine. Internet Explorer will not work.</small>
+            </li>
+            <li data-check="tab">
+              I have a separate tab or window open with claude.ai
+              <small>So you can switch between this module and Claude as we go.</small>
+            </li>
+          </ul>
+        </div>
+
+        <h3>First time? Or have you already poked around?</h3>
+        <p><strong>If this is your first time</strong> — you are exactly where you should be. We start from zero. Don't worry about anything you might have heard about coding, prompts, or AI in general. Today we just look, click, and ask.</p>
+        <p><strong>If you've already used Claude</strong> — wonderful. You'll know some of what comes next. Stay anyway: we'll cover the home screen properly, what the modes are actually for, and where your work lives — which is the part most people get hazy on.</p>
+
+        <h3>Why Claude (and not the others)</h3>
+        <p>The phrase "learning to code" used to mean memorizing syntax, debugging errors, and reading thick textbooks. That world still exists for professional engineers. But there's a newer world — one where you describe what you want in plain English and a thoughtful collaborator builds it with you. That collaborator is Claude.</p>
+
+        <p>You don't need to learn to code in the traditional sense. You need to learn to <strong>direct</strong>. To know what's possible. To ask for the right thing. To recognize when something is good. That's what this module is for.</p>
+
+        <h3>How Claude compares</h3>
+        <div class="compare">
+          <div>
+            <h4>Claude</h4>
+            <ul>
+              <li><strong>Strongest at coding</strong> among major AI tools, by most measures</li>
+              <li>Live preview of what it builds, right inside the chat (Artifacts)</li>
+              <li>Excellent at long, careful conversations and revisions</li>
+              <li>Less likely to flatter you; more likely to push back</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Other tools (ChatGPT, Gemini, etc.)</h4>
+            <ul>
+              <li>Strong general assistants — fine for many tasks</li>
+              <li>Good at search, image generation, and casual writing</li>
+              <li>Less specialized in code; previews exist but feel less polished</li>
+              <li>Different personalities, different defaults</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="wisdom">You are not learning a programming language today. You are learning a working relationship with a very capable collaborator.</div>
+      </section>
+
+      <!-- ============ 02 HOW CLAUDE WORKS ============ -->
+      <section id="how-it-works" class="lockable locked" data-code="SAGE">
+        <div class="section-head">
+          <span class="section-num">02</span>
+          <span class="section-time">~ 5 minutes</span>
+        </div>
+        <h2>How Claude Works — A Short Mental Model</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">You don't need to understand the math. You do need to understand the shape of what's happening.</p>
+
+        <p>Claude is a language model — a system trained on enormous amounts of text and code from books, articles, documentation, and conversation. From all of that, it learned patterns: how sentences work, how arguments flow, how a working webpage is put together, how a thoughtful person responds to a hard question.</p>
+
+        <p>When you write to Claude, it considers what you've said and produces what would most usefully come next. It is not searching a database for an answer. It is generating one, fresh, in response to you.</p>
+
+        <ul class="styled-list">
+          <li>
+            <strong>Each conversation has a memory window</strong>
+            Within one chat, Claude remembers what you've said. Open a new chat and the slate is mostly clean — though the new memory feature can carry highlights forward across chats.
+          </li>
+          <li>
+            <strong>Claude doesn't browse unless asked</strong>
+            By default, Claude isn't on the internet. It works from what it learned during training. You can give it tools — like web search — when you need current information.
+          </li>
+          <li>
+            <strong>It can be wrong, especially about specifics</strong>
+            Numbers, names, dates, recent events — verify these. Claude is most reliable when it's reasoning, writing, or building, less reliable when it's recalling specific facts without a source.
+          </li>
+          <li>
+            <strong>It improves with context</strong>
+            The more clearly you describe what you want, what you don't want, who it's for, and what good looks like, the better the result.
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============ 03 CHEAT SHEET ============ -->
+      <section id="cheat-sheet" class="lockable locked" data-code="MOSS">
+        <div class="section-head">
+          <span class="section-num">03</span>
+          <span class="section-time">~ 3 minutes · reference</span>
+        </div>
+        <h2>A Two-Computer Cheat Sheet</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">If you've used one kind of computer for years and the other one feels foreign — this is your reference. Come back to it any time.</p>
+
+        <p>Most of what we'll do today is the same on both: click here, type that. But shortcuts and a handful of small actions differ between Mac and PC. The single biggest thing to remember:</p>
+
+        <div class="wisdom">On a PC, the magic key is <em>Ctrl</em>. On a Mac, the magic key is <em>Cmd</em> — the one with the <strong>⌘</strong> symbol. For most shortcuts, that swap is the only thing that changes.</div>
+
+        <div class="card">
+          <div class="card-mark">Quick Reference</div>
+          <p id="cheatDetected" style="margin-bottom: 18px; font-size: 14px; color: var(--text-soft); font-style: italic;">Your column will be highlighted automatically.</p>
+
+          <table class="cheat-table" id="cheatTable">
+            <thead>
+              <tr>
+                <th>What you want to do</th>
+                <th class="col-pc">On a PC (Windows)</th>
+                <th class="col-mac">On a Mac</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Copy</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>C</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>C</kbd></td>
+              </tr>
+              <tr>
+                <td>Paste</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>V</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>V</kbd></td>
+              </tr>
+              <tr>
+                <td>Cut</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>X</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>X</kbd></td>
+              </tr>
+              <tr>
+                <td>Select all on a page</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>A</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>A</kbd></td>
+              </tr>
+              <tr>
+                <td>Undo your last move</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>Z</kbd></td>
+              </tr>
+              <tr>
+                <td>Find something on a page</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>F</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>F</kbd></td>
+              </tr>
+              <tr>
+                <td>Refresh / reload the page</td>
+                <td class="col-pc"><kbd>F5</kbd> &nbsp;or&nbsp; <kbd>Ctrl</kbd> + <kbd>R</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>R</kbd></td>
+              </tr>
+              <tr>
+                <td>Open a new browser tab</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>T</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>T</kbd></td>
+              </tr>
+              <tr>
+                <td>Close the current tab</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>W</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>W</kbd></td>
+              </tr>
+              <tr>
+                <td>Switch between browser tabs</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>Tab</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>Option</kbd> + <kbd>→</kbd></td>
+              </tr>
+              <tr>
+                <td>Switch between open apps</td>
+                <td class="col-pc"><kbd>Alt</kbd> + <kbd>Tab</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>Tab</kbd></td>
+              </tr>
+              <tr>
+                <td>Right-click on something</td>
+                <td class="col-pc">Right mouse button</td>
+                <td class="col-mac"><kbd>Ctrl</kbd> + click &nbsp;<em>or</em>&nbsp; two-finger tap on trackpad</td>
+              </tr>
+              <tr>
+                <td>Screenshot a portion of the screen</td>
+                <td class="col-pc"><kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd></td>
+              </tr>
+              <tr>
+                <td>Screenshot the whole screen</td>
+                <td class="col-pc"><kbd>PrtScn</kbd> &nbsp;<em>or</em>&nbsp; <kbd>Win</kbd> + <kbd>PrtScn</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd></td>
+              </tr>
+              <tr>
+                <td>Click into the address bar</td>
+                <td class="col-pc"><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+                <td class="col-mac"><kbd>⌘</kbd> + <kbd>L</kbd></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>About screenshots — they are your secret weapon</h3>
+        <p>One of the most useful things you can do when something looks wrong, confusing, or beautiful in your build: <strong>take a screenshot and paste it into your chat with Claude.</strong> Claude can see images and respond to them. "Why does this look like that?" "Can you make the spacing match this?" — paste the picture, ask the question.</p>
+
+        <p><strong>On a Mac:</strong> press <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>, then drag a box around what you want to capture. It saves to your desktop and copies to your clipboard automatically.</p>
+        <p><strong>On a PC:</strong> press <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>, then drag a box around what you want. It copies to your clipboard.</p>
+        <p>Then paste it into Claude with the paste shortcut from the table above.</p>
+
+        <div class="card card-warm">
+          <div class="card-mark">A Note on the Mac Trackpad</div>
+          <p>If you've never used a Mac trackpad before, it's gestural. <strong>Tap with two fingers</strong> to right-click. <strong>Swipe with two fingers</strong> to scroll up or down. <strong>Pinch with two fingers</strong> to zoom a webpage in or out. <strong>Three-finger swipe</strong> moves between desktops. If something feels stuck, the answer is usually a two-finger gesture.</p>
+        </div>
+      </section>
+
+      <!-- ============ 04 HOME SCREEN ============ -->
+      <section id="home-screen" class="lockable locked" data-code="WILLOW">
+        <div class="section-head">
+          <span class="section-num">04</span>
+          <span class="section-time">~ 10 minutes · screen tour</span>
+        </div>
+        <h2>The Home Screen</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">Open <em>claude.ai</em> in a browser. We'll walk through what each part does together.</p>
+
+        <h3>The Sidebar (left side)</h3>
+        <ul class="styled-list">
+          <li>
+            <strong>New Chat</strong>
+            The fresh start button. Use it when you're switching topics — keeping unrelated work in separate chats keeps each one focused.
+          </li>
+          <li>
+            <strong>Recent Chats</strong>
+            Your conversation history. You can search across them. If you can't remember which chat you were having a thought in, search by a keyword.
+          </li>
+          <li>
+            <strong>Projects</strong>
+            A folder for related chats — like a binder. You can give a Project shared instructions and shared documents, so Claude knows the context every time you start a new chat inside it. Use Projects when you have ongoing work: a business, a book, a course.
+          </li>
+          <li>
+            <strong>Settings</strong>
+            Where memory, styles, and connectors live. Worth a quick visit later — not today.
+          </li>
+        </ul>
+
+        <h3>Inside a Chat</h3>
+        <ul class="styled-list">
+          <li>
+            <strong>Model selector (top of chat)</strong>
+            Claude comes in different sizes. Opus is the most capable — slower, more thoughtful. Sonnet is the balanced default. Haiku is the fastest. For most work, the default is fine. For hard creative or strategic problems, choose Opus.
+          </li>
+          <li>
+            <strong>Tools menu</strong>
+            Toggle web search, file creation, code execution, and more. Tools change what Claude can do in a given chat. We'll come back to these.
+          </li>
+          <li>
+            <strong>Style selector</strong>
+            You can give Claude a custom voice — formal, casual, in your own style — that applies across chats. Optional, but lovely once tuned.
+          </li>
+          <li>
+            <strong>The Artifact panel (right side)</strong>
+            When Claude builds something — a webpage, a document, a chart — it opens here, live, side-by-side with your chat. This is the magic.
+          </li>
+        </ul>
+
+        <div class="card card-sage">
+          <div class="card-mark">Try It Now</div>
+          <p>Open claude.ai. Click around. Hover over each icon. Click into Settings just to peek. Don't worry about breaking anything — you cannot. Spend two minutes just exploring.</p>
+        </div>
+      </section>
+
+      <!-- ============ 05 CAPABILITIES ============ -->
+      <section id="capabilities" class="lockable locked" data-code="BIRCH">
+        <div class="section-head">
+          <span class="section-num">05</span>
+          <span class="section-time">~ 10 minutes</span>
+        </div>
+        <h2>Coding Capabilities — and Where to Use Them</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">There is more than one way to use Claude. Knowing which version to use, when, will save you hours.</p>
+
+        <h3>The Web Interface (claude.ai)</h3>
+        <p>This is what you've already been looking at. It's a chat window with the ability to build things. For 90% of what you'll do — prototypes, simple websites, documents, learning, brainstorming — this is exactly the right tool.</p>
+
+        <h3>Claude Code (the terminal version)</h3>
+        <p>Claude Code is a more powerful version of Claude that runs on your computer in a tool called the terminal. Instead of building one file at a time in a chat window, it can read, edit, and create many files in a real project, run code, and act more like a teammate sitting next to you. It's what professional developers use for serious work.</p>
+        <p><strong>You probably don't need this yet.</strong> Mention it exists. Come back to it once you've built three or four things in the chat interface and start to feel limited.</p>
+
+        <h3>What people mean by "modes"</h3>
+        <p>There isn't one master mode switch. Instead, Claude has a few different ways of working you can turn on:</p>
+
+        <dl class="glossary">
+          <dt>Default Chat</dt>
+          <dd>Just talking with Claude — asking questions, building things, getting help. The starting point.</dd>
+
+          <dt>Research</dt>
+          <dd>For deeper questions that need the web. Claude searches multiple sources, reads them, and produces a longer, more thorough answer with citations. Use this for "What's the current state of [topic]?" or "Compare these five options for me."</dd>
+
+          <dt>Imagine</dt>
+          <dd>An exploratory mode where Claude can generate interfaces and tools on the fly — useful when you're not sure what you want and you'd like to see options.</dd>
+
+          <dt>Cowork (early access)</dt>
+          <dd>A desktop app where Claude can help with files on your computer directly — moving things, organizing, automating small tasks. Aimed at non-developers.</dd>
+
+          <dt>Tools (toggleable per chat)</dt>
+          <dd>Web search, file creation, image search, and more. Turn these on when you need them; leave them off when you don't.</dd>
+        </dl>
+
+        <div class="card card-warm">
+          <div class="card-mark">Rule of Thumb</div>
+          <p>Start in the regular chat. Add tools as you need them. Move to Claude Code only once you have a real, multi-file project that's outgrown a single conversation.</p>
+        </div>
+      </section>
+
+      <!-- ============ 06 WHERE IT LIVES ============ -->
+      <section id="where-it-lives" class="lockable locked" data-code="HARBOR">
+        <div class="section-head">
+          <span class="section-num">06</span>
+          <span class="section-time">~ 10 minutes</span>
+        </div>
+        <h2>Where Your Build Lives</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">When Claude builds you a webpage, where <em>is</em> it? This is the question that confuses everyone at first. Let's settle it.</p>
+
+        <p>There are three different places your work can live, and each one is for a different stage of its life.</p>
+
+        <h3>1. A Claude Artifact</h3>
+        <p>When Claude builds something for you in a chat, it lives <strong>inside that chat</strong>, in the Artifact panel. You can refine it, share a preview link with someone, and come back to it later. Think of an Artifact as a sketch on beautiful paper — real, viewable, but tied to the studio it was made in.</p>
+        <p><strong>Use Artifacts for:</strong> prototyping, quick tools, sharing previews with collaborators, anything you don't need to be permanent or public.</p>
+
+        <h3>2. GitHub</h3>
+        <p><strong>GitHub is a free home for code on the internet.</strong> Owned by Microsoft. Used by everyone from solo builders to giant companies. You upload your files there, and they're saved, version-tracked, and shareable.</p>
+        <p>GitHub also has a free service called <strong>GitHub Pages</strong> that takes your files and turns them into a real, public website at an address like <em>yourname.github.io/your-project</em>. This is how many simple websites you've seen are hosted.</p>
+        <p><strong>Use GitHub when:</strong> you want your build to live on the public internet, you want to keep a history of changes, you want a real URL you can share.</p>
+
+        <h3>3. Cloudflare</h3>
+        <p><strong>Cloudflare is a bigger, more powerful hosting and security company.</strong> It does many things, but two are most relevant to you:</p>
+        <ul class="styled-list">
+          <li>
+            <strong>Cloudflare Pages</strong>
+            Like GitHub Pages, but faster and with more options. Hosts your website.
+          </li>
+          <li>
+            <strong>Cloudflare Workers</strong>
+            Tiny pieces of code that run in the cloud, on demand. Useful when your website needs to do something more than just sit there — like fetch data from somewhere else, or process a form.
+          </li>
+        </ul>
+
+        <h3>The mental model</h3>
+        <div class="compare">
+          <div>
+            <h4>Claude Artifact</h4>
+            <p style="font-size: 14px; color: var(--text-soft);">The sketch. Viewable, refinable, shareable as a preview. Lives inside Claude.</p>
+          </div>
+          <div>
+            <h4>GitHub Pages</h4>
+            <p style="font-size: 14px; color: var(--text-soft);">The free public address. Your build, on the open internet, with a URL.</p>
+          </div>
+        </div>
+        <div class="compare">
+          <div>
+            <h4>Cloudflare</h4>
+            <p style="font-size: 14px; color: var(--text-soft);">The professional address. Faster, more capable, better for things that need to do work in the background.</p>
+          </div>
+          <div>
+            <h4>Custom Domain (yourname.com)</h4>
+            <p style="font-size: 14px; color: var(--text-soft);">A name you buy, then point at any of the above. Sits on top.</p>
+          </div>
+        </div>
+
+        <div class="wisdom">You don't need to choose today. Build first. Move it onto GitHub or Cloudflare only when you have something worth sharing.</div>
+      </section>
+
+      <!-- ============ 07 PRACTICE ============ -->
+      <section id="practice" class="lockable locked" data-code="BLOOM">
+        <div class="section-head">
+          <span class="section-num">07</span>
+          <span class="section-time">~ 15 minutes · build together</span>
+        </div>
+        <h2>Hands-On — A Personal Landing Page</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">Now we build something real. A simple page that introduces you. We'll do it together, one prompt at a time.</p>
+
+        <ol class="steps">
+          <li>
+            <strong>Open a fresh chat</strong>
+            Go to claude.ai. Click <em>New Chat</em> in the sidebar. We want a clean slate.
+          </li>
+          <li>
+            <strong>Send your opening prompt</strong>
+            Use the prompt below as your starting point. Replace the bracketed parts with your own details. Tap the <em>Copy prompt</em> button, switch to your Claude tab, and paste it in &mdash; <kbd>⌘</kbd> + <kbd>V</kbd> on a Mac, <kbd>Ctrl</kbd> + <kbd>V</kbd> on a PC. Then press <kbd>Enter</kbd> to send.
+          </li>
+          <li>
+            <strong>Watch the Artifact appear</strong>
+            Claude will build your page in the panel on the right. Read it. Click around. Notice what it chose for you.
+          </li>
+          <li>
+            <strong>Refine in plain English</strong>
+            Now ask for changes. "Make the colors warmer." "Add a section about my work." "Try a different font." Each request gets a new version. If something doesn't look right, take a screenshot (<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd> on Mac, <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> on PC) and paste it into the chat with your question.
+          </li>
+          <li>
+            <strong>Stop when it feels yours</strong>
+            That's it. You've built a webpage. It's saved in the chat &mdash; you can come back to it any time.
+          </li>
+        </ol>
+
+        <div class="prompt-block">
+          <div class="prompt-text copyable">
+            I'd like to build a simple, beautiful personal landing page for myself. Here's about me: <span class="fill">two or three sentences about who you are, what you do, what you care about</span>. The feeling I want is <span class="fill">warm and welcoming / quietly confident / playful and curious — pick one</span>. Please build it as a single HTML artifact with elegant typography and a thoughtful color palette. Include a short introduction, a section for what I do, and a way to reach me.
+          </div>
+          <button class="copy-btn" onclick="copyPrompt(this, 0)">Copy prompt</button>
+        </div>
+
+        <h3>If you have time — refinement prompts to try</h3>
+        <div class="prompt-block">
+          <div class="prompt-text copyable">
+            Change the color palette to soft blues and creams. Make the headings feel more elegant.
+          </div>
+          <button class="copy-btn" onclick="copyPrompt(this, 1)">Copy prompt</button>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-text copyable">
+            Add a section called "Currently" with three things I'm working on or thinking about right now. Style it differently from the rest of the page.
+          </div>
+          <button class="copy-btn" onclick="copyPrompt(this, 2)">Copy prompt</button>
+        </div>
+        <div class="prompt-block">
+          <div class="prompt-text copyable">
+            Make the page feel less like a resume and more like an invitation. I want someone landing here to feel something.
+          </div>
+          <button class="copy-btn" onclick="copyPrompt(this, 3)">Copy prompt</button>
+        </div>
+
+        <div class="card card-sage">
+          <div class="card-mark">Notice</div>
+          <p>You didn't write a single line of code. You described what you wanted in your own words and watched it become real. <em>This is the skill.</em> Everything else is a refinement of it.</p>
+        </div>
+      </section>
+
+      <!-- ============ 08 BEYOND ============ -->
+      <section id="beyond" class="lockable locked" data-code="GROVE">
+        <div class="section-head">
+          <span class="section-num">08</span>
+          <span class="section-time">~ 5 minutes</span>
+        </div>
+        <h2>Beyond the Basics — When You'll Need More</h2>
+        <div class="lock-card">
+          <div class="lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 10V8a5 5 0 0110 0v2"/><rect x="5" y="10" width="14" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <p class="lock-title">This section is locked</p>
+          <p class="lock-sub">Your facilitator will share the code when we arrive here.</p>
+          <div class="lock-input-row">
+            <input type="text" class="lock-input" placeholder="Enter code" maxlength="20" autocomplete="off" spellcheck="false" />
+            <button class="lock-button" type="button">Unlock</button>
+          </div>
+          <p class="lock-error"></p>
+        </div>
+
+        <p class="section-deck">You can go a long way with Claude alone. Here's a glimpse of what you reach for when your idea grows up.</p>
+
+        <p>A landing page is content that just <em>sits there</em>. It looks beautiful, says what you want, and never changes. Most of what you'll build at first is exactly this — and that's wonderful.</p>
+
+        <p>But sometimes your idea needs to <strong>remember things</strong>. A list of clients. A login for users. Data that someone enters that needs to come back tomorrow. The moment your build needs memory across visits, you've crossed into a new territory. Welcome.</p>
+
+        <h3>Tools that give your build memory</h3>
+        <dl class="glossary">
+          <dt>Supabase</dt>
+          <dd>A free, friendly database in a box. The most common choice for builders like you. It handles user accounts, stores your data, and gives Claude clear instructions to work with. You'll hear this name a lot. Free for small projects.</dd>
+
+          <dt>Airtable</dt>
+          <dd>A spreadsheet that thinks like a database. The easiest path if you already love spreadsheets. Less powerful than Supabase, but more familiar.</dd>
+
+          <dt>Firebase</dt>
+          <dd>Google's version of Supabase. Powerful, slightly more complex. Both are valid; people pick based on taste.</dd>
+
+          <dt>Stripe</dt>
+          <dd>For accepting payments. The standard. Plug it in when you're ready to charge for something.</dd>
+
+          <dt>Resend / SendGrid</dt>
+          <dd>For sending emails from your app. When a form on your site needs to email you, these are how.</dd>
+        </dl>
+
+        <h3>How to know when you need them</h3>
+        <ul class="styled-list">
+          <li>
+            <strong>You don't, until you do</strong>
+            If your build is a beautiful page, a portfolio, a simple tool — stay in the chat with Claude. Don't pre-emptively reach for complexity.
+          </li>
+          <li>
+            <strong>The signal is "save this"</strong>
+            The first time you find yourself wishing your build could remember a list, a login, or a record across visits — that's the moment. Ask Claude. It will walk you through it.
+          </li>
+          <li>
+            <strong>Claude knows these tools well</strong>
+            You don't need to learn Supabase before you use it. You learn it <em>through</em> Claude, the same way you've been learning everything else.
+          </li>
+        </ul>
+
+        <div class="ornament">· · ·</div>
+
+        <h3>A closing word</h3>
+        <p>You came in thinking you needed to learn to code. You're leaving with something more useful: a clear sense of what's possible, a feel for how to ask, and a single page you built yourself.</p>
+        <p>The first three things you build will feel slow and uncertain. The next three will feel quicker. By the tenth, you'll be surprised at what you reach for naturally. Keep building. Keep asking. The skill is the asking.</p>
+
+        <div class="wisdom">You are not here to replace developers. You are here to stop being the one who has to wait for them.</div>
+
+        <div class="footer-note">
+          Quinta &amp; Co. · Module One · Licensed for the named attendee only.<br>
+          Please do not redistribute. Future modules forthcoming.
+        </div>
+      </section>
+
+      <!-- ============ SESSION SUMMARY ============ -->
+      <div class="session-summary" id="sessionSummary">
+        <div class="card-mark">A Final Favor</div>
+        <h3>Share Your Session With Erika</h3>
+        <p>This module is being refined. If you'd be willing, please tap below to copy your session log — what you saw, when, and what you tried — and paste it into a reply to Erika's email. It helps her shape the next module for you.</p>
+        <p style="font-size: 13px; color: var(--text-muted); font-style: italic;">No personal information is captured beyond your name and the time you spent on the module. Nothing leaves your device unless you send it.</p>
+
+        <div class="session-log-preview" id="sessionLogPreview">Your session log will appear here.</div>
+
+        <div class="session-actions">
+          <button class="session-button" id="copyLogBtn" type="button">Copy log to clipboard</button>
+          <button class="session-button secondary" id="downloadLogBtn" type="button">Download as text file</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Watermark -->
+  <div class="watermark" id="watermark">Licensed · Loading</div>
+</div>
+
+<script>
+  // ============================
+  // CONFIG — change as needed
+  // ============================
+  const ACCESS_CODE = 'BLOOM2026'; // Gate code attendees enter to access the module
+  // Section unlock codes — change per cohort if you like
+  // (Codes are also enforced via the data-code attribute on each section)
+
+  // ============================
+  // STORAGE — graceful fallback
+  // ============================
+  const memStore = {};
+  const storage = {
+    get(k) {
+      try { return localStorage.getItem(k); }
+      catch (e) { return memStore[k] === undefined ? null : memStore[k]; }
+    },
+    set(k, v) {
+      try { localStorage.setItem(k, v); }
+      catch (e) { memStore[k] = v; }
+    },
+    remove(k) {
+      try { localStorage.removeItem(k); }
+      catch (e) { delete memStore[k]; }
+    }
+  };
+
+  // ============================
+  // EVENT LOG (for session summary)
+  // ============================
+  const sessionLog = {
+    name: '',
+    startedAt: null,
+    events: [],
+    sectionTime: {}, // sectionId -> total ms in viewport
+    _viewStart: {},  // sectionId -> ts when entered viewport
+    log(type, meta) {
+      this.events.push({ ts: Date.now(), type: type, meta: meta || {} });
+    },
+    sectionEnter(id) {
+      this._viewStart[id] = Date.now();
+    },
+    sectionLeave(id) {
+      if (this._viewStart[id]) {
+        const dt = Date.now() - this._viewStart[id];
+        this.sectionTime[id] = (this.sectionTime[id] || 0) + dt;
+        delete this._viewStart[id];
+      }
+    }
+  };
+
+  // ============================
+  // ACCESS GATE
+  // ============================
+  const gate = document.getElementById('gate');
+  const app = document.getElementById('app');
+  const codeInput = document.getElementById('codeInput');
+  const nameInput = document.getElementById('nameInput');
+  const unlockBtn = document.getElementById('unlockBtn');
+  const gateError = document.getElementById('gateError');
+
+  function unlock() {
+    const code = codeInput.value.trim().toUpperCase();
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      gateError.textContent = 'Please enter your name to continue.';
+      gateError.classList.add('show');
+      nameInput.focus();
+      return;
+    }
+
+    if (code !== ACCESS_CODE.toUpperCase()) {
+      gateError.textContent = "That code isn't quite right. Try again.";
+      gateError.classList.add('show');
+      codeInput.focus();
+      codeInput.select();
+      return;
+    }
+
+    sessionLog.name = name;
+    sessionLog.startedAt = Date.now();
+    sessionLog.log('module_open', { name: name });
+
+    document.getElementById('licenseName').textContent = name;
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('licenseDate').textContent = dateStr;
+    document.getElementById('watermark').textContent = `Licensed · ${name} · ${dateStr}`;
+
+    gate.style.display = 'none';
+    app.classList.add('unlocked');
+
+    initLockables();
+    updateNavLockIndicators();
+  }
+
+  unlockBtn.addEventListener('click', unlock);
+  codeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { if (!nameInput.value) nameInput.focus(); else unlock(); } });
+  nameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') unlock(); });
+
+  // ============================
+  // SECTION LOCKING
+  // ============================
+  function initLockables() {
+    const sections = document.querySelectorAll('section.lockable');
+    sections.forEach((sec) => {
+      const id = sec.id;
+      const expected = (sec.dataset.code || '').toUpperCase();
+
+      // Restore prior unlock state
+      if (storage.get('unlocked:' + id) === '1') {
+        sec.classList.remove('locked');
+        return;
+      }
+
+      const card = sec.querySelector('.lock-card');
+      if (!card) return;
+      const input = card.querySelector('.lock-input');
+      const button = card.querySelector('.lock-button');
+      const errorEl = card.querySelector('.lock-error');
+
+      function tryUnlock() {
+        const v = (input.value || '').trim().toUpperCase();
+        if (!v) { input.focus(); return; }
+        if (v === expected) {
+          sec.classList.remove('locked');
+          storage.set('unlocked:' + id, '1');
+          sessionLog.log('section_unlock', { id: id });
+          updateNavLockIndicators();
+          maybeShowSessionSummary();
+          // Smooth scroll the section into view
+          setTimeout(() => sec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        } else {
+          errorEl.textContent = "That code doesn't match. Try again, or ask your facilitator.";
+          errorEl.classList.add('show');
+          sessionLog.log('section_unlock_failed', { id: id, attempt: v });
+          input.value = '';
+          input.focus();
+          setTimeout(() => errorEl.classList.remove('show'), 3500);
+        }
+      }
+
+      button.addEventListener('click', tryUnlock);
+      input.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryUnlock(); });
+    });
+  }
+
+  function updateNavLockIndicators() {
+    const navLinks = document.querySelectorAll('.nav a');
+    navLinks.forEach((a) => {
+      const href = a.getAttribute('href') || '';
+      if (!href.startsWith('#')) return;
+      const id = href.slice(1);
+      const target = document.getElementById(id);
+      if (!target) return;
+      a.classList.remove('is-locked', 'is-unlocked');
+      if (target.classList.contains('lockable')) {
+        if (target.classList.contains('locked')) {
+          a.classList.add('is-locked');
+        } else {
+          a.classList.add('is-unlocked');
+        }
+      }
+    });
+  }
+
+  // ============================
+  // ANTI-CASUAL-SHARING
+  // ============================
+  document.addEventListener('contextmenu', (e) => {
+    // Allow right-click in input fields (so they can paste codes)
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
+    return false;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const k = (e.key || '').toLowerCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && (k === 's' || k === 'p' || k === 'u')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  document.addEventListener('dragstart', (e) => e.preventDefault());
+
+  // ============================
+  // NAV — active section highlighting + tracking
+  // ============================
+  const sections = document.querySelectorAll('main section');
+  const navLinks = document.querySelectorAll('.nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const id = entry.target.id;
+      if (entry.isIntersecting) {
+        navLinks.forEach((l) => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+        sessionLog.sectionEnter(id);
+      } else {
+        sessionLog.sectionLeave(id);
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+
+  sections.forEach((s) => observer.observe(s));
+
+  // ============================
+  // PROMPT COPY BUTTONS
+  // ============================
+  function copyPrompt(btn, idx) {
+    const block = btn.previousElementSibling;
+    const text = block.innerText.replace(/\s+/g, ' ').trim();
+    sessionLog.log('prompt_copy', { idx: idx, length: text.length });
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1800);
+    }).catch(() => {
+      const range = document.createRange();
+      range.selectNode(block);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      btn.textContent = 'Select & copy manually';
+    });
+  }
+
+  // ============================
+  // SETUP CHECKLIST — tappable
+  // ============================
+  document.querySelectorAll('#setupChecklist li').forEach((li) => {
+    li.addEventListener('click', () => {
+      li.classList.toggle('checked');
+      sessionLog.log('checklist_toggle', { item: li.dataset.check, checked: li.classList.contains('checked') });
+    });
+  });
+
+  // ============================
+  // SESSION SUMMARY
+  // ============================
+  function maybeShowSessionSummary() {
+    // Reveal once the final section ('beyond') is unlocked
+    const finalSection = document.getElementById('beyond');
+    if (finalSection && !finalSection.classList.contains('locked')) {
+      const summary = document.getElementById('sessionSummary');
+      if (summary && !summary.classList.contains('show')) {
+        summary.classList.add('show');
+        renderSessionLog();
+      }
+    }
+  }
+
+  function fmtTime(ts) {
+    return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function fmtDuration(ms) {
+    if (ms < 60000) return Math.round(ms / 1000) + 's';
+    const m = Math.floor(ms / 60000);
+    const s = Math.round((ms % 60000) / 1000);
+    return m + 'm ' + s + 's';
+  }
+
+  function buildSessionLogText() {
+    // Flush any in-progress section view
+    Object.keys(sessionLog._viewStart).forEach((id) => sessionLog.sectionLeave(id));
+
+    const start = sessionLog.startedAt || Date.now();
+    const end = Date.now();
+    const total = end - start;
+
+    let out = '';
+    out += '## Module Session Log\n';
+    out += `**Attendee:** ${sessionLog.name || 'Anonymous'}\n`;
+    out += `**Date:** ${fmtDate(start)}\n`;
+    out += `**Started:** ${fmtTime(start)}\n`;
+    out += `**Last activity:** ${fmtTime(end)}\n`;
+    out += `**Total session time:** ${fmtDuration(total)}\n\n`;
+
+    out += '### Section flow\n';
+    sessionLog.events.forEach((e) => {
+      const t = fmtTime(e.ts);
+      let label = '';
+      switch (e.type) {
+        case 'module_open':           label = 'Entered the module'; break;
+        case 'section_unlock':        label = 'Unlocked: ' + (e.meta.id || ''); break;
+        case 'section_unlock_failed': label = 'Tried to open (wrong code): ' + (e.meta.id || ''); break;
+        case 'prompt_copy':           label = 'Copied a prompt (#' + (e.meta.idx + 1) + ')'; break;
+        case 'checklist_toggle':      label = (e.meta.checked ? 'Checked: ' : 'Unchecked: ') + (e.meta.item || ''); break;
+        default:                      label = e.type;
+      }
+      out += `- ${t} — ${label}\n`;
+    });
+
+    out += '\n### Time spent per section\n';
+    const sortedSections = Object.entries(sessionLog.sectionTime).sort((a, b) => b[1] - a[1]);
+    if (sortedSections.length === 0) {
+      out += '_(no section view data captured)_\n';
+    } else {
+      sortedSections.forEach(([id, ms]) => {
+        out += `- ${id}: ${fmtDuration(ms)}\n`;
+      });
+    }
+
+    out += '\n### Engagement summary\n';
+    const promptCopies = sessionLog.events.filter(e => e.type === 'prompt_copy').length;
+    const failedUnlocks = sessionLog.events.filter(e => e.type === 'section_unlock_failed').length;
+    const unlocked = sessionLog.events.filter(e => e.type === 'section_unlock').length;
+    out += `- Sections unlocked during session: ${unlocked}\n`;
+    out += `- Prompts copied: ${promptCopies}\n`;
+    out += `- Failed unlock attempts: ${failedUnlocks}\n`;
+
+    return out;
+  }
+
+  function renderSessionLog() {
+    const preview = document.getElementById('sessionLogPreview');
+    if (preview) preview.textContent = buildSessionLogText();
+  }
+
+  document.getElementById('copyLogBtn').addEventListener('click', function(ev) {
+    const btn = ev.currentTarget;
+    const text = buildSessionLogText();
+    sessionLog.log('session_share');
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.dataset.originalText || btn.textContent;
+      btn.dataset.originalText = original;
+      btn.textContent = 'Copied — paste into your email';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 3000);
+    }).catch(() => {
+      const preview = document.getElementById('sessionLogPreview');
+      const range = document.createRange();
+      range.selectNode(preview);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+    renderSessionLog();
+  });
+
+  document.getElementById('downloadLogBtn').addEventListener('click', function() {
+    const text = buildSessionLogText();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const safeName = (sessionLog.name || 'attendee').replace(/[^a-zA-Z0-9_-]/g, '_');
+    a.download = `claude-module-log_${safeName}_${stamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    sessionLog.log('session_download');
+  });
+
+  // Refresh the preview every 20s if the summary is showing
+  setInterval(() => {
+    const summary = document.getElementById('sessionSummary');
+    if (summary && summary.classList.contains('show')) renderSessionLog();
+  }, 20000);
+
+  // ============================
+  // OS DETECTION — highlights cheat sheet column
+  // ============================
+  (function detectOS() {
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const plat = (navigator.platform || '').toLowerCase();
+    const table = document.getElementById('cheatTable');
+    const note = document.getElementById('cheatDetected');
+    if (!table) return;
+
+    const isMac = plat.includes('mac') || ua.includes('macintosh') || ua.includes('mac os');
+    const isPC = plat.includes('win') || ua.includes('windows');
+    const isIOS = /ipad|iphone/.test(ua);
+
+    if (isMac || isIOS) {
+      table.classList.add('detect-mac');
+      if (note) note.textContent = "Looks like you're on a Mac — that column is highlighted for you.";
+    } else if (isPC) {
+      table.classList.add('detect-pc');
+      if (note) note.textContent = "Looks like you're on a PC — that column is highlighted for you.";
+    } else {
+      if (note) note.textContent = 'Both columns are shown — pick the one that matches your computer.';
+    }
+  })();
+
+  // Auto-focus name input on load
+  window.addEventListener('load', () => {
+    setTimeout(() => codeInput.focus(), 100);
+  });
+
+  // Save session log progress periodically (in case of refresh)
+  setInterval(() => {
+    if (sessionLog.startedAt) {
+      try {
+        storage.set('sessionLog', JSON.stringify({
+          name: sessionLog.name,
+          startedAt: sessionLog.startedAt,
+          events: sessionLog.events,
+          sectionTime: sessionLog.sectionTime
+        }));
+      } catch (e) { /* ignore */ }
+    }
+  }, 15000);
+</script>
+
+</body>
+</html>
