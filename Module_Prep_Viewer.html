@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cohort Prep · Quinta &amp; Co.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF6;
+    --bg-warm: #F5F2EA;
+    --surface: #FFFFFF;
+    --surface-soft: #F1EEE6;
+    --border: #DCD7CB;
+    --border-soft: #E8E3D7;
+    --text: #2F332E;
+    --text-soft: #5A5E55;
+    --text-muted: #8A8E83;
+    --heading: #20231F;
+    --sage: #6E8B7A;
+    --sage-deep: #4F6B5C;
+    --sage-soft: #DFE7E0;
+    --sage-whisper: #EEF2EC;
+    --moss: #3D544A;
+    --warn: #B8975C;
+    --error: #A0524F;
+    --shadow-soft: 0 1px 2px rgba(48, 56, 49, 0.04), 0 4px 12px rgba(48, 56, 49, 0.04);
+    --shadow-lift: 0 4px 16px rgba(48, 56, 49, 0.06), 0 12px 32px rgba(48, 56, 49, 0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(110, 139, 122, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(184, 163, 126, 0.03) 0%, transparent 40%);
+  }
+
+  /* ==========================
+     LOGIN GATE
+     ========================== */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #F5F2EA 0%, #EEF2EC 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .gate-card {
+    max-width: 460px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 56px 44px;
+    box-shadow: var(--shadow-lift);
+    text-align: center;
+    position: relative;
+  }
+
+  .gate-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--sage);
+  }
+
+  .gate-mark {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .gate-card h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 28px;
+    color: var(--heading);
+    margin-bottom: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  .gate-card p.gate-sub {
+    color: var(--text-soft);
+    margin-bottom: 32px;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .gate-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 14px;
+    border-radius: 2px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .gate-input:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-whisper);
+  }
+
+  .gate-button {
+    width: 100%;
+    padding: 14px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .gate-button:hover { background: var(--moss); }
+  .gate-button:active { transform: translateY(1px); }
+  .gate-button:disabled { background: var(--text-muted); cursor: wait; }
+
+  .gate-error {
+    color: var(--error);
+    font-size: 13px;
+    font-style: italic;
+    margin-top: 12px;
+    min-height: 18px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .gate-error.show { opacity: 1; }
+
+  .gate-config-warn {
+    background: #FBEEEC;
+    border: 1px solid #E0BCB9;
+    border-left: 3px solid var(--error);
+    padding: 14px 16px;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #6E3A38;
+    text-align: left;
+    border-radius: 2px;
+  }
+
+  /* ==========================
+     APP
+     ========================== */
+  .app {
+    display: none;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .app.ready { display: block; }
+
+  .app-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--bg-warm);
+    border-right: 1px solid var(--border-soft);
+    padding: 32px 0 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-head {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .brand {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--heading);
+    line-height: 1.3;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .sidebar-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Stats row */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 4px;
+    padding: 16px 16px 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  /* Active cohort manager */
+  .active-cohort {
+    padding: 14px 20px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--sage-whisper);
+  }
+
+  .active-cohort-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .active-cohort-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .active-cohort-input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+
+  .active-cohort-input:focus {
+    outline: none;
+    border-color: var(--sage);
+  }
+
+  .active-cohort-current {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    min-height: 14px;
+  }
+
+  .active-cohort-current strong {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--moss);
+  }
+
+  .brief-button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .brief-button:hover { background: var(--moss); }
+  .brief-button:active { transform: translateY(1px); }
+  .brief-button:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .brief-count {
+    background: rgba(255, 255, 255, 0.18);
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+  }
+
+  /* Resources section */
+  .resources {
+    padding: 14px 20px 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .resources-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin: 0 -10px;
+    color: var(--text-soft);
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.15s, color 0.15s;
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  .resource-link:hover {
+    background: var(--sage-whisper);
+    color: var(--moss);
+  }
+  .resource-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: var(--sage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .resource-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+  }
+  .resource-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--heading);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .resource-link:hover .resource-name { color: var(--moss); }
+  .resource-desc {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Inline homepage on empty detail */
+  .homepage {
+    padding: 20px 0;
+  }
+  .homepage-greeting {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 28px;
+    color: var(--heading);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+  .homepage-sub {
+    color: var(--text-soft);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 540px;
+  }
+  .homepage-section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .quick-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .quick-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 3px;
+    padding: 22px 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .quick-card:hover {
+    border-color: var(--sage);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+  }
+  .quick-card-mark {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .quick-card-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--heading);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .quick-card-desc {
+    color: var(--text-soft);
+    font-size: 14px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .urls-block {
+    background: var(--bg-warm);
+    border: 1px solid var(--border-soft);
+    border-radius: 3px;
+    padding: 22px 26px;
+    margin-bottom: 36px;
+  }
+  .url-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 14px;
+  }
+  .url-row:last-child { border-bottom: none; }
+  .url-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .url-value {
+    flex: 1;
+    font-family: 'Cinzel', monospace;
+    font-size: 12px;
+    color: var(--moss);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .url-value a {
+    color: var(--moss);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sage);
+  }
+  .url-value a:hover { color: var(--sage-deep); }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover {
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+  .copy-btn.copied {
+    background: var(--sage-whisper);
+    border-color: var(--sage);
+    color: var(--sage-deep);
+  }
+
+  /* "Use active" button next to cohort field */
+  .use-active-btn {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--sage);
+    color: var(--sage-deep);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .use-active-btn:hover:not(:disabled) {
+    background: var(--sage-whisper);
+    color: var(--moss);
+  }
+
+  .use-active-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+
+  .stat {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .stat:hover { background: var(--sage-whisper); }
+  .stat.active { background: var(--sage-whisper); }
+
+  .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--heading);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .stat.active .stat-num,
+  .stat.active .stat-label { color: var(--sage-deep); }
+
+  /* Search */
+  .search-wrap {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--text);
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--sage);
+  }
+
+  /* Attendee list */
+  .attendee-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .attendee {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .attendee:hover { background: var(--sage-whisper); }
+
+  .attendee.active {
+    background: var(--sage-whisper);
+    border-left-color: var(--sage-deep);
+  }
+
+  .attendee-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .attendee-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    color: var(--heading);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .attendee-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-pending { background: var(--warn); }
+  .dot-confirmed { background: var(--sage); }
+  .dot-completed { background: var(--text-muted); }
+  .dot-declined { background: var(--border); }
+
+  .attendee-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .attendee-cohort {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  .empty-list {
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  /* Sidebar footer */
+  .sidebar-foot {
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .signout {
+    background: none;
+    border: none;
+    color: var(--text-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .signout:hover { color: var(--moss); }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .refresh-btn:hover {
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+
+  /* ==========================
+     MAIN PANEL
+     ========================== */
+  .main {
+    padding: 56px 64px 120px;
+    max-width: 880px;
+  }
+
+  .empty-detail {
+    text-align: center;
+    padding: 120px 32px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 17px;
+  }
+
+  /* Detail header */
+  .detail-head {
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .detail-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .detail-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 38px;
+    color: var(--heading);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+
+  .detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 14px;
+    color: var(--text-soft);
+    align-items: baseline;
+  }
+
+  .detail-meta a {
+    color: var(--sage-deep);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sage);
+  }
+
+  .detail-meta a:hover {
+    color: var(--moss);
+  }
+
+  /* Status + cohort row */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 3px;
+  }
+
+  .status-group {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .cohort-group {
+    width: 100%;
+    flex: 0 0 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .status-btn {
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .status-btn:hover { border-color: var(--sage); color: var(--moss); }
+
+  .status-btn.active {
+    background: var(--sage-deep);
+    border-color: var(--sage-deep);
+    color: var(--bg);
+  }
+
+  .cohort-group {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cohort-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .cohort-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--text);
+    border-radius: 2px;
+  }
+
+  .cohort-input:focus {
+    outline: none;
+    border-color: var(--sage);
+  }
+
+  .save-indicator {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .save-indicator.show { opacity: 1; }
+  .save-indicator.saving { color: var(--warn); }
+  .save-indicator.saved { color: var(--sage-deep); }
+
+  /* Story sections */
+  .story-section {
+    margin-bottom: 40px;
+  }
+
+  .story-section h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .story-q {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .story-a {
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+  }
+
+  .story-a.empty {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 15px;
+  }
+
+  .quick-facts {
+    background: var(--bg-warm);
+    border-left: 2px solid var(--sage);
+    padding: 22px 28px;
+    margin-bottom: 36px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .quick-facts dl {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px 20px;
+  }
+
+  .quick-facts dt {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    align-self: baseline;
+  }
+
+  .quick-facts dd {
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  /* Notes */
+  .notes-section {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .notes-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .notes-section h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    color: var(--moss);
+    text-transform: uppercase;
+    border: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+  }
+
+  .notes-section .save-indicator {
+    margin-left: auto;
+  }
+
+  .notes-help {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  .notes-textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 22px 26px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--text);
+    border-radius: 3px;
+    line-height: 1.7;
+    resize: vertical;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .notes-textarea:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px var(--sage-whisper);
+  }
+
+  /* Mobile */
+  .mobile-back {
+    display: none;
+    background: none;
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar {
+      position: relative;
+      height: auto;
+      max-height: none;
+    }
+    .main { padding: 32px 24px 80px; }
+    .detail-name { font-size: 28px; }
+    .quick-facts dl { grid-template-columns: 1fr; gap: 4px; }
+    .quick-facts dt { margin-top: 8px; }
+
+    .app.detail-open .sidebar { display: none; }
+    .app.detail-open .mobile-back { display: inline-block; }
+    .app:not(.detail-open) .main { display: none; }
+  }
+
+  /* Subtle entrance */
+  .app.ready .main, .app.ready .sidebar {
+    animation: rise 0.5s ease-out backwards;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===========================
+     LOGIN GATE
+     =========================== -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="gate-mark">Quinta &amp; Co. · Private</div>
+    <h1>Cohort Prep</h1>
+    <p class="gate-sub">Sign in to read the stories.</p>
+    <input id="gateEmail" class="gate-input" type="email" placeholder="Email" autocomplete="email" />
+    <input id="gatePassword" class="gate-input" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="gateButton" class="gate-button">Enter</button>
+    <div id="gateError" class="gate-error"></div>
+    <div id="gateConfigWarn" class="gate-config-warn" style="display: none;">
+      <strong>Setup needed:</strong> the Supabase URL and anon key haven't been added to this file yet. Open it in a text editor and paste them in near the top of the script.
+    </div>
+  </div>
+</div>
+
+<!-- ===========================
+     APP
+     =========================== -->
+<div id="app" class="app">
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand">Quinta &amp; Co.</div>
+        <h2 class="sidebar-title">Cohort Prep</h2>
+        <p class="sidebar-sub">Their stories, in their words.</p>
+      </div>
+
+      <div class="active-cohort">
+        <div class="active-cohort-label">Active Cohort</div>
+        <div class="active-cohort-row">
+          <input id="activeCohortInput" class="active-cohort-input" type="text" placeholder="e.g. Claude Module 1 — June 4, 2026" />
+        </div>
+        <div class="active-cohort-current" id="activeCohortCurrent">Not set — type above and press Enter</div>
+        <button class="brief-button" id="briefButton" type="button" disabled>
+          View Cohort Brief
+          <span class="brief-count" id="briefCount" style="display:none;"></span>
+        </button>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="stat" data-filter="all">
+          <div class="stat-num" id="statAll">—</div>
+          <div class="stat-label">All</div>
+        </div>
+        <div class="stat" data-filter="pending">
+          <div class="stat-num" id="statPending">—</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat" data-filter="confirmed">
+          <div class="stat-num" id="statConfirmed">—</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat" data-filter="completed">
+          <div class="stat-num" id="statCompleted">—</div>
+          <div class="stat-label">Done</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <input id="searchInput" class="search-input" type="text" placeholder="Search names, words, cohorts..." />
+      </div>
+
+      <div class="resources">
+        <div class="resources-label">Resources</div>
+        <a href="../playbook/" target="_blank" class="resource-link">
+          <div class="resource-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div class="resource-text">
+            <span class="resource-name">Cohort Playbook</span>
+            <span class="resource-desc">48-hour run-up &amp; codes</span>
+          </div>
+        </a>
+        <a href="../facilitator/" target="_blank" class="resource-link">
+          <div class="resource-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          </div>
+          <div class="resource-text">
+            <span class="resource-name">Facilitator Notes</span>
+            <span class="resource-desc">Teaching guide &amp; FAQs</span>
+          </div>
+        </a>
+        <a href="../m1/" target="_blank" class="resource-link">
+          <div class="resource-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <div class="resource-text">
+            <span class="resource-name">Module 1</span>
+            <span class="resource-desc">Live training site</span>
+          </div>
+        </a>
+        <a href="../signup/" target="_blank" class="resource-link">
+          <div class="resource-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="resource-text">
+            <span class="resource-name">Signup Form</span>
+            <span class="resource-desc">Public application page</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="attendee-list" id="attendeeList">
+        <div class="empty-list">Loading...</div>
+      </div>
+
+      <div class="sidebar-foot">
+        <button class="signout" id="signoutBtn">Sign out</button>
+        <button class="refresh-btn" id="refreshBtn">Refresh</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" id="main">
+      <button class="mobile-back" id="mobileBack">← Back to list</button>
+      <div class="empty-detail" id="emptyDetail">
+        <div class="homepage" style="text-align: left;">
+          <div class="brand" style="margin-bottom: 14px;">Quinta &amp; Co. · Command Center</div>
+          <h1 class="homepage-greeting">Welcome back, Erika.</h1>
+          <p class="homepage-sub">Everything you need for teaching is on this page or one click away. Select an attendee from the sidebar to read their story, or use the quick links below.</p>
+
+          <div class="homepage-section-label">Quick Access</div>
+          <div class="quick-cards">
+            <a href="../playbook/" target="_blank" class="quick-card">
+              <span class="quick-card-mark">Reference</span>
+              <span class="quick-card-title">Cohort Playbook</span>
+              <span class="quick-card-desc">Your 48-hour run-up, day-of checklist, and all the codes for tonight.</span>
+            </a>
+            <a href="../facilitator/" target="_blank" class="quick-card">
+              <span class="quick-card-mark">Teaching</span>
+              <span class="quick-card-title">Facilitator Notes</span>
+              <span class="quick-card-desc">Section-by-section teaching moves and likely questions.</span>
+            </a>
+            <a href="../m1/" target="_blank" class="quick-card">
+              <span class="quick-card-mark">Live Site</span>
+              <span class="quick-card-title">Module 1 Training</span>
+              <span class="quick-card-desc">The actual training experience your students will see.</span>
+            </a>
+            <a href="../signup/" target="_blank" class="quick-card">
+              <span class="quick-card-mark">Public</span>
+              <span class="quick-card-title">Signup Form</span>
+              <span class="quick-card-desc">The application form. Share this link with prospects.</span>
+            </a>
+          </div>
+
+          <div class="homepage-section-label">URLs to Share</div>
+          <div class="urls-block">
+            <div class="url-row">
+              <span class="url-label">Module</span>
+              <span class="url-value"><a href="../m1/" target="_blank">erikagonzalez103-hash.github.io/quinta/m1/</a></span>
+              <button class="copy-btn" data-copy="https://erikagonzalez103-hash.github.io/quinta/m1/">Copy</button>
+            </div>
+            <div class="url-row">
+              <span class="url-label">Signup</span>
+              <span class="url-value"><a href="../signup/" target="_blank">erikagonzalez103-hash.github.io/quinta/signup/</a></span>
+              <button class="copy-btn" data-copy="https://erikagonzalez103-hash.github.io/quinta/signup/">Copy</button>
+            </div>
+            <div class="url-row">
+              <span class="url-label">Gate code</span>
+              <span class="url-value">BLOOM2026</span>
+              <button class="copy-btn" data-copy="BLOOM2026">Copy</button>
+            </div>
+          </div>
+
+          <p style="font-style: italic; color: var(--text-muted); font-size: 14px;">Section codes — SAGE → MOSS → WILLOW → BIRCH → HARBOR → BLOOM → GROVE — full reference in the Playbook and Facilitator Notes.</p>
+        </div>
+      </div>
+      <div id="detailContent" style="display: none;"></div>
+    </main>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ============================
+  // CONFIG — paste your Supabase values here
+  // ============================
+  const SUPABASE_URL = 'https://pmpaslevwimofohirves.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf';
+
+  // ============================
+  // SETUP CHECK
+  // ============================
+  const isConfigured =
+    SUPABASE_URL && !SUPABASE_URL.includes('YOUR_SUPABASE_URL') &&
+    SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
+
+  if (!isConfigured) {
+    document.getElementById('gateConfigWarn').style.display = 'block';
+  }
+
+  let sb = null;
+  if (isConfigured) {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+  }
+
+  // ============================
+  // STATE
+  // ============================
+  const state = {
+    signups: [],
+    selectedId: null,
+    filter: 'all',
+    search: ''
+  };
+
+  // ============================
+  // ACTIVE COHORT (persisted in localStorage)
+  // ============================
+  let activeCohort = '';
+
+  function loadActiveCohort() {
+    try {
+      activeCohort = localStorage.getItem('eridion:activeCohort') || '';
+    } catch (e) {
+      activeCohort = '';
+    }
+    const input = document.getElementById('activeCohortInput');
+    const current = document.getElementById('activeCohortCurrent');
+    if (input) input.value = activeCohort;
+    if (current) {
+      current.innerHTML = activeCohort
+        ? `Currently: <strong>${escapeHtml(activeCohort)}</strong>`
+        : 'Not set — type above and press Enter';
+    }
+  }
+
+  function saveActiveCohort(value) {
+    activeCohort = (value || '').trim();
+    try {
+      if (activeCohort) localStorage.setItem('eridion:activeCohort', activeCohort);
+      else localStorage.removeItem('eridion:activeCohort');
+    } catch (e) { /* ignore */ }
+    const current = document.getElementById('activeCohortCurrent');
+    if (current) {
+      current.innerHTML = activeCohort
+        ? `Currently: <strong>${escapeHtml(activeCohort)}</strong>`
+        : 'Not set — type above and press Enter';
+    }
+    updateBriefButton();
+    // Re-render detail so the placeholder + button update
+    if (state.selectedId) renderDetail();
+  }
+
+  // ============================
+  // COHORT BRIEF
+  // ============================
+  function getBriefAttendees() {
+    if (!activeCohort) return [];
+    return state.signups.filter((s) => {
+      return s.cohort === activeCohort && s.status === 'confirmed';
+    });
+  }
+
+  function updateBriefButton() {
+    const btn = document.getElementById('briefButton');
+    const countEl = document.getElementById('briefCount');
+    if (!btn) return;
+    const attendees = getBriefAttendees();
+    if (!activeCohort || attendees.length === 0) {
+      btn.disabled = true;
+      if (countEl) countEl.style.display = 'none';
+    } else {
+      btn.disabled = false;
+      if (countEl) {
+        countEl.textContent = attendees.length;
+        countEl.style.display = 'inline-block';
+      }
+    }
+  }
+
+  function buildBriefHtml() {
+    const attendees = getBriefAttendees();
+    const cohortName = activeCohort || 'Untitled Cohort';
+    const generatedAt = new Date().toLocaleString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    });
+
+    const cards = attendees.map((s, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      const dreamSnippet = s.dream_build
+        ? escapeHtml(s.dream_build).split(/\s+/).slice(0, 28).join(' ') + (s.dream_build.split(/\s+/).length > 28 ? '\u2026' : '')
+        : '<em>not provided</em>';
+      const oneLine = s.work || '<em>no work info</em>';
+
+      return `
+        <div class="card" data-attendee-id="${s.id}">
+          <div class="card-head">
+            <div class="card-num">${num}</div>
+            <div class="card-name-block">
+              <h2 class="card-name">${escapeHtml(s.name)}</h2>
+              <p class="card-oneline">${escapeHtml(oneLine)}</p>
+            </div>
+            <button class="toggle-btn" type="button" onclick="toggleAttendee('${s.id}')">
+              <span class="toggle-label">Show full</span>
+            </button>
+          </div>
+
+          <div class="quick-scan">
+            <p class="dream-label">Wants to build</p>
+            <p class="dream-text">${dreamSnippet}</p>
+          </div>
+
+          <div class="full-detail" id="full-${s.id}" style="display:none;">
+            <div class="detail-row">
+              <span class="detail-label">Email</span>
+              <span class="detail-value"><a href="mailto:${escapeHtml(s.email)}">${escapeHtml(s.email)}</a></span>
+            </div>
+            ${s.phone ? `<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${escapeHtml(s.phone)}</span></div>` : ''}
+            <div class="detail-row">
+              <span class="detail-label">Computer</span>
+              <span class="detail-value">${escapeHtml(s.computer || 'not specified')}</span>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">Where she is now</p>
+              <p class="story-text">${s.prior_experience ? escapeHtml(s.prior_experience) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">Why now</p>
+              <p class="story-text">${s.why_now ? escapeHtml(s.why_now) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">What she'd build (full)</p>
+              <p class="story-text">${s.dream_build ? escapeHtml(s.dream_build) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">What worthwhile looks like</p>
+              <p class="story-text">${s.success_definition ? escapeHtml(s.success_definition) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">How she learns</p>
+              <p class="story-text">${s.learning_notes ? escapeHtml(s.learning_notes) : '<em>not provided</em>'}</p>
+            </div>
+
+            ${s.facilitator_notes ? `
+              <div class="story-block notes-block">
+                <p class="story-label">Your private notes</p>
+                <p class="story-text">${escapeHtml(s.facilitator_notes)}</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cohort Brief — ${escapeHtml(cohortName)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF6;
+    --bg-warm: #F5F2EA;
+    --surface: #FFFFFF;
+    --border: #DCD7CB;
+    --border-soft: #E8E3D7;
+    --text: #2F332E;
+    --text-soft: #5A5E55;
+    --text-muted: #8A8E83;
+    --heading: #20231F;
+    --sage: #6E8B7A;
+    --sage-deep: #4F6B5C;
+    --sage-soft: #DFE7E0;
+    --sage-whisper: #EEF2EC;
+    --moss: #3D544A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 48px 32px 80px;
+    font-size: 16px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .brand {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 36px;
+    color: var(--heading);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+  .subhead {
+    color: var(--text-soft);
+    font-style: italic;
+    font-size: 16px;
+  }
+  .meta {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .actions {
+    margin: 24px 0 36px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--sage);
+    color: var(--sage-deep);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .action-btn:hover {
+    background: var(--sage-whisper);
+    color: var(--moss);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .card-num {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--sage);
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    margin-top: 8px;
+    min-width: 28px;
+  }
+  .card-name-block { flex: 1; }
+  .card-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--heading);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .card-oneline {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 7px 12px;
+    border-radius: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .toggle-btn:hover {
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+  .card.expanded .toggle-btn {
+    background: var(--sage-whisper);
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+
+  .quick-scan {
+    background: var(--bg-warm);
+    border-left: 2px solid var(--sage);
+    padding: 16px 20px;
+    border-radius: 0 3px 3px 0;
+  }
+  .dream-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .dream-text {
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .full-detail {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .detail-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .detail-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .detail-value { color: var(--text); }
+  .detail-value a {
+    color: var(--sage-deep);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sage);
+  }
+
+  .story-block { margin-top: 18px; }
+  .story-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .story-text {
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+    white-space: pre-wrap;
+  }
+  .story-text em { color: var(--text-muted); }
+
+  .notes-block {
+    background: var(--sage-whisper);
+    border-left: 2px solid var(--sage-deep);
+    padding: 12px 16px;
+    border-radius: 0 3px 3px 0;
+  }
+  .notes-block .story-label { color: var(--moss); }
+
+  .empty {
+    text-align: center;
+    padding: 80px 32px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-soft);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Print mode */
+  @media print {
+    body { padding: 0; background: #fff; font-size: 11pt; }
+    .actions { display: none; }
+    .toggle-btn { display: none; }
+    .full-detail { display: block !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 14px; }
+    h1 { font-size: 22pt; }
+    .card-name { font-size: 16pt; }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    body { padding: 24px 16px 60px; font-size: 15px; }
+    h1 { font-size: 26px; }
+    .card { padding: 20px 18px; }
+    .card-name { font-size: 19px; }
+    .detail-label { width: 70px; }
+    .actions { flex-direction: column; }
+    .action-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <div class="brand">Quinta &amp; Co. · Cohort Brief</div>
+      <h1>${escapeHtml(cohortName)}</h1>
+      <p class="subhead">${attendees.length} confirmed attendee${attendees.length === 1 ? '' : 's'}</p>
+      <p class="meta">Generated ${generatedAt}</p>
+    </header>
+
+    <div class="actions">
+      <button class="action-btn" onclick="expandAll()">Expand All</button>
+      <button class="action-btn" onclick="collapseAll()">Collapse All</button>
+      <button class="action-btn" onclick="window.print()">Print</button>
+    </div>
+
+    ${attendees.length === 0 ? `
+      <div class="empty">
+        <p>No confirmed attendees in this cohort yet.</p>
+        <p style="margin-top:12px;font-size:13px;">Mark applicants as <strong>Confirmed</strong> and stamp them with the active cohort using the "Use Active" button to see them here.</p>
+      </div>
+    ` : cards}
+
+    <div class="footer">
+      Quinta &amp; Co. \u00b7 Private \u00b7 For facilitator use only
+    </div>
+  </div>
+
+<script>
+  function toggleAttendee(id) {
+    const detail = document.getElementById('full-' + id);
+    const card = detail.closest('.card');
+    const label = card.querySelector('.toggle-label');
+    if (detail.style.display === 'none') {
+      detail.style.display = 'block';
+      card.classList.add('expanded');
+      if (label) label.textContent = 'Hide';
+    } else {
+      detail.style.display = 'none';
+      card.classList.remove('expanded');
+      if (label) label.textContent = 'Show full';
+    }
+  }
+  function expandAll() {
+    document.querySelectorAll('.full-detail').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('.card').forEach(el => el.classList.add('expanded'));
+    document.querySelectorAll('.toggle-label').forEach(el => el.textContent = 'Hide');
+  }
+  function collapseAll() {
+    document.querySelectorAll('.full-detail').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.card').forEach(el => el.classList.remove('expanded'));
+    document.querySelectorAll('.toggle-label').forEach(el => el.textContent = 'Show full');
+  }
+</script>
+</body>
+</html>`;
+  }
+
+  function openCohortBrief() {
+    const html = buildBriefHtml();
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    // Don't revoke immediately — give the new tab time to load
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  // ============================
+  // LOGIN
+  // ============================
+  const gate = document.getElementById('gate');
+  const app = document.getElementById('app');
+  const gateEmail = document.getElementById('gateEmail');
+  const gatePassword = document.getElementById('gatePassword');
+  const gateButton = document.getElementById('gateButton');
+  const gateError = document.getElementById('gateError');
+
+  function showGateError(msg) {
+    gateError.textContent = msg;
+    gateError.classList.add('show');
+  }
+
+  async function doLogin() {
+    if (!isConfigured) {
+      showGateError('Configure Supabase first (see setup guide).');
+      return;
+    }
+    const email = gateEmail.value.trim();
+    const password = gatePassword.value;
+    if (!email || !password) {
+      showGateError('Email and password are required.');
+      return;
+    }
+    gateButton.disabled = true;
+    gateButton.textContent = 'Signing in...';
+    gateError.classList.remove('show');
+
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      enterApp();
+    } catch (err) {
+      console.error(err);
+      gateButton.disabled = false;
+      gateButton.textContent = 'Enter';
+      showGateError('That sign-in didn\u2019t work. Check your email and password.');
+    }
+  }
+
+  gateButton.addEventListener('click', doLogin);
+  gatePassword.addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
+  gateEmail.addEventListener('keypress', (e) => { if (e.key === 'Enter') gatePassword.focus(); });
+
+  document.getElementById('signoutBtn').addEventListener('click', async () => {
+    if (sb) await sb.auth.signOut();
+    location.reload();
+  });
+
+  // Auto-check existing session
+  if (isConfigured) {
+    sb.auth.getSession().then(({ data }) => {
+      if (data && data.session) enterApp();
+    });
+  }
+
+  function enterApp() {
+    gate.style.display = 'none';
+    app.classList.add('ready');
+    loadActiveCohort();
+    setupActiveCohortHandlers();
+    loadSignups();
+  }
+
+  function setupActiveCohortHandlers() {
+    const input = document.getElementById('activeCohortInput');
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = '1';
+      input.addEventListener('blur', () => saveActiveCohort(input.value));
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+    }
+    const btn = document.getElementById('briefButton');
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', openCohortBrief);
+    }
+  }
+
+  // ============================
+  // LOAD + RENDER
+  // ============================
+  async function loadSignups() {
+    try {
+      const { data, error } = await sb
+        .from('module_signups')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      state.signups = data || [];
+      renderAll();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('attendeeList').innerHTML =
+        '<div class="empty-list">Couldn\'t load. Try the Refresh button.</div>';
+    }
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadSignups);
+
+  function renderAll() {
+    renderStats();
+    renderList();
+    updateBriefButton();
+  }
+
+  function renderStats() {
+    const all = state.signups.length;
+    const pending = state.signups.filter(s => s.status === 'pending').length;
+    const confirmed = state.signups.filter(s => s.status === 'confirmed').length;
+    const completed = state.signups.filter(s => s.status === 'completed').length;
+    document.getElementById('statAll').textContent = all;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statConfirmed').textContent = confirmed;
+    document.getElementById('statCompleted').textContent = completed;
+
+    document.querySelectorAll('.stat').forEach((el) => {
+      el.classList.toggle('active', el.dataset.filter === state.filter);
+    });
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function fmtDateTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const date = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return `${date} at ${time}`;
+  }
+
+  function getFiltered() {
+    const q = (state.search || '').toLowerCase().trim();
+    return state.signups.filter((s) => {
+      if (state.filter !== 'all' && s.status !== state.filter) return false;
+      if (!q) return true;
+      const blob = [
+        s.name, s.email, s.work, s.cohort, s.why_now, s.dream_build,
+        s.prior_experience, s.success_definition, s.learning_notes, s.facilitator_notes
+      ].filter(Boolean).join(' ').toLowerCase();
+      return blob.includes(q);
+    });
+  }
+
+  function renderList() {
+    const list = document.getElementById('attendeeList');
+    const items = getFiltered();
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-list">No matches.</div>';
+      return;
+    }
+    list.innerHTML = items.map((s) => {
+      const dot = `dot-${s.status || 'pending'}`;
+      const meta = [s.work, fmtDate(s.created_at)].filter(Boolean).join(' · ');
+      const cohort = s.cohort ? `<div class="attendee-cohort">${escapeHtml(s.cohort)}</div>` : '';
+      return `
+        <div class="attendee ${state.selectedId === s.id ? 'active' : ''}" data-id="${s.id}">
+          <div class="attendee-row">
+            <div class="attendee-status-dot ${dot}" title="${s.status || 'pending'}"></div>
+            <div class="attendee-name">${escapeHtml(s.name || '(no name)')}</div>
+          </div>
+          ${meta ? `<div class="attendee-meta">${escapeHtml(meta)}</div>` : ''}
+          ${cohort}
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.attendee').forEach((el) => {
+      el.addEventListener('click', () => selectAttendee(el.dataset.id));
+    });
+  }
+
+  // Search + filter handlers
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    state.search = e.target.value;
+    renderList();
+  });
+
+  document.querySelectorAll('.stat').forEach((el) => {
+    el.addEventListener('click', () => {
+      state.filter = el.dataset.filter;
+      renderStats();
+      renderList();
+    });
+  });
+
+  // ============================
+  // DETAIL VIEW
+  // ============================
+  function selectAttendee(id) {
+    state.selectedId = id;
+    renderList();
+    renderDetail();
+    app.classList.add('detail-open');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('mobileBack').addEventListener('click', () => {
+    app.classList.remove('detail-open');
+  });
+
+  function renderDetail() {
+    const s = state.signups.find(x => x.id === state.selectedId);
+    const empty = document.getElementById('emptyDetail');
+    const content = document.getElementById('detailContent');
+
+    if (!s) {
+      empty.style.display = 'block';
+      content.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    content.style.display = 'block';
+
+    const computer = s.computer || 'Not specified';
+    const phone = s.phone ? `<a href="tel:${escapeHtml(s.phone)}">${escapeHtml(s.phone)}</a>` : '<span style="color: var(--text-muted)">not provided</span>';
+
+    content.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-eyebrow">Submitted ${fmtDateTime(s.created_at)}</div>
+        <h1 class="detail-name">${escapeHtml(s.name || '')}</h1>
+        <div class="detail-meta">
+          <span><a href="mailto:${escapeHtml(s.email)}">${escapeHtml(s.email)}</a></span>
+          <span>${phone}</span>
+          ${s.work ? `<span>${escapeHtml(s.work)}</span>` : ''}
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="status-group" id="statusGroup">
+          <button class="status-btn ${s.status === 'pending' ? 'active' : ''}" data-status="pending">Pending</button>
+          <button class="status-btn ${s.status === 'confirmed' ? 'active' : ''}" data-status="confirmed">Confirmed</button>
+          <button class="status-btn ${s.status === 'completed' ? 'active' : ''}" data-status="completed">Completed</button>
+          <button class="status-btn ${s.status === 'declined' ? 'active' : ''}" data-status="declined">Declined</button>
+        </div>
+        <div class="cohort-group">
+          <span class="cohort-label">Cohort</span>
+          <input class="cohort-input" id="cohortInput" type="text" placeholder="${activeCohort ? escapeHtml(activeCohort) : 'e.g. Claude Module 1 — June 4, 2026'}" value="${escapeHtml(s.cohort || '')}" />
+          <button class="use-active-btn" id="useActiveBtn" type="button" ${activeCohort ? '' : 'disabled'} title="${activeCohort ? 'Apply: ' + escapeHtml(activeCohort) : 'Set an active cohort first'}">Use Active</button>
+          <span class="save-indicator" id="cohortSave"></span>
+        </div>
+      </div>
+
+      <div class="quick-facts">
+        <dl>
+          <dt>Computer</dt><dd>${escapeHtml(computer)}</dd>
+          <dt>Email</dt><dd><a href="mailto:${escapeHtml(s.email)}" style="color: var(--sage-deep);">${escapeHtml(s.email)}</a></dd>
+          ${s.phone ? `<dt>Phone</dt><dd>${escapeHtml(s.phone)}</dd>` : ''}
+          ${s.work ? `<dt>Work</dt><dd>${escapeHtml(s.work)}</dd>` : ''}
+        </dl>
+      </div>
+
+      <div class="story-section">
+        <h3>Where she is now</h3>
+        <p class="story-q">Have you used Claude or any other AI tool before?</p>
+        <div class="story-a ${!s.prior_experience ? 'empty' : ''}">${escapeHtml(s.prior_experience) || 'No answer given.'}</div>
+      </div>
+
+      <div class="story-section">
+        <h3>Why now</h3>
+        <p class="story-q">What made you sign up?</p>
+        <div class="story-a ${!s.why_now ? 'empty' : ''}">${escapeHtml(s.why_now) || 'No answer given.'}</div>
+      </div>
+
+      <div class="story-section">
+        <h3>What she'd build</h3>
+        <p class="story-q">If you could wave a wand and build one thing for your work or life, what would it be?</p>
+        <div class="story-a ${!s.dream_build ? 'empty' : ''}">${escapeHtml(s.dream_build) || 'No answer given.'}</div>
+      </div>
+
+      <div class="story-section">
+        <h3>What worthwhile looks like</h3>
+        <p class="story-q">What would make this hour feel worthwhile to you?</p>
+        <div class="story-a ${!s.success_definition ? 'empty' : ''}">${escapeHtml(s.success_definition) || 'No answer given.'}</div>
+      </div>
+
+      <div class="story-section">
+        <h3>How she learns</h3>
+        <p class="story-q">Anything I should know about you, or how you learn best?</p>
+        <div class="story-a ${!s.learning_notes ? 'empty' : ''}">${escapeHtml(s.learning_notes) || 'No answer given.'}</div>
+      </div>
+
+      <div class="notes-section">
+        <div class="notes-head">
+          <h3>Your Private Notes</h3>
+          <span class="save-indicator" id="notesSave"></span>
+        </div>
+        <p class="notes-help">Anything you want to remember about her before the session — observations, questions to ask, a moment to set up. Auto-saves as you type.</p>
+        <textarea class="notes-textarea" id="notesTextarea" placeholder="e.g. &quot;Mary nervous about Cmd vs Ctrl — reassure her early. Wants to build a meal-planning app — reference in practice section.&quot;">${escapeHtml(s.facilitator_notes || '')}</textarea>
+      </div>
+    `;
+
+    bindDetailHandlers(s);
+  }
+
+  function bindDetailHandlers(s) {
+    // Status buttons
+    document.querySelectorAll('.status-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const newStatus = btn.dataset.status;
+        await updateField(s.id, { status: newStatus });
+        s.status = newStatus;
+        // Update local list
+        const localIdx = state.signups.findIndex(x => x.id === s.id);
+        if (localIdx >= 0) state.signups[localIdx].status = newStatus;
+        renderStats();
+        renderList();
+        updateBriefButton();
+        // Re-style buttons
+        document.querySelectorAll('.status-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.status === newStatus);
+        });
+      });
+    });
+
+    // "Use Active" button — fills cohort field with the saved active cohort
+    const useActiveBtn = document.getElementById('useActiveBtn');
+    if (useActiveBtn && activeCohort) {
+      useActiveBtn.addEventListener('click', async () => {
+        const cohortInput = document.getElementById('cohortInput');
+        const cohortSave = document.getElementById('cohortSave');
+        cohortInput.value = activeCohort;
+        cohortSave.textContent = 'Saving';
+        cohortSave.className = 'save-indicator show saving';
+        try {
+          await updateField(s.id, { cohort: activeCohort });
+          s.cohort = activeCohort;
+          const localIdx = state.signups.findIndex(x => x.id === s.id);
+          if (localIdx >= 0) state.signups[localIdx].cohort = activeCohort;
+          renderList();
+          updateBriefButton();
+          cohortSave.textContent = 'Saved';
+          cohortSave.className = 'save-indicator show saved';
+          setTimeout(() => cohortSave.classList.remove('show'), 2000);
+        } catch (err) {
+          cohortSave.textContent = 'Save failed';
+          cohortSave.className = 'save-indicator show';
+        }
+      });
+    }
+
+    // Cohort field — save on blur or Enter
+    const cohortInput = document.getElementById('cohortInput');
+    const cohortSave = document.getElementById('cohortSave');
+    let cohortDirty = false;
+
+    cohortInput.addEventListener('input', () => { cohortDirty = true; });
+    cohortInput.addEventListener('blur', async () => {
+      if (!cohortDirty) return;
+      cohortDirty = false;
+      const value = cohortInput.value.trim() || null;
+      cohortSave.textContent = 'Saving';
+      cohortSave.className = 'save-indicator show saving';
+      try {
+        await updateField(s.id, { cohort: value });
+        s.cohort = value;
+        const localIdx = state.signups.findIndex(x => x.id === s.id);
+        if (localIdx >= 0) state.signups[localIdx].cohort = value;
+        renderList();
+        cohortSave.textContent = 'Saved';
+        cohortSave.className = 'save-indicator show saved';
+        setTimeout(() => cohortSave.classList.remove('show'), 2000);
+      } catch (err) {
+        cohortSave.textContent = 'Save failed';
+        cohortSave.className = 'save-indicator show';
+      }
+    });
+    cohortInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); cohortInput.blur(); }
+    });
+
+    // Notes textarea — debounced auto-save
+    const notesArea = document.getElementById('notesTextarea');
+    const notesSave = document.getElementById('notesSave');
+    let notesTimer = null;
+
+    notesArea.addEventListener('input', () => {
+      notesSave.textContent = 'Editing';
+      notesSave.className = 'save-indicator show';
+      clearTimeout(notesTimer);
+      notesTimer = setTimeout(async () => {
+        notesSave.textContent = 'Saving';
+        notesSave.className = 'save-indicator show saving';
+        try {
+          await updateField(s.id, {
+            facilitator_notes: notesArea.value,
+            notes_updated_at: new Date().toISOString()
+          });
+          s.facilitator_notes = notesArea.value;
+          notesSave.textContent = 'Saved';
+          notesSave.className = 'save-indicator show saved';
+          setTimeout(() => notesSave.classList.remove('show'), 1500);
+        } catch (err) {
+          notesSave.textContent = 'Save failed';
+          notesSave.className = 'save-indicator show';
+        }
+      }, 1200);
+    });
+  }
+
+  async function updateField(id, fields) {
+    const { error } = await sb.from('module_signups').update(fields).eq('id', id);
+    if (error) throw error;
+  }
+
+  // Copy URL buttons on homepage
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.copy-btn');
+    if (!btn) return;
+    const text = btn.dataset.copy;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1500);
+    }).catch(() => {
+      btn.textContent = 'Failed';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+    });
+  });
+
+  // ============================
+  // KEYBOARD SHORTCUT — / focuses search
+  // ============================
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+  });
+
+  // Auto-focus email on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (gate.style.display !== 'none') gateEmail.focus();
+    }, 100);
+  });
+</script>
+
+</body>
+</html>
