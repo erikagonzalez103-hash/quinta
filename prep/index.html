@@ -302,6 +302,43 @@
     color: var(--moss);
   }
 
+  .brief-button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--sage-deep);
+    color: var(--bg);
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .brief-button:hover { background: var(--moss); }
+  .brief-button:active { transform: translateY(1px); }
+  .brief-button:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .brief-count {
+    background: rgba(255, 255, 255, 0.18);
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+  }
+
   /* "Use active" button next to cohort field */
   .use-active-btn {
     padding: 8px 14px;
@@ -878,6 +915,10 @@
           <input id="activeCohortInput" class="active-cohort-input" type="text" placeholder="e.g. Claude Module 1 — June 4, 2026" />
         </div>
         <div class="active-cohort-current" id="activeCohortCurrent">Not set — type above and press Enter</div>
+        <button class="brief-button" id="briefButton" type="button" disabled>
+          View Cohort Brief
+          <span class="brief-count" id="briefCount" style="display:none;"></span>
+        </button>
       </div>
 
       <div class="stats" id="stats">
@@ -994,8 +1035,452 @@
         ? `Currently: <strong>${escapeHtml(activeCohort)}</strong>`
         : 'Not set — type above and press Enter';
     }
+    updateBriefButton();
     // Re-render detail so the placeholder + button update
     if (state.selectedId) renderDetail();
+  }
+
+  // ============================
+  // COHORT BRIEF
+  // ============================
+  function getBriefAttendees() {
+    if (!activeCohort) return [];
+    return state.signups.filter((s) => {
+      return s.cohort === activeCohort && s.status === 'confirmed';
+    });
+  }
+
+  function updateBriefButton() {
+    const btn = document.getElementById('briefButton');
+    const countEl = document.getElementById('briefCount');
+    if (!btn) return;
+    const attendees = getBriefAttendees();
+    if (!activeCohort || attendees.length === 0) {
+      btn.disabled = true;
+      if (countEl) countEl.style.display = 'none';
+    } else {
+      btn.disabled = false;
+      if (countEl) {
+        countEl.textContent = attendees.length;
+        countEl.style.display = 'inline-block';
+      }
+    }
+  }
+
+  function buildBriefHtml() {
+    const attendees = getBriefAttendees();
+    const cohortName = activeCohort || 'Untitled Cohort';
+    const generatedAt = new Date().toLocaleString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric',
+      hour: 'numeric', minute: '2-digit'
+    });
+
+    const cards = attendees.map((s, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      const dreamSnippet = s.dream_build
+        ? escapeHtml(s.dream_build).split(/\s+/).slice(0, 28).join(' ') + (s.dream_build.split(/\s+/).length > 28 ? '\u2026' : '')
+        : '<em>not provided</em>';
+      const oneLine = s.work || '<em>no work info</em>';
+
+      return `
+        <div class="card" data-attendee-id="${s.id}">
+          <div class="card-head">
+            <div class="card-num">${num}</div>
+            <div class="card-name-block">
+              <h2 class="card-name">${escapeHtml(s.name)}</h2>
+              <p class="card-oneline">${escapeHtml(oneLine)}</p>
+            </div>
+            <button class="toggle-btn" type="button" onclick="toggleAttendee('${s.id}')">
+              <span class="toggle-label">Show full</span>
+            </button>
+          </div>
+
+          <div class="quick-scan">
+            <p class="dream-label">Wants to build</p>
+            <p class="dream-text">${dreamSnippet}</p>
+          </div>
+
+          <div class="full-detail" id="full-${s.id}" style="display:none;">
+            <div class="detail-row">
+              <span class="detail-label">Email</span>
+              <span class="detail-value"><a href="mailto:${escapeHtml(s.email)}">${escapeHtml(s.email)}</a></span>
+            </div>
+            ${s.phone ? `<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">${escapeHtml(s.phone)}</span></div>` : ''}
+            <div class="detail-row">
+              <span class="detail-label">Computer</span>
+              <span class="detail-value">${escapeHtml(s.computer || 'not specified')}</span>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">Where she is now</p>
+              <p class="story-text">${s.prior_experience ? escapeHtml(s.prior_experience) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">Why now</p>
+              <p class="story-text">${s.why_now ? escapeHtml(s.why_now) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">What she'd build (full)</p>
+              <p class="story-text">${s.dream_build ? escapeHtml(s.dream_build) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">What worthwhile looks like</p>
+              <p class="story-text">${s.success_definition ? escapeHtml(s.success_definition) : '<em>not provided</em>'}</p>
+            </div>
+
+            <div class="story-block">
+              <p class="story-label">How she learns</p>
+              <p class="story-text">${s.learning_notes ? escapeHtml(s.learning_notes) : '<em>not provided</em>'}</p>
+            </div>
+
+            ${s.facilitator_notes ? `
+              <div class="story-block notes-block">
+                <p class="story-label">Your private notes</p>
+                <p class="story-text">${escapeHtml(s.facilitator_notes)}</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cohort Brief — ${escapeHtml(cohortName)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF6;
+    --bg-warm: #F5F2EA;
+    --surface: #FFFFFF;
+    --border: #DCD7CB;
+    --border-soft: #E8E3D7;
+    --text: #2F332E;
+    --text-soft: #5A5E55;
+    --text-muted: #8A8E83;
+    --heading: #20231F;
+    --sage: #6E8B7A;
+    --sage-deep: #4F6B5C;
+    --sage-soft: #DFE7E0;
+    --sage-whisper: #EEF2EC;
+    --moss: #3D544A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 48px 32px 80px;
+    font-size: 16px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  .header {
+    margin-bottom: 48px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .brand {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 36px;
+    color: var(--heading);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+  .subhead {
+    color: var(--text-soft);
+    font-style: italic;
+    font-size: 16px;
+  }
+  .meta {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .actions {
+    margin: 24px 0 36px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--sage);
+    color: var(--sage-deep);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .action-btn:hover {
+    background: var(--sage-whisper);
+    color: var(--moss);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .card-num {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--sage);
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    margin-top: 8px;
+    min-width: 28px;
+  }
+  .card-name-block { flex: 1; }
+  .card-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--heading);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+  .card-oneline {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+  }
+  .toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 7px 12px;
+    border-radius: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .toggle-btn:hover {
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+  .card.expanded .toggle-btn {
+    background: var(--sage-whisper);
+    border-color: var(--sage);
+    color: var(--moss);
+  }
+
+  .quick-scan {
+    background: var(--bg-warm);
+    border-left: 2px solid var(--sage);
+    padding: 16px 20px;
+    border-radius: 0 3px 3px 0;
+  }
+  .dream-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .dream-text {
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .full-detail {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .detail-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .detail-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .detail-value { color: var(--text); }
+  .detail-value a {
+    color: var(--sage-deep);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--sage);
+  }
+
+  .story-block { margin-top: 18px; }
+  .story-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .story-text {
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+    white-space: pre-wrap;
+  }
+  .story-text em { color: var(--text-muted); }
+
+  .notes-block {
+    background: var(--sage-whisper);
+    border-left: 2px solid var(--sage-deep);
+    padding: 12px 16px;
+    border-radius: 0 3px 3px 0;
+  }
+  .notes-block .story-label { color: var(--moss); }
+
+  .empty {
+    text-align: center;
+    padding: 80px 32px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-soft);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Print mode */
+  @media print {
+    body { padding: 0; background: #fff; font-size: 11pt; }
+    .actions { display: none; }
+    .toggle-btn { display: none; }
+    .full-detail { display: block !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 14px; }
+    h1 { font-size: 22pt; }
+    .card-name { font-size: 16pt; }
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    body { padding: 24px 16px 60px; font-size: 15px; }
+    h1 { font-size: 26px; }
+    .card { padding: 20px 18px; }
+    .card-name { font-size: 19px; }
+    .detail-label { width: 70px; }
+    .actions { flex-direction: column; }
+    .action-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <div class="brand">Quinta &amp; Co. · Cohort Brief</div>
+      <h1>${escapeHtml(cohortName)}</h1>
+      <p class="subhead">${attendees.length} confirmed attendee${attendees.length === 1 ? '' : 's'}</p>
+      <p class="meta">Generated ${generatedAt}</p>
+    </header>
+
+    <div class="actions">
+      <button class="action-btn" onclick="expandAll()">Expand All</button>
+      <button class="action-btn" onclick="collapseAll()">Collapse All</button>
+      <button class="action-btn" onclick="window.print()">Print</button>
+    </div>
+
+    ${attendees.length === 0 ? `
+      <div class="empty">
+        <p>No confirmed attendees in this cohort yet.</p>
+        <p style="margin-top:12px;font-size:13px;">Mark applicants as <strong>Confirmed</strong> and stamp them with the active cohort using the "Use Active" button to see them here.</p>
+      </div>
+    ` : cards}
+
+    <div class="footer">
+      Quinta &amp; Co. \u00b7 Private \u00b7 For facilitator use only
+    </div>
+  </div>
+
+<script>
+  function toggleAttendee(id) {
+    const detail = document.getElementById('full-' + id);
+    const card = detail.closest('.card');
+    const label = card.querySelector('.toggle-label');
+    if (detail.style.display === 'none') {
+      detail.style.display = 'block';
+      card.classList.add('expanded');
+      if (label) label.textContent = 'Hide';
+    } else {
+      detail.style.display = 'none';
+      card.classList.remove('expanded');
+      if (label) label.textContent = 'Show full';
+    }
+  }
+  function expandAll() {
+    document.querySelectorAll('.full-detail').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('.card').forEach(el => el.classList.add('expanded'));
+    document.querySelectorAll('.toggle-label').forEach(el => el.textContent = 'Hide');
+  }
+  function collapseAll() {
+    document.querySelectorAll('.full-detail').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.card').forEach(el => el.classList.remove('expanded'));
+    document.querySelectorAll('.toggle-label').forEach(el => el.textContent = 'Show full');
+  }
+</script>
+</body>
+</html>`;
+  }
+
+  function openCohortBrief() {
+    const html = buildBriefHtml();
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    // Don't revoke immediately — give the new tab time to load
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   // ============================
@@ -1066,16 +1551,21 @@
 
   function setupActiveCohortHandlers() {
     const input = document.getElementById('activeCohortInput');
-    if (!input || input.dataset.bound) return;
-    input.dataset.bound = '1';
-
-    input.addEventListener('blur', () => saveActiveCohort(input.value));
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        input.blur();
-      }
-    });
+    if (input && !input.dataset.bound) {
+      input.dataset.bound = '1';
+      input.addEventListener('blur', () => saveActiveCohort(input.value));
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+    }
+    const btn = document.getElementById('briefButton');
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', openCohortBrief);
+    }
   }
 
   // ============================
@@ -1102,6 +1592,7 @@
   function renderAll() {
     renderStats();
     renderList();
+    updateBriefButton();
   }
 
   function renderStats() {
@@ -1316,6 +1807,7 @@
         if (localIdx >= 0) state.signups[localIdx].status = newStatus;
         renderStats();
         renderList();
+        updateBriefButton();
         // Re-style buttons
         document.querySelectorAll('.status-btn').forEach((b) => {
           b.classList.toggle('active', b.dataset.status === newStatus);
@@ -1338,6 +1830,7 @@
           const localIdx = state.signups.findIndex(x => x.id === s.id);
           if (localIdx >= 0) state.signups[localIdx].cohort = activeCohort;
           renderList();
+          updateBriefButton();
           cohortSave.textContent = 'Saved';
           cohortSave.className = 'save-indicator show saved';
           setTimeout(() => cohortSave.classList.remove('show'), 2000);
