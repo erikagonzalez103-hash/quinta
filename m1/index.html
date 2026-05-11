@@ -913,6 +913,86 @@
     margin-right: 4px;
   }
 
+  /* ============================
+     CALLOUT — Where the water comes from / Why this way
+     A two-part explainer that appears at the first mention of a tool.
+     ============================ */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--sage-deep);
+    padding: 26px 30px;
+    margin: 28px 0;
+    border-radius: 3px;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  .callout::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, transparent 0 50%, var(--bg-warm) 50%);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  .callout-section { margin: 0; }
+
+  .callout-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--sage-deep);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 500;
+    display: block;
+  }
+
+  .callout-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .callout-body em {
+    color: var(--moss);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .callout-fleuron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 18px 0;
+    gap: 14px;
+  }
+
+  .callout-fleuron::before,
+  .callout-fleuron::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    max-width: 90px;
+  }
+
+  .callout-fleuron span {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--accent-warm);
+    line-height: 1;
+    opacity: 0.85;
+  }
+
+  .callout--single { padding: 26px 30px; }
+
   /* Prompt blocks */
   .prompt-block {
     background: var(--bg-warm);
@@ -1249,6 +1329,18 @@
           </div>
         </div>
 
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">Where the water comes from</p>
+            <p class="callout-body">Claude is an AI assistant made by <strong>Anthropic</strong> — a company in San Francisco. When you type into the box, your message goes to Anthropic's servers, the AI reads it, thinks for a few seconds, and types back. That's it. No magic, no robots in a basement. <em>A very smart pattern-finding program that's read most of the internet.</em></p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why we're using Claude and not the others</p>
+            <p class="callout-body">ChatGPT, Gemini, Copilot — they all do similar things. I picked Claude because it holds context the longest, writes the cleanest code, and (in my opinion) is the easiest to talk to like a real person. For what you're learning here — building real tools, drafting in your voice, thinking through hard things — Claude is the one I use every day. The trade-off: the good plan is $20 a month. <em>Worth it if you'll use it for your business. Skip it if you're kicking tires.</em></p>
+          </div>
+        </div>
+
         <div class="wisdom">You are not learning a programming language today. You are learning a working relationship with a very capable collaborator.</div>
       </section>
 
@@ -1451,6 +1543,18 @@
 
         <p class="section-deck">Open <em>claude.ai</em> in a browser. We'll walk through what each part does together.</p>
 
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">What you're looking at</p>
+            <p class="callout-body">This is your home base. The sidebar on the left is every conversation you've ever had — Claude saves them automatically so you can come back. The folder icon is <em>Projects</em> — workspaces where you can drop files Claude should always remember. The pencil icon starts a new chat. <em>That's 95% of what you'll use.</em></p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why it's built this way</p>
+            <p class="callout-body">Each chat is its own world. Claude doesn't remember what you said in a different chat unless both are inside the same Project. This is on purpose. It means you can have one chat about your business and a totally separate one about a recipe, and they don't mix. Once you understand this, you stop being confused about <em>"why doesn't it remember?"</em> — it remembers exactly where you tell it to.</p>
+          </div>
+        </div>
+
         <h3>The Sidebar (left side)</h3>
         <ul class="styled-list">
           <li>
@@ -1519,6 +1623,18 @@
 
         <p class="section-deck">There is more than one way to use Claude. Knowing which version to use, when, will save you hours.</p>
 
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">What's the difference</p>
+            <p class="callout-body">What you're using right now — the chat box in your browser — is the <em>web interface.</em> It's the easiest place to start. <em>Claude Code</em> is the same Claude, but it lives inside your computer's terminal (the black-screen-with-text app developers use). Same brain, different door.</p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why we start in the web interface</p>
+            <p class="callout-body">Claude Code is more powerful — it can read every file on your computer at once and edit them directly — but it requires installing things, knowing the basics of a terminal, and a paid plan. Everything you'll build today, you can build in the web interface. Claude Code is what you graduate to once you have a project that needs more horsepower. <em>We'll point at the door. We won't walk through it today.</em></p>
+          </div>
+        </div>
+
         <h3>The Web Interface (claude.ai)</h3>
         <p>This is what you've already been looking at. It's a chat window with the ability to build things. For 90% of what you'll do — prototypes, simple websites, documents, learning, brainstorming — this is exactly the right tool.</p>
 
@@ -1585,6 +1701,18 @@
         <p>GitHub also has a free service called <strong>GitHub Pages</strong> that takes your files and turns them into a real, public website at an address like <em>yourname.github.io/your-project</em>. This is how many simple websites you've seen are hosted.</p>
         <p><strong>Use GitHub when:</strong> you want your build to live on the public internet, you want to keep a history of changes, you want a real URL you can share.</p>
 
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">Where the water comes from</p>
+            <p class="callout-body">GitHub is a website that stores code. Think of it as Google Drive, but for the building blocks of websites and apps. Programmers all over the world keep their work there because it has a built-in <em>time machine</em> — every version of every file is saved forever, so you can always go back when you break something.</p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why GitHub (and not just keeping files on your desktop)</p>
+            <p class="callout-body">A file on your laptop is yours alone — your friend can't see it on her phone. GitHub Pages makes the same file public, with a real URL, for free. The trade-off: the URL looks like <em>yourname.github.io/something</em> until you connect a custom domain. <em>That's fine for now.</em> When you want it to say <em>yourname.com,</em> that's a 20-minute job for another day.</p>
+          </div>
+        </div>
+
         <h3>3. Cloudflare</h3>
         <p><strong>Cloudflare is a bigger, more powerful hosting and security company.</strong> It does many things, but two are most relevant to you:</p>
         <ul class="styled-list">
@@ -1597,6 +1725,18 @@
             Tiny pieces of code that run in the cloud, on demand. Useful when your website needs to do something more than just sit there — like fetch data from somewhere else, or process a form.
           </li>
         </ul>
+
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">Where the water comes from</p>
+            <p class="callout-body">Cloudflare is a company that does a lot of things — they speed websites up, they block sketchy traffic, they sell domain names, and they host websites. When you use <em>Cloudflare Pages</em> to host your build, you're touching just one of their services. Their broader job is sitting between visitors and your website, making the trip faster and safer.</p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why we reach for Cloudflare</p>
+            <p class="callout-body">Netlify, Vercel, GoDaddy, Namecheap — different companies cover different pieces of what Cloudflare does. I reach for Cloudflare because their privacy is genuinely better (your home address doesn't show up in public records when you register a domain), their pricing is honest (no doubling at renewal), and the speed-and-security stuff is built in for free. The trade-off: their dashboard has <em>a lot of buttons.</em> When you log in and see Bot Fight Mode, Argo, Load Balancing, Image Optimization — ignore most of it. <em>We'll only press the few that matter.</em></p>
+          </div>
+        </div>
 
         <h3>The mental model</h3>
         <div class="compare">
@@ -1745,6 +1885,18 @@
           <dd>For sending emails from your app. When a form on your site needs to email you, these are how.</dd>
         </dl>
 
+        <div class="callout">
+          <div class="callout-section">
+            <p class="callout-label">Where the water comes from</p>
+            <p class="callout-body">Supabase gives you a real database — a place to store information that's structured (like a spreadsheet, but smarter and faster). When your tracker outgrows <em>"a file on my laptop,"</em> Supabase is what you graduate to. It also handles other grown-up things: logins, file storage, sending an email when something happens on your site.</p>
+          </div>
+          <div class="callout-fleuron"><span>❦</span></div>
+          <div class="callout-section">
+            <p class="callout-label">Why Supabase, and not the alternatives</p>
+            <p class="callout-body">Firebase (Google) and others do the same job. I reach for Supabase because the free tier is generous, the dashboard is readable by humans, and it's built on a database technology (<em>PostgreSQL</em>) that's been around for thirty years and isn't going anywhere. The trade-off: <em>you don't need it today.</em> We're showing it to you so you know the door exists. When you're ready, walk through.</p>
+          </div>
+        </div>
+
         <h3>How to know when you need them</h3>
         <ul class="styled-list">
           <li>
@@ -1766,6 +1918,13 @@
         <h3>A closing word</h3>
         <p>You came in thinking you needed to learn to code. You're leaving with something more useful: a clear sense of what's possible, a feel for how to ask, and a single page you built yourself.</p>
         <p>The first three things you build will feel slow and uncertain. The next three will feel quicker. By the tenth, you'll be surprised at what you reach for naturally. Keep building. Keep asking. The skill is the asking.</p>
+
+        <div class="callout callout--single">
+          <div class="callout-section">
+            <p class="callout-label">The honest answer</p>
+            <p class="callout-body">There are fifty ways to build the thing we built today. I picked Claude + GitHub + Cloudflare + Supabase because they're all generous on the free tier, they all play nicely together, and — most important — they're all what <em>I</em> use to run <em>my</em> business. <em>I'm not going to teach you a tool I don't use myself.</em> If a better stack comes out next year, we'll all switch together.</p>
+          </div>
+        </div>
 
         <div class="wisdom">You are not here to replace developers. You are here to stop being the one who has to wait for them.</div>
 
