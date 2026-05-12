@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quinta &amp; Co. — Practical AI for women business owners</title>
+  <meta name="description" content="A small new education brand teaching practical AI to women business owners. One hour at a time, taught by Erika Gonzalez Harrison.">
+
+  <meta property="og:title" content="Quinta &amp; Co.">
+  <meta property="og:description" content="Practical AI taught the way a friend would teach it. Small classes for women business owners.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#FAFAF6">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #FAFAF6;
+      --bg-warm: #F5F2EA;
+      --surface: #FFFFFF;
+      --border: #DCD7CB;
+      --border-soft: #E8E3D7;
+      --text: #2F332E;
+      --text-soft: #5A5E55;
+      --text-muted: #8A8E83;
+      --heading: #20231F;
+      --sage: #6E8B7A;
+      --sage-deep: #4F6B5C;
+      --sage-soft: #DFE7E0;
+      --sage-whisper: #EEF2EC;
+      --moss: #3D544A;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.7;
+      background: var(--bg);
+      color: var(--text);
+      padding: 0 0 80px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .rise { animation: rise 0.8s ease-out backwards; }
+    .rise-0 { animation-delay: 0s; }
+    .rise-1 { animation-delay: 0.15s; }
+    .rise-2 { animation-delay: 0.35s; }
+    .rise-3 { animation-delay: 0.55s; }
+    .rise-4 { animation-delay: 0.75s; }
+    .rise-5 { animation-delay: 1.0s; }
+
+    /* ====== HERO — DARK OVERLAY ====== */
+    .hero {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background-image: url("header.jpg");
+      background-size: cover;
+      background-position: center;
+      isolation: isolate;
+      margin-bottom: 48px;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(180deg, rgba(20,28,24,0.68) 0%, rgba(20,28,24,0.72) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 56px 32px; text-align: center; color: #FFFFFF;
+    }
+    .hero .brand-mark {
+      font-family: 'Cinzel', serif; font-size: 13px; font-weight: 500;
+      letter-spacing: 0.42em; color: rgba(255,255,255,0.92);
+      text-transform: uppercase; margin-bottom: 36px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif; font-weight: 300;
+      font-size: clamp(28px, 4.4vw, 50px); line-height: 1.16;
+      letter-spacing: -0.01em; color: #FFFFFF;
+      max-width: 720px; margin: 0 auto 30px;
+      text-shadow: 0 1px 24px rgba(0,0,0,0.25);
+    }
+    .hero h1 em { font-style: italic; font-weight: 400; color: #E8EFE5; }
+    .hero h1 br.desktop { display: inline; }
+    .hero-sub {
+      font-family: 'Fraunces', serif; font-style: italic;
+      font-size: 18px; line-height: 1.65;
+      color: rgba(255,255,255,0.88); max-width: 540px;
+      margin: 0 auto 40px;
+      text-shadow: 0 1px 14px rgba(0,0,0,0.3);
+    }
+    .fleuron {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; margin: 6px auto 0;
+    }
+    .fleuron .line { width: 80px; height: 1px; background: rgba(255,255,255,0.5); }
+    .fleuron .dot {
+      width: 4px; height: 4px;
+      background: rgba(255,255,255,0.65);
+      transform: rotate(45deg);
+    }
+    .fleuron svg { width: 46px; height: 50px; color: #C4DDC5; }
+
+    /* ====== CREDIBILITY NOTE (now below the hero) ====== */
+    .credibility-note {
+      text-align: center;
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+    }
+    .credibility-note a {
+      color: var(--sage-deep);
+      text-decoration: none;
+      border-bottom: 1px solid var(--sage-soft);
+      padding-bottom: 1px;
+      font-style: normal;
+      font-weight: 500;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .credibility-note a:hover { color: var(--moss); border-color: var(--sage); }
+
+    /* ====== ABOUT ====== */
+    .about {
+      padding: 16px 0 56px;
+      max-width: 620px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .section-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.32em; color: var(--text-muted);
+      text-transform: uppercase; margin-bottom: 22px;
+    }
+    .about p { font-size: 18px; line-height: 1.75; color: var(--text); }
+    .about p em { font-style: italic; color: var(--moss); }
+
+
+    .about p + p.about-coda {
+      margin-top: 22px;
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--moss);
+      line-height: 1.55;
+    }
+
+    /* ====== TESTIMONIALS REEL ====== */
+    .testimonials {
+      padding: 8px 0 64px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .reel { position: relative; margin: 0 auto; }
+    .reel-track { position: relative; min-height: 280px; }
+    .reel-card {
+      position: absolute; inset: 0;
+      background: var(--sage-whisper);
+      border-radius: 4px;
+      padding: 44px 36px 40px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+    .reel-card.active {
+      opacity: 1; transform: translateY(0); pointer-events: auto;
+    }
+    .testimonial-mark {
+      display: block;
+      font-family: 'Cinzel', serif; font-size: 32px;
+      color: var(--sage); opacity: 0.55;
+      line-height: 1; margin-bottom: 16px;
+    }
+    .testimonial-quote {
+      font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+      font-size: 18px; color: var(--text);
+      line-height: 1.7; margin-bottom: 24px;
+    }
+    .testimonial-author {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.26em; color: var(--moss); text-transform: uppercase;
+    }
+    .testimonial-role {
+      display: block; margin-top: 5px;
+      font-family: 'Fraunces', serif; font-style: italic;
+      font-size: 13px; letter-spacing: 0;
+      color: var(--text-muted); text-transform: none;
+    }
+    .reel-dots {
+      display: flex; justify-content: center; gap: 12px; margin-top: 28px;
+    }
+    .reel-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1px solid var(--sage); background: transparent;
+      padding: 0; cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease, border-color 0.3s ease;
+      font-size: 0; touch-action: manipulation;
+    }
+    .reel-dot.active {
+      background: var(--sage-deep); border-color: var(--sage-deep);
+      transform: scale(1.15);
+    }
+    .reel-dot:hover { background: var(--sage); border-color: var(--sage); }
+    .reel-dot:focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reel-card { transition: opacity 0.2s ease; transform: none; }
+    }
+
+    /* ====== MODULES ====== */
+    .modules-eyebrow { text-align: center; margin-bottom: 32px; }
+    .module-card {
+      background: var(--bg-warm);
+      border: 1px dashed var(--border);
+      padding: 48px 40px;
+      border-radius: 3px;
+      margin-bottom: 28px;
+    }
+    .module-card.module-2 {
+      background: var(--surface);
+      border-style: solid;
+      border-color: var(--border-soft);
+    }
+    .card-eyebrow {
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.32em; color: var(--sage-deep);
+      text-transform: uppercase; margin-bottom: 18px;
+    }
+    .module-card h2 {
+      font-family: 'Cinzel', serif; font-weight: 500;
+      font-size: 26px; letter-spacing: 0.04em;
+      color: var(--heading); margin-bottom: 22px; line-height: 1.25;
+    }
+    .card-desc {
+      font-size: 17px; color: var(--text);
+      margin-bottom: 32px; line-height: 1.7;
+    }
+    .card-desc em { font-style: italic; color: var(--moss); }
+    .card-meta {
+      display: flex; flex-wrap: wrap; gap: 6px 16px;
+      align-items: center; padding: 14px 0; margin: 0 0 28px;
+      border-top: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border-soft);
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.22em; color: var(--moss); text-transform: uppercase;
+    }
+    .card-meta span:not(:last-child)::after {
+      content: '·'; margin-left: 16px;
+      color: var(--text-muted); font-weight: 400;
+    }
+    .card-list-label {
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.24em; color: var(--text-muted);
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .card-list { list-style: none; margin-bottom: 36px; }
+    .card-list li {
+      position: relative; padding: 7px 0 7px 22px;
+      font-size: 16px; color: var(--text); line-height: 1.55;
+    }
+    .card-list li::before {
+      content: ''; position: absolute; left: 0; top: 17px;
+      width: 12px; height: 1px; background: var(--sage);
+    }
+    .card-prereq {
+      font-size: 14px; font-style: italic; color: var(--text-soft);
+      margin: 24px 0 32px; padding: 14px 16px;
+      background: var(--sage-whisper); border-radius: 2px; line-height: 1.55;
+    }
+    .cta-primary {
+      display: inline-block; padding: 18px 34px;
+      background: var(--sage-deep); color: var(--bg);
+      text-decoration: none;
+      font-family: 'Cinzel', serif; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.1s;
+      min-height: 48px; touch-action: manipulation;
+    }
+    .cta-primary:hover { background: var(--moss); }
+    .cta-primary:active { transform: translateY(1px); }
+    .cta-arrow { display: inline-block; margin-left: 10px; transition: transform 0.2s; }
+    .cta-primary:hover .cta-arrow { transform: translateX(3px); }
+    .cta-note {
+      display: block; margin-top: 14px;
+      font-size: 13px; color: var(--text-muted); font-style: italic;
+    }
+
+
+    .module-card.module-3 {
+      background: var(--sage-whisper);
+      border: 1px dashed var(--sage);
+      opacity: 0.92;
+    }
+    .card-eyebrow-soon {
+      color: var(--sage);
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: 0.28em;
+    }
+    .module-card.module-3 h2 { color: var(--moss); }
+    .card-coming-soon {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+    .card-coming-soon a {
+      color: var(--sage-deep);
+      text-decoration: none;
+      border-bottom: 1px solid var(--sage-soft);
+      padding-bottom: 1px;
+      font-style: normal;
+      font-weight: 500;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .card-coming-soon a:hover { color: var(--moss); border-color: var(--sage); }
+
+    /* ====== FOOTER ====== */
+    .footer {
+      text-align: center;
+      padding: 48px 0 0;
+      margin-top: 48px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .footer .brand-mark {
+      font-family: 'Cinzel', serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.36em; color: var(--sage-deep);
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .footer-meta {
+      font-size: 13px; color: var(--text-muted); font-style: italic;
+    }
+    .footer-meta a {
+      color: var(--sage-deep); text-decoration: none;
+      border-bottom: 1px solid var(--border); padding-bottom: 1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .footer-meta a:hover { color: var(--moss); border-color: var(--sage); }
+
+
+    .footer .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .footer-sprout {
+      width: 18px;
+      height: 20px;
+      color: var(--sage);
+      vertical-align: middle;
+    }
+
+    /* ====== MOBILE ====== */
+    @media (max-width: 640px) {
+      body { padding: 0 0 56px; font-size: 16px; }
+      .wrap { padding: 0 16px; }
+      .hero { aspect-ratio: 4 / 5; margin-bottom: 36px; }
+      .hero-content { padding: 48px 24px; }
+      .hero .brand-mark { font-size: 11px; letter-spacing: 0.36em; margin-bottom: 28px; }
+      .hero h1 { font-size: 28px; line-height: 1.22; margin-bottom: 22px; }
+      .hero h1 br.desktop { display: none; }
+      .hero-sub { font-size: 16px; margin-bottom: 28px; }
+      .fleuron .line { width: 54px; }
+      .fleuron svg { width: 38px; height: 42px; }
+      .fleuron { gap: 10px; }
+      .credibility-note { font-size: 12px; margin-bottom: 36px; padding: 0 4px; }
+
+      .about { padding: 8px 0 48px; }
+      .about p { font-size: 16px; line-height: 1.7; }
+
+      .testimonials { padding: 0 0 48px; }
+      .reel-track { min-height: 340px; }
+      .reel-card { padding: 32px 22px 28px; border-radius: 3px; }
+      .testimonial-quote { font-size: 16px; }
+      .testimonial-mark { font-size: 28px; margin-bottom: 12px; }
+      .reel-dots { margin-top: 24px; }
+      .reel-dot { width: 10px; height: 10px; }
+
+      .module-card { padding: 32px 22px; margin-bottom: 20px; }
+      .module-card h2 { font-size: 22px; letter-spacing: 0.03em; }
+      .card-desc { font-size: 16px; }
+      .card-list li { font-size: 15px; }
+      .card-meta {
+        flex-direction: column; align-items: flex-start;
+        gap: 4px; padding: 16px 0;
+      }
+      .card-meta span:not(:last-child)::after { display: none; }
+      .cta-primary {
+        display: block; text-align: center;
+        padding: 18px 24px; font-size: 11px; letter-spacing: 0.22em;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero h1 { font-size: 26px; }
+      .module-card h2 { font-size: 20px; }
+      .module-card { padding: 28px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== HERO ====== -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="brand-mark rise rise-1">Quinta &amp; Co.</p>
+      <h1 class="rise rise-2">Practical AI, taught the way<br class="desktop">
+        <em>a friend would teach it</em>.</h1>
+      <p class="hero-sub rise rise-3">A peaceful hour with Claude &mdash; for women curious about what&rsquo;s possible without learning to code.</p>
+      <div class="fleuron rise rise-4" aria-hidden="true">
+        <span class="line"></span>
+        <span class="dot"></span>
+        <svg viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M24 50 V28" stroke-width="1.0"/>
+          <path d="M24 28 C20 27 14 24 11 16 C16 14 22 19 24 28 Z" stroke-width="1.0"/>
+          <path d="M24 28 C28 27 34 24 37 16 C32 14 26 19 24 28 Z" stroke-width="1.0"/>
+          <path d="M24 28 L15 19" stroke-width="0.75" opacity="0.7"/>
+          <path d="M24 28 L33 19" stroke-width="0.75" opacity="0.7"/>
+          <circle cx="24" cy="20" r="1.3" fill="currentColor"/>
+        </svg>
+        <span class="dot"></span>
+        <span class="line"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== EVERYTHING BELOW THE HERO ====== -->
+  <div class="wrap">
+
+    <p class="credibility-note rise rise-5">Yes &mdash; this page was built with Claude. <a href="#module-two">By Module Two, you'll know how.</a></p>
+
+    <section class="about">
+      <p class="section-eyebrow">About</p>
+      <p>Quinta &amp; Co. is a small new education and consulting brand by Erika Gonzalez Harrison, co-founder of Eridion Glass. After three months of quietly rebuilding her own workflow with Claude, she started teaching the women she loves the same things &mdash; <em>over coffee, one hour at a time</em>.</p>
+      <p class="about-coda">These are those classes.</p>
+    </section>
+
+    <section class="testimonials">
+      <p class="section-eyebrow" style="text-align: center;">What women are saying</p>
+      <div class="reel" id="testimonialReel" role="region" aria-label="Testimonials" aria-roledescription="carousel">
+        <div class="reel-track" id="reelTrack" aria-live="polite"></div>
+        <div class="reel-dots" id="reelDots" role="tablist" aria-label="Choose a testimonial"></div>
+      </div>
+    </section>
+
+    <p class="section-eyebrow modules-eyebrow">The Classes</p>
+
+    <section class="module-card module-1">
+      <p class="card-eyebrow">Module One &mdash; Now Open</p>
+      <h2>Claude for Beginners</h2>
+      <p class="card-desc">A one-hour, hands-on introduction to using Claude for real business work. No coding. No jargon. No <em>"first let me explain transformers"</em> energy. By the end, you'll have built something real and walked out with a workflow that actually fits your life.</p>
+      <div class="card-meta">
+        <span>1 Hour</span><span>Live, Small Group</span><span>$150</span>
+      </div>
+      <p class="card-list-label">What you'll walk out with</p>
+      <ul class="card-list">
+        <li>Your own simple webpage, made with Claude</li>
+        <li>A workflow you'll actually keep using</li>
+        <li>The confidence to keep building on your own</li>
+      </ul>
+      <a href="https://erikagonzalez103-hash.github.io/quinta/signup/" class="cta-primary">
+        Apply for the next cohort
+        <span class="cta-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <span class="cta-note">A short application &mdash; about five minutes.</span>
+    </section>
+
+    <section class="module-card module-2" id="module-two">
+      <p class="card-eyebrow">Module Two &mdash; Now Booking</p>
+      <h2>Build Your AI Assistant</h2>
+      <p class="card-desc">Take what you know and give Claude a memory. In one hour, you'll build a simple business tracker &mdash; clients, projects, candidates, whatever fits your work &mdash; and turn it into a personal AI assistant that knows your business. <em>Claude with context.</em> Claude that's actually yours.</p>
+      <div class="card-meta">
+        <span>1 Hour</span><span>Live, Small Group</span><span>$150</span>
+      </div>
+      <p class="card-list-label">What you'll walk out with</p>
+      <ul class="card-list">
+        <li>A simple tracker built for the way you actually work</li>
+        <li>A Claude Project configured with your business context</li>
+        <li>Real assistant behavior &mdash; drafts, summaries, and follow-ups in your voice</li>
+      </ul>
+      <p class="card-prereq">For women who've taken Module One or have been using Claude for a few months. A Claude Pro subscription is required for the Project setup.</p>
+      <a href="https://erikagonzalez103-hash.github.io/quinta/signup/" class="cta-primary">
+        Apply for the next cohort
+        <span class="cta-arrow" aria-hidden="true">&rarr;</span>
+      </a>
+      <span class="cta-note">A short application &mdash; about five minutes.</span>
+    </section>
+
+
+    <section class="module-card module-3">
+      <p class="card-eyebrow card-eyebrow-soon">Module Three &mdash; Coming Soon</p>
+      <h2>Teach Claude to Do</h2>
+      <p class="card-desc">Once Claude knows your business, the natural next question is whether it can <em>act</em> on it &mdash; send the email, update the tracker, run the workflow. This module is where Claude stops drafting and starts doing. <em>Quietly in development.</em></p>
+      <p class="card-coming-soon">Drop me a note at <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> to be the first in line.</p>
+    </section>
+
+    <footer class="footer">
+      <p class="brand-mark">
+        <span>Quinta &amp; Co.</span>
+        <svg class="footer-sprout" viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M24 50 V28" stroke-width="1.0"/>
+        <path d="M24 28 C20 27 14 24 11 16 C16 14 22 19 24 28 Z" stroke-width="1.0"/>
+        <path d="M24 28 C28 27 34 24 37 16 C32 14 26 19 24 28 Z" stroke-width="1.0"/>
+        <path d="M24 28 L15 19" stroke-width="0.75" opacity="0.7"/>
+        <path d="M24 28 L33 19" stroke-width="0.75" opacity="0.7"/>
+        <circle cx="24" cy="20" r="1.3" fill="currentColor"/>
+      </svg>
+      </p>
+      <p class="footer-meta">Dallas &middot; 2026</p>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ============================================================
+       TESTIMONIALS — Edit this list to add, remove, or change
+       quotes shown in the carousel. Order matters: the first one
+       shows first when the page loads.
+
+       To add a new testimonial: copy one block (the {...} object),
+       paste it in the list, and edit the three fields. Done.
+       ============================================================ */
+    const TESTIMONIALS = [
+      {
+        quote: "Thank you so much for last night. The time, energy, and knowledge you shared so generously was truly special, and I left feeling inspired.",
+        author: "Marisol B.",
+        role: "Dallas Businesswoman"
+      }
+    ];
+
+    (function() {
+      const reel = document.getElementById('testimonialReel');
+      if (!reel) return;
+      const track = document.getElementById('reelTrack');
+      const dotsContainer = document.getElementById('reelDots');
+      if (!track || !dotsContainer || TESTIMONIALS.length === 0) return;
+
+      // Build cards from TESTIMONIALS data
+      TESTIMONIALS.forEach(function(t, i) {
+        const card = document.createElement('article');
+        card.className = 'reel-card' + (i === 0 ? ' active' : '');
+        card.innerHTML =
+          '<span class="testimonial-mark" aria-hidden="true">\u201c</span>' +
+          '<p class="testimonial-quote">' + t.quote + '</p>' +
+          '<p class="testimonial-author">' + t.author +
+          '<span class="testimonial-role">' + t.role + '</span></p>';
+        track.appendChild(card);
+      });
+
+      const cards = track.querySelectorAll('.reel-card');
+
+      // Hide dots entirely when there is only one testimonial
+      if (cards.length <= 1) {
+        dotsContainer.style.display = 'none';
+      }
+      cards.forEach(function(card, i) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'reel-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('role', 'tab');
+        dot.setAttribute('aria-label', 'Show testimonial ' + (i + 1));
+        dot.setAttribute('aria-current', i === 0 ? 'true' : 'false');
+        dotsContainer.appendChild(dot);
+      });
+      const dots = dotsContainer.querySelectorAll('.reel-dot');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const INTERVAL = 7000;
+      let current = 0; let timer = null;
+      function show(index) {
+        cards.forEach(function(card, i) { card.classList.toggle('active', i === index); });
+        dots.forEach(function(dot, i) {
+          dot.classList.toggle('active', i === index);
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+        current = index;
+      }
+      function next() { show((current + 1) % cards.length); }
+      function start() { stop(); if (cards.length > 1 && !reduceMotion) { timer = setInterval(next, INTERVAL); } }
+      function stop() { if (timer) { clearInterval(timer); timer = null; } }
+      dots.forEach(function(dot, i) {
+        dot.addEventListener('click', function() { show(i); start(); });
+      });
+      reel.addEventListener('mouseenter', stop);
+      reel.addEventListener('mouseleave', start);
+      reel.addEventListener('focusin', stop);
+      reel.addEventListener('focusout', start);
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) stop(); else start();
+      });
+      start();
+    })();
+  </script>
+
+</body>
+</html>
