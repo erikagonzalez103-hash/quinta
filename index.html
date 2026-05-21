@@ -327,6 +327,32 @@
       margin-bottom: 32px;
     }
     .card-eyebrow-quinta { color: var(--moss); }
+    .quinta-durations {
+      display: flex; flex-direction: column; gap: 10px; margin-top: 4px;
+    }
+    .duration-link {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 22px; min-height: 48px;
+      background: var(--bg-warm); border: 1px solid var(--border-soft);
+      border-radius: 2px; text-decoration: none; color: var(--text);
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      touch-action: manipulation;
+    }
+    .duration-link:hover { border-color: var(--moss); background: var(--sage-whisper); }
+    .duration-link:active { transform: translateY(1px); }
+    .duration-time {
+      font-family: 'Cinzel', serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--heading);
+    }
+    .duration-price {
+      font-family: 'Cinzel', serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.12em; color: var(--moss);
+    }
+    .duration-arrow {
+      display: inline-block; margin-left: 10px; color: var(--sage);
+      transition: transform 0.2s;
+    }
+    .duration-link:hover .duration-arrow { transform: translateX(3px); }
     .card-eyebrow-soon {
       color: var(--sage);
       font-style: italic;
@@ -496,11 +522,10 @@
         <li>A workflow you'll actually keep using</li>
         <li>The confidence to keep building on your own</li>
       </ul>
-      <a href="https://erikagonzalez103-hash.github.io/quinta/signup/" class="cta-primary">
-        Apply for the next cohort
+      <a href="https://cal.com/quintaandco/module-1" class="cta-primary">
+        Reserve your seat
         <span class="cta-arrow" aria-hidden="true">&rarr;</span>
       </a>
-      <span class="cta-note">A short application &mdash; about five minutes.</span>
     </section>
 
     <section class="module-card module-2" id="module-two">
@@ -517,11 +542,10 @@
         <li>Real assistant behavior &mdash; drafts, summaries, and follow-ups in your voice</li>
       </ul>
       <p class="card-prereq">For women who've taken Module One or have been using Claude for a few months. A Claude Pro subscription is required for the Project setup.</p>
-      <a href="https://erikagonzalez103-hash.github.io/quinta/signup/" class="cta-primary">
-        Apply for the next cohort
+      <a href="https://cal.com/quintaandco/module-2" class="cta-primary">
+        Reserve your seat
         <span class="cta-arrow" aria-hidden="true">&rarr;</span>
       </a>
-      <span class="cta-note">A short application &mdash; about five minutes.</span>
     </section>
 
 
@@ -548,12 +572,25 @@
         <li>You want someone in your corner for the <em>"but what about my situation"</em> questions</li>
       </ul>
       <p class="card-prereq">Book in 30-minute increments &mdash; stay as long as the work calls for. I'll email you the recording after, yours to keep.</p>
-      <!-- CTA: replace href with Cal.com booking URL once configured -->
-      <a href="mailto:hello@quintaand.co?subject=Quinta%20Session%20Booking" class="cta-primary">
-        Book your session
-        <span class="cta-arrow" aria-hidden="true">&rarr;</span>
-      </a>
-      <span class="cta-note">Direct calendar booking coming soon &mdash; until then, drop me a note.</span>
+      <p class="card-list-label">Book your length</p>
+      <div class="quinta-durations">
+        <a href="https://cal.com/quintaandco/quinta-session-60" class="duration-link">
+          <span class="duration-time">60 Minutes</span>
+          <span class="duration-price">$350 <span class="duration-arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="https://cal.com/quintaandco/quinta-session-90" class="duration-link">
+          <span class="duration-time">90 Minutes</span>
+          <span class="duration-price">$525 <span class="duration-arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="https://cal.com/quintaandco/quinta-session-120" class="duration-link">
+          <span class="duration-time">120 Minutes</span>
+          <span class="duration-price">$700 <span class="duration-arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+        <a href="https://cal.com/quintaandco/quinta-session-150" class="duration-link">
+          <span class="duration-time">150 Minutes</span>
+          <span class="duration-price">$875 <span class="duration-arrow" aria-hidden="true">&rarr;</span></span>
+        </a>
+      </div>
     </section>
 
     <footer class="footer">
