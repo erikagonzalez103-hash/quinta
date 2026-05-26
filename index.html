@@ -173,9 +173,9 @@
       margin: 0 auto;
     }
     .reel { position: relative; margin: 0 auto; }
-    .reel-track { position: relative; min-height: 320px; }
+    .reel-track { position: relative; display: grid; }
     .reel-card {
-      position: absolute; inset: 0;
+      grid-area: 1 / 1;
       background: var(--sage-whisper);
       border-radius: 4px;
       padding: 44px 36px 40px;
@@ -210,7 +210,7 @@
       color: var(--text-muted); text-transform: none;
     }
     .reel-dots {
-      display: flex; justify-content: center; gap: 12px; margin-top: 28px;
+      display: flex; justify-content: center; gap: 12px; margin-top: 32px;
     }
     .reel-dot {
       width: 9px; height: 9px; border-radius: 50%;
@@ -433,11 +433,10 @@
       .about p { font-size: 16px; line-height: 1.7; }
 
       .testimonials { padding: 0 0 48px; }
-      .reel-track { min-height: 340px; }
       .reel-card { padding: 32px 22px 28px; border-radius: 3px; }
       .testimonial-quote { font-size: 16px; }
       .testimonial-mark { font-size: 28px; margin-bottom: 12px; }
-      .reel-dots { margin-top: 24px; }
+      .reel-dots { margin-top: 28px; }
       .reel-dot { width: 10px; height: 10px; }
 
       .module-card { padding: 32px 22px; margin-bottom: 20px; }
@@ -624,7 +623,7 @@
         quote: "Thank you so much for last night. The time, energy, and knowledge you shared so generously was truly special, and I left feeling inspired.",
         author: "Marisol B.",
         role: "Dallas Businesswoman"
-      } ,
+      },
       {
         quote: "Quinta & Co took this small business owner who yearns to grow and opened up the vast possibilities of learning AI. I thought AI tools were just for people who build things with technology \u2014 but it unlocked a side of my creativity in business I hadn't experienced before. With that creativity, dreams of potential for my business were birthed.",
         author: "Robin F.",
