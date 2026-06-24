@@ -1,0 +1,9 @@
+# Local setup tools — not part of the published website
+create_quinta_*.py
+quinta-*-created.csv
+
+# Internal docs & dev config — keep private (public repo)
+.claude/
+CLAUDE.md
+SETUP.md
+brand/quinta-and-co-brand-guidelines.pdf
