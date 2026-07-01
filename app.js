@@ -96,6 +96,12 @@
     wireToggles();
     decorateWordmarks();
     wireShare();
+    setupMobileNav();
+    if (document.querySelector(".scroll-cue")) {
+      window.addEventListener("scroll", function () {
+        document.body.classList.toggle("scrolled", window.scrollY > 40);
+      }, { passive: true });
+    }
 
     // Footer disclaimer: start the second sentence ("For decisions…") on its own line.
     var disc = document.querySelector(".legal-disclaimer");
@@ -103,6 +109,35 @@
 
     var y = document.getElementById("year");
     if (y) y.textContent = String(new Date().getFullYear());
+  }
+
+  // Mobile hamburger nav — the header markup is shared across every page, so we
+  // inject the toggle here rather than editing 18 files. On phones the long Coffee
+  // button is moved into the dropdown so it can't overflow the bar.
+  function setupMobileNav() {
+    var barRight = document.querySelector("header .bar .bar-right");
+    var nav = barRight && barRight.querySelector("nav.top");
+    if (!barRight || !nav) return;
+    var btn = document.createElement("button");
+    btn.className = "nav-toggle";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Open menu");
+    btn.setAttribute("aria-expanded", "false");
+    btn.innerHTML = "<span></span><span></span><span></span>";
+    barRight.insertBefore(btn, barRight.firstChild);
+    var coffee = barRight.querySelector(".btn-coffee");
+    if (coffee) {
+      var c = coffee.cloneNode(true);
+      c.className = "btn btn-solid nav-coffee";
+      nav.appendChild(c);
+    }
+    function close() { document.body.classList.remove("nav-open"); btn.setAttribute("aria-expanded", "false"); }
+    btn.addEventListener("click", function () {
+      var open = document.body.classList.toggle("nav-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    nav.addEventListener("click", function (e) { if (e.target.closest("a")) close(); });
+    window.addEventListener("resize", function () { if (window.innerWidth >= 760) close(); });
   }
 
   /* ---------- 2. Hub lists ---------- */
@@ -435,7 +470,7 @@
 
       var bg = document.createElement("div");
       bg.className = "tcard-bg";
-      if (t.bg) { bg.classList.add("has-photo"); bg.style.backgroundImage = 'url("' + t.bg + '")'; }
+      if (t.bg) { bg.classList.add("has-photo"); bg.style.backgroundImage = 'url("' + String(t.bg).replace(/["'()]/g, "") + '")'; }
       else bg.classList.add("tcard-bg--g" + (i % 4)); // brand-green fallback, rotates
       card.appendChild(bg);
 
@@ -537,7 +572,7 @@
       a.className = "bt-card";
       a.href = "blog/" + p.slug + ".html";
       var html = "";
-      if (p.image) html += '<span class="bt-thumb"><img src="images/' + p.image + '" alt="" loading="lazy"></span>';
+      if (p.image) html += '<span class="bt-thumb"><img src="images/' + escapeHtml(p.image) + '" alt="" loading="lazy"></span>';
       html += '<p class="bt-meta">' + fmt(p.date) + "</p>";
       html += '<h3 class="bt-card-title">' + escapeHtml(p.title) + "</h3>";
       html += '<p class="bt-excerpt">' + escapeHtml(p.excerpt || "") + "</p>";
@@ -548,6 +583,31 @@
   }
 
   /* ---------- 3. Class detail page ---------- */
+
+  // Inject per-class OpenGraph/Twitter tags so shared class links unfurl correctly
+  // (the static class.html head has none, and every class would otherwise look identical).
+  function setClassOG(c) {
+    var base = "https://quintaand.co/";
+    var url = base + "class.html?c=" + encodeURIComponent(c.slug);
+    var img = base + "images/og-" + (c.track === "foundations" ? "foundations" : "practice") + ".jpg";
+    var tags = [
+      ["property", "og:type", "website"],
+      ["property", "og:site_name", "Quinta & Co."],
+      ["property", "og:title", c.name],
+      ["property", "og:description", c.desc],
+      ["property", "og:url", url],
+      ["property", "og:image", img],
+      ["name", "twitter:card", "summary_large_image"],
+      ["name", "twitter:title", c.name],
+      ["name", "twitter:image", img]
+    ];
+    tags.forEach(function (t) {
+      var sel = "meta[" + t[0] + '="' + t[1] + '"]';
+      var el = document.head.querySelector(sel);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(t[0], t[1]); document.head.appendChild(el); }
+      el.setAttribute("content", t[2]);
+    });
+  }
 
   function renderClassDetail() {
     var slug = new URLSearchParams(window.location.search).get("c");
@@ -575,6 +635,7 @@
     document.title = c.name + " — Quinta & Co.";
     setMetaTag("description", c.desc);
     setCanonical("https://quintaand.co/class.html?c=" + encodeURIComponent(c.slug));
+    setClassOG(c);
     injectCourseSchema(c);
 
     // Breadcrumb back to the right hub
