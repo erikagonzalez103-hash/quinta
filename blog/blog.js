@@ -36,6 +36,20 @@
       card.className = "post-card";
       card.href = p.slug + ".html";
 
+      if (p.image) {
+        var thumb = document.createElement("span");
+        thumb.className = "pc-thumb";
+        var im = document.createElement("img");
+        im.src = "../images/" + p.image;
+        im.alt = "";
+        im.loading = "lazy";
+        thumb.appendChild(im);
+        card.appendChild(thumb);
+      }
+
+      var text = document.createElement("span");
+      text.className = "pc-text";
+
       var meta = document.createElement("p");
       meta.className = "pc-meta";
       meta.textContent = formatDate(p.date) + " · " + p.author;
@@ -48,9 +62,10 @@
       excerpt.className = "pc-excerpt";
       excerpt.textContent = p.excerpt || "";
 
-      card.appendChild(meta);
-      card.appendChild(title);
-      card.appendChild(excerpt);
+      text.appendChild(meta);
+      text.appendChild(title);
+      text.appendChild(excerpt);
+      card.appendChild(text);
       list.appendChild(card);
     });
   }

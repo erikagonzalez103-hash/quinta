@@ -46,7 +46,7 @@ const QUINTA_CLASSES = [
 
   // Phase 01 — Start right
   {
-    slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01",
+    slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     name: "Entity setup",
     desc: "Pick the right entity, get your EIN, and leave with a licensing checklist built for your exact business — plain English, no scare tactics.",
     format: "90 minutes · live, small group",
@@ -57,12 +57,12 @@ const QUINTA_CLASSES = [
       "Keeping your setup clean so taxes are easier later"
     ],
     walkout: "A licensing checklist built for your exact business, and a clear next step on your entity.",
-    prereq: "None — a great first step.",
+    prereq: "Nothing — a great first step.",
     booking: "https://cal.com/quintaandco/entity-setup",
     disclaimer: "Educational only — not legal or tax advice. Confirm your structure with an attorney or CPA."
   },
   {
-    slug: "banking", track: "foundations", phase: "Start right", phaseNum: "01",
+    slug: "banking", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     name: "Banking",
     desc: "Open the right accounts, keep business and personal money truly separate, and start building business credit before you ever need it.",
     format: "90 minutes · live, small group",
@@ -76,7 +76,7 @@ const QUINTA_CLASSES = [
     booking: "https://cal.com/quintaandco/banking"
   },
   {
-    slug: "insurance", track: "foundations", phase: "Start right", phaseNum: "01",
+    slug: "insurance", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     name: "Insurance",
     desc: "Sort out the coverage you actually need — liability, workers' comp, health — and leave with a risk worksheet ready to hand a broker.",
     format: "90 minutes · live, small group",
@@ -92,7 +92,7 @@ const QUINTA_CLASSES = [
 
   // Phase 02 — Keep the books
   {
-    slug: "bookkeeping-1", track: "foundations", phase: "Keep the books", phaseNum: "02",
+    slug: "bookkeeping-1", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Bookkeeping I — Set up QuickBooks",
     desc: "Decide whether you even need QuickBooks, then set it up right — bank connected, accounts organized — and walk out with a working, categorized file.",
     format: "90 minutes · live, small group",
@@ -107,7 +107,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not accounting or tax advice."
   },
   {
-    slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02",
+    slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Bookkeeping II — Prep for your bookkeeper",
     desc: "Learn what a clean handoff looks like so your bookkeeper thanks you, instead of billing you to untangle a shoebox.",
     format: "90 minutes · live, small group",
@@ -122,7 +122,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not accounting or tax advice."
   },
   {
-    slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02",
+    slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Taxes",
     desc: "Register for the right things from the start and leave with a calendar of every deadline that keeps your business legal.",
     format: "90 minutes · live, small group",
@@ -137,7 +137,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not tax advice. Confirm with a CPA or tax professional."
   },
   {
-    slug: "pricing", track: "foundations", phase: "Keep the books", phaseNum: "02",
+    slug: "pricing", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Pricing",
     desc: "The step up from the basics: price your work to be both fair and sustainable — values and math together — and walk out with a real offer built on your own numbers.",
     format: "90 minutes · live, small group (the step-up class — expect to work)",
@@ -154,7 +154,7 @@ const QUINTA_CLASSES = [
 
   // Phase 03 — Build to last
   {
-    slug: "contracts", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "contracts", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     name: "Contracts",
     desc: "Build a client agreement that protects you — scope, deposits, payment terms — and leave with a reusable template for your business.",
     format: "90 minutes · live, small group",
@@ -168,7 +168,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not legal advice. Have an attorney review your contracts."
   },
   {
-    slug: "first-hire", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "first-hire", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Your first hire",
     desc: "Know whether your next hire is a 1099 or a W-2, and what each one really requires, with a decision worksheet and a starter job description.",
     format: "90 minutes · live, small group",
@@ -183,7 +183,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not legal or HR/employment advice. Confirm with an employment attorney or HR pro."
   },
   {
-    slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Get certified — WBE / MBE / DBE",
     desc: "Learn what certification unlocks and exactly how to get it, taught by someone who's been through it, and leave with your roadmap.",
     format: "90 minutes · live, small group",
@@ -197,7 +197,7 @@ const QUINTA_CLASSES = [
     booking: "https://cal.com/quintaandco/certification"
   },
   {
-    slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Financial planning & estate",
     desc: "Pay yourself first and protect what you build, and walk out with a financial-plan outline ready for a fee-only advisor.",
     format: "90 minutes · live, small group",
@@ -212,7 +212,7 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
   },
   {
-    slug: "funding", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "funding", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Funding",
     desc: "Map the funding that's realistic for your stage — and tell the real grants from the scams.",
     format: "90 minutes · live, small group",
@@ -225,7 +225,7 @@ const QUINTA_CLASSES = [
     booking: "https://cal.com/quintaandco/funding"
   },
   {
-    slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03",
+    slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     name: "Brand 101",
     desc: "Walk out with a one-page brand foundation — your promise, your voice, and a simple visual direction — so every future decision gets easier, no agency required.",
     format: "90 minutes · live, small group",
@@ -242,22 +242,22 @@ const QUINTA_CLASSES = [
   /* ---------- THE PRACTICE ---------- */
 
   {
-    slug: "coffee", track: "practice", phase: null, phaseNum: null,
+    slug: "coffee", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     name: "Coffee with Quinta",
     desc: "A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.",
-    format: "60 minutes · free · live, small group · monthly from August",
+    format: "60 minutes · free · live, small group · monthly",
     covers: [
       "What AI can actually do for a small business (no hype)",
       "Building one small, working tool together — on your phone",
       "How to keep going after the hour"
     ],
     walkout: "One small, working tool, built start to finish.",
-    prereq: "None. Just bring coffee.",
+    prereq: "Nothing. Just bring coffee.",
     booking: "https://cal.com/quintaandco/coffee",
     free: true
   },
   {
-    slug: "module-1", track: "practice", phase: null, phaseNum: null,
+    slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     name: "Module 1 — Claude for beginners",
     desc: "Your first real session: what Claude is, how to talk to it, and how to put it to work for your business that same day.",
     format: "60 minutes · live, small group",
@@ -267,11 +267,11 @@ const QUINTA_CLASSES = [
       "Putting it to work on a task from your business that same day"
     ],
     walkout: "A workflow you'll actually keep using.",
-    prereq: "None — start here.",
+    prereq: "Nothing — start here.",
     booking: "https://cal.com/quintaandco/module-1"
   },
   {
-    slug: "module-2", track: "practice", phase: null, phaseNum: null,
+    slug: "module-2", track: "practice", phase: null, phaseNum: null, stage: "Up and running",
     name: "Module 2 — Build your AI assistant",
     desc: "Go from chatting with Claude to building an assistant that handles a real, repeatable task in your business.",
     format: "90 minutes · live, small group",
@@ -285,18 +285,19 @@ const QUINTA_CLASSES = [
     booking: "https://cal.com/quintaandco/module-2"
   },
   {
-    slug: "module-3", track: "practice", phase: null, phaseNum: null,
+    slug: "module-3", track: "practice", phase: null, phaseNum: null, stage: "Established",
     name: "Module 3 — Real databases & automation",
-    desc: "Add a real database and a little automation so your tools start running quietly in the background instead of needing you.",
+    desc: "Add a real database and a little automation so your tools start running quietly in the background — keeping track of things and handling the busywork without needing you.",
     format: "120 minutes · live, small group",
     covers: [
-      "Adding a real database behind your tools",
-      "Light automation so things run in the background",
-      "Connecting the pieces you've built so far"
+      "Adding a real database — a proper home for your customers, orders, or notes",
+      "Light automation so routine steps happen on their own",
+      "Connecting the tools you built in Modules 1 and 2 into one workflow",
+      "Knowing what's safe to automate — and what to keep an eye on"
     ],
-    walkout: "Tools that run quietly without you.",
-    booking: null,
-    soon: true
+    walkout: "A connected tool that keeps track of your work and runs quietly in the background.",
+    prereq: "Built an assistant in Module 2 (or equivalent). A Claude Pro subscription is recommended.",
+    booking: "https://cal.com/quintaandco/module-3"
   }
 
   /* ============================================================

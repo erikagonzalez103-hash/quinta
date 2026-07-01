@@ -1,0 +1,23 @@
+# Quinta & Co. — quintaand.co
+
+User-agent: *
+Allow: /
+
+# AI search / retrieval crawlers are welcome — these power live citations in
+# ChatGPT, Perplexity, Google AI Overviews, and Claude. Do not block them.
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://quintaand.co/sitemap.xml

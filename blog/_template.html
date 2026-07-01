@@ -6,10 +6,17 @@
         + ".html"  — e.g.  pricing-with-confidence.html
         (lowercase, words-joined-by-dashes, no spaces).
 
-     2. Fill in the three spots marked  >>> EDIT <<<  below:
-        the <title>, the H1 headline, and the date/author line.
+     2. SEO / social setup — in the <head>, fill every spot marked
+        >>> EDIT 1–4 <<<. The comments tell you exactly what goes where:
+        the title + description, the web address, the social link preview,
+        and the structured data search engines & AI read. (This is the
+        "laundry list" — it's all here, just fill the blanks. Tip: paste
+        the same title/description into the matching og: and twitter: lines.)
 
-     3. Paste your writing between the two PASTE markers in the
+     3. Fill the body spots marked >>> EDIT <<<: the H1 headline and the
+        date/author line.
+
+     4. Paste your writing between the two PASTE markers in the
         <div class="post-body">. From Substack: select your post,
         copy, and paste. Then wrap each paragraph in <p>…</p>.
         (Or just send the post to Claude and it'll format it for you.)
@@ -18,24 +25,60 @@
         - Quote:         <blockquote>…</blockquote>
         - Link:          <a href="https://…">text</a>
         - Image:         save it in /blog/images/ then
-                         <img src="images/your-photo.jpg" alt="describe it">
+                         <img src="images/your-photo.jpg" alt="a plain, truthful
+                         description of the photo (what a screen reader reads aloud)">
 
-     4. Add one matching block to posts.js so it appears on the
+     5. Add one matching block to posts.js so it appears on the
         blog landing page. (Instructions are in that file.)
+
+     6. Add the post to /sitemap.xml — copy an existing blog <url> line,
+        change the address and date — so search engines find it.
+
+     7. (Optional) Add the post to /blog/feed.xml — copy an <item> block,
+        change the 5 fields — so RSS subscribers see it.
      ============================================================ -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- >>> EDIT: title + description for search/AI <<< -->
+<!-- ===== SEO / AEO — fill each ">>> EDIT" spot to match this post ===== -->
+<!-- >>> EDIT 1 · Title (~60 chars) + description (~155 chars). Shown in Google & AI answers. <<< -->
 <title>POST TITLE | Quinta &amp; Co.</title>
-<meta name="description" content="One-sentence summary of this post for search and AI.">
+<meta name="description" content="One-sentence summary of this post for search and AI (about 150 characters).">
 <meta name="theme-color" content="#FAFAF6">
 <meta name="robots" content="index,follow">
+<!-- >>> EDIT 2 · This post's web address (the file name is the slug). <<< -->
+<link rel="canonical" href="https://quintaand.co/blog/your-slug.html">
+<link rel="alternate" type="application/rss+xml" title="Quinta &amp; Co. Blog" href="https://quintaand.co/blog/feed.xml">
+
+<!-- >>> EDIT 3 · Social link preview (LinkedIn, Facebook, iMessage, Slack, X).
+     Reuse the same title + description. Keep the default image, or swap in your
+     own 1200x630 image from /images/ (use a full https:// URL). <<< -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Quinta &amp; Co.">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="POST TITLE">
+<meta property="og:description" content="One-sentence summary of this post for search and AI.">
+<meta property="og:url" content="https://quintaand.co/blog/your-slug.html">
+<meta property="og:image" content="https://quintaand.co/images/og-default.jpg">
+<meta property="og:image:alt" content="A short, truthful description of the social image">
+<meta property="article:published_time" content="2026-01-01">
+<meta property="article:author" content="Erika Gonzalez Harrison">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="POST TITLE">
+<meta name="twitter:description" content="One-sentence summary of this post for search and AI.">
+<meta name="twitter:image" content="https://quintaand.co/images/og-default.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css">
+
+<!-- >>> EDIT 4 · Structured data for Google & AI engines. Fill: headline, dates
+     (YYYY-MM-DD), image URL, the post URL, description, and a few keywords. <<< -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"POST TITLE","image":"https://quintaand.co/images/og-default.jpg","datePublished":"2026-01-01","dateModified":"2026-01-01","author":{"@type":"Person","name":"Erika Gonzalez Harrison","url":"https://quintaand.co/about.html"},"publisher":{"@type":"Organization","name":"Quinta & Co.","logo":{"@type":"ImageObject","url":"https://quintaand.co/apple-touch-icon.png"}},"mainEntityOfPage":"https://quintaand.co/blog/your-slug.html","description":"One-sentence summary.","keywords":"keyword one, keyword two, keyword three"}
+</script>
 </head>
 <body>
 
@@ -70,6 +113,10 @@
     <!-- >>> EDIT: headline <<< -->
     <h1>Your post title</h1>
 
+    <!-- OPTIONAL header image — save a wide photo in /blog/images/ (or reuse one from
+         /images/), then uncomment the next line and set the src + alt:
+    <img class="post-hero" src="../images/banner-7.jpg" alt="A plain, truthful description of the image"> -->
+
     <div class="post-body">
       <!-- ===== PASTE YOUR WRITING BELOW THIS LINE ===== -->
 
@@ -77,6 +124,16 @@
       <p>Your second paragraph goes here.</p>
 
       <!-- ===== PASTE YOUR WRITING ABOVE THIS LINE ===== -->
+    </div>
+
+    <!-- Share bar — links are built automatically from this post's address + title. Leave as-is. -->
+    <div class="post-share">
+      <span class="post-share-label">Share</span>
+      <a class="share-btn" data-share="linkedin" href="#" aria-label="Share on LinkedIn">LinkedIn</a>
+      <a class="share-btn" data-share="x" href="#" aria-label="Share on X">X</a>
+      <a class="share-btn" data-share="facebook" href="#" aria-label="Share on Facebook">Facebook</a>
+      <a class="share-btn" data-share="email" href="#" aria-label="Share by email">Email</a>
+      <button class="share-btn share-copy" type="button">Copy link</button>
     </div>
   </article>
 </main>

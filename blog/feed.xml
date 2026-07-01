@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Quinta &amp; Co. Blog</title>
+    <link>https://quintaand.co/blog/</link>
+    <description>Practical notes on running a business and using AI, for women founders.</description>
+    <language>en-us</language>
+    <atom:link href="https://quintaand.co/blog/feed.xml" rel="self" type="application/rss+xml" />
+    <!-- NEWEST ITEM AT THE TOP. To add a post, copy one <item> block, change the 5 fields. -->
+    <item>
+      <title>More Women Are Starting Businesses Than Ever — Here&apos;s What AI Actually Changed.</title>
+      <link>https://quintaand.co/blog/more-women-starting-businesses.html</link>
+      <guid>https://quintaand.co/blog/more-women-starting-businesses.html</guid>
+      <pubDate>Sun, 28 Jun 2026 09:00:00 +0000</pubDate>
+      <description>More women are starting businesses than ever, because AI dropped the cost of trying — but starting isn&apos;t the same as staying open. Here&apos;s what actually changed, and what didn&apos;t.</description>
+    </item>
+    <item>
+      <title>What 3 Women Building AI Say Comes Next (And What It Means for Yours)</title>
+      <link>https://quintaand.co/blog/three-women-building-ai.html</link>
+      <guid>https://quintaand.co/blog/three-women-building-ai.html</guid>
+      <pubDate>Sun, 21 Jun 2026 09:00:00 +0000</pubDate>
+      <description>Mira Murati, Fei-Fei Li, and the women shaping AI&apos;s next chapter aren&apos;t talking about robots replacing you.</description>
+    </item>
+    <item>
+      <title>Three AI Quick Wins Every Woman Business Owner Should Start With</title>
+      <link>https://quintaand.co/blog/three-ai-quick-wins.html</link>
+      <guid>https://quintaand.co/blog/three-ai-quick-wins.html</guid>
+      <pubDate>Sun, 14 Jun 2026 09:00:00 +0000</pubDate>
+      <description>Skip the strategy sessions and automation overwhelm. Start with the pain that keeps you up at 2 AM — and the simple tools that solve it in under four hours.</description>
+    </item>
+    <item>
+      <title>The AI gap that&apos;s costing women-owned businesses everything</title>
+      <link>https://quintaand.co/blog/ai-gap-women-owned-businesses.html</link>
+      <guid>https://quintaand.co/blog/ai-gap-women-owned-businesses.html</guid>
+      <pubDate>Thu, 04 Jun 2026 09:00:00 +0000</pubDate>
+      <description>Women adopt AI at half the rate of men, but our businesses are growing 3x faster. The math doesn&apos;t add up — and neither does ignoring it.</description>
+    </item>
+    <item>
+      <title>Why I&apos;m Not Replacing Experience</title>
+      <link>https://quintaand.co/blog/not-replacing-experience.html</link>
+      <guid>https://quintaand.co/blog/not-replacing-experience.html</guid>
+      <pubDate>Sun, 19 Apr 2026 09:00:00 +0000</pubDate>
+      <description>After leaving corporate advertising to co-found a construction company, I found AI&apos;s real value isn&apos;t replacing expertise — it&apos;s recreating the departmental support I lost.</description>
+    </item>
+  </channel>
+</rss>

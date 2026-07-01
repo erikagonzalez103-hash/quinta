@@ -6,4 +6,12 @@ quinta-*-created.csv
 .claude/
 CLAUDE.md
 SETUP.md
+TESTIMONIALS.md
+BUILD-LOG.md
+POST-LAUNCH.md
+teaching/
 brand/quinta-and-co-brand-guidelines.pdf
+images/_originals/
+
+# Other in-repo apps — not part of the public marketing site
+prep/
