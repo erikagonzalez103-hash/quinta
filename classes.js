@@ -243,6 +243,7 @@ const QUINTA_CLASSES = [
 
   {
     slug: "coffee", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
+    url: "coffee.html",   // Coffee has its own page (not class.html?c=coffee)
     name: "Coffee with Quinta",
     desc: "A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.",
     format: "60 minutes · free · live, small group · monthly",

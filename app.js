@@ -18,11 +18,21 @@
      holding screen, any future page) carries it. Brand recognition first. */
   var SPROUT_SVG = '<svg class="sprout" viewBox="0 0 18 13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" aria-hidden="true"><path d="M9 8.5 V 13.5"/><path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/><path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/><circle cx="9" cy="3.5" r="0.8" fill="currentColor" stroke="none"/></svg>';
 
+  /* Our social profiles — the one place to edit them. Used by the footer
+     "Follow along" row and the end-of-post follow card.
+     NOTE: must be assigned up here, before the page renders (the renderers
+     run mid-file, so anything assigned below them isn't ready in time). */
+  var SOCIAL = {
+    li: "https://www.linkedin.com/company/quintaandco/",
+    ig: "https://www.instagram.com/quintapractice/"
+  };
+
   // Put the sprout in front of any wordmark that doesn't already have it.
   function decorateWordmarks() {
     var marks = document.querySelectorAll(".wordmark");
     Array.prototype.forEach.call(marks, function (m) {
-      if (!m.querySelector("svg")) m.insertAdjacentHTML("afterbegin", SPROUT_SVG);
+      // Skip marks that already carry the sprout — an inline SVG or the full logo image.
+      if (!m.querySelector("svg,img")) m.insertAdjacentHTML("afterbegin", SPROUT_SVG);
     });
   }
 
@@ -126,7 +136,7 @@
     btn.setAttribute("aria-label", "Open menu");
     btn.setAttribute("aria-expanded", "false");
     btn.innerHTML = "<span></span><span></span><span></span>";
-    barRight.insertBefore(btn, barRight.firstChild);
+    barRight.appendChild(btn); // hamburger sits far right — the standard spot
     var coffee = barRight.querySelector(".btn-coffee");
     if (coffee) {
       var c = coffee.cloneNode(true);
@@ -142,12 +152,8 @@
     window.addEventListener("resize", function () { if (window.innerWidth >= 760) close(); });
   }
 
-  // Social follow — one source of truth for the profile links, injected site-wide
-  // (footer row on every page) + an end-of-post prompt on blog articles.
-  var SOCIAL = {
-    li: "https://www.linkedin.com/company/quintaandco/",
-    ig: "https://www.instagram.com/quintapractice/"
-  };
+  // Social follow — injected site-wide: footer row on every page + an
+  // end-of-post prompt on blog articles. Profile URLs live in SOCIAL up top.
   function socialIcon(kind) {
     if (kind === "li") {
       return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3zM9 9h3.8v1.64h.05c.53-1 1.83-2.05 3.76-2.05C20.4 8.59 21 10.94 21 14.05V21h-4v-6.16c0-1.47-.03-3.36-2.05-3.36-2.05 0-2.36 1.6-2.36 3.25V21H9z"/></svg>';
@@ -188,7 +194,7 @@
   function classRow(c) {
     var a = document.createElement("a");
     a.className = "cls";
-    a.href = "class.html?c=" + encodeURIComponent(c.slug);
+    a.href = c.url || "class.html?c=" + encodeURIComponent(c.slug);
 
     var name = document.createElement("span");
     name.className = "cls-name";
@@ -219,7 +225,7 @@
   function classRowCompact(c) {
     var a = document.createElement("a");
     a.className = "cls-mini";
-    a.href = "class.html?c=" + encodeURIComponent(c.slug);
+    a.href = c.url || "class.html?c=" + encodeURIComponent(c.slug);
     var name = document.createElement("span");
     name.className = "cls-mini-name";
     name.textContent = c.name;
@@ -630,7 +636,7 @@
   // (the static class.html head has none, and every class would otherwise look identical).
   function setClassOG(c) {
     var base = "https://quintaand.co/";
-    var url = base + "class.html?c=" + encodeURIComponent(c.slug);
+    var url = classUrl(c);
     var img = base + "images/og-" + (c.track === "foundations" ? "foundations" : "practice") + ".jpg";
     var tags = [
       ["property", "og:type", "website"],
@@ -651,8 +657,16 @@
     });
   }
 
+  // A class's public URL — most live at class.html?c=<slug>, but a class can claim
+  // its own page (e.g. Coffee with Quinta at coffee.html) with a `url` field.
+  function classUrl(c) {
+    return "https://quintaand.co/" + (c.url || "class.html?c=" + encodeURIComponent(c.slug));
+  }
+
   function renderClassDetail() {
-    var slug = new URLSearchParams(window.location.search).get("c");
+    // The slug comes from ?c=<slug>, or from data-class on <body> for classes
+    // that have their own page (coffee.html).
+    var slug = new URLSearchParams(window.location.search).get("c") || document.body.getAttribute("data-class");
     var c = slug ? quintaBySlug(slug) : null;
     var mount = document.getElementById("class-detail");
     if (!mount) return;
@@ -676,7 +690,7 @@
 
     document.title = c.name + " — Quinta & Co.";
     setMetaTag("description", c.desc);
-    setCanonical("https://quintaand.co/class.html?c=" + encodeURIComponent(c.slug));
+    setCanonical(classUrl(c));
     setClassOG(c);
     injectCourseSchema(c);
 
@@ -768,7 +782,7 @@
       cbook.className = "book";
       var cbtn = document.createElement("a");
       cbtn.className = "btn btn-solid";
-      cbtn.href = "index.html#coffee";
+      cbtn.href = "coffee.html";
       cbtn.textContent = "Start free: Coffee with Quinta";
       cbook.appendChild(cbtn);
       detail.appendChild(cbook);
@@ -819,7 +833,7 @@
       "name": c.name,
       "description": c.desc,
       "provider": { "@type": "EducationalOrganization", "name": "Quinta & Co.", "sameAs": "https://quintaand.co/" },
-      "url": "https://quintaand.co/class.html?c=" + c.slug
+      "url": classUrl(c)
     };
     var s = document.createElement("script");
     s.type = "application/ld+json";
