@@ -97,6 +97,8 @@
     decorateWordmarks();
     wireShare();
     setupMobileNav();
+    injectFooterSocial();
+    injectPostFollow();
     if (document.querySelector(".scroll-cue")) {
       window.addEventListener("scroll", function () {
         document.body.classList.toggle("scrolled", window.scrollY > 40);
@@ -138,6 +140,46 @@
     });
     nav.addEventListener("click", function (e) { if (e.target.closest("a")) close(); });
     window.addEventListener("resize", function () { if (window.innerWidth >= 760) close(); });
+  }
+
+  // Social follow — one source of truth for the profile links, injected site-wide
+  // (footer row on every page) + an end-of-post prompt on blog articles.
+  var SOCIAL = {
+    li: "https://www.linkedin.com/company/quintaandco/",
+    ig: "https://www.instagram.com/quintapractice/"
+  };
+  function socialIcon(kind) {
+    if (kind === "li") {
+      return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3zM9 9h3.8v1.64h.05c.53-1 1.83-2.05 3.76-2.05C20.4 8.59 21 10.94 21 14.05V21h-4v-6.16c0-1.47-.03-3.36-2.05-3.36-2.05 0-2.36 1.6-2.36 3.25V21H9z"/></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.15" fill="currentColor" stroke="none"/></svg>';
+  }
+  function socialLink(kind, cls) {
+    var url = SOCIAL[kind], name = kind === "li" ? "LinkedIn" : "Instagram";
+    return '<a class="' + cls + '" href="' + url + '" target="_blank" rel="noopener" aria-label="Quinta & Co. on ' + name + '">' + socialIcon(kind);
+  }
+  function injectFooterSocial() {
+    var frow = document.querySelector("footer .frow");
+    if (!frow || document.querySelector(".social-row")) return;
+    var row = document.createElement("div");
+    row.className = "social-row";
+    row.innerHTML = '<span class="social-label">Follow along</span>' +
+      socialLink("li", "social-ico") + '</a>' +
+      socialLink("ig", "social-ico") + '</a>';
+    frow.parentNode.insertBefore(row, frow.nextSibling);
+  }
+  function injectPostFollow() {
+    var share = document.querySelector("article .post-share");
+    if (!share || document.querySelector(".post-follow")) return;
+    var card = document.createElement("div");
+    card.className = "post-follow";
+    card.innerHTML =
+      '<p class="pf-lead">Enjoyed this? Follow along for a practical AI tip every week.</p>' +
+      '<div class="pf-links">' +
+        socialLink("li", "pf-btn") + '<span>LinkedIn</span></a>' +
+        socialLink("ig", "pf-btn") + '<span>Instagram</span></a>' +
+      '</div>';
+    share.parentNode.insertBefore(card, share.nextSibling);
   }
 
   /* ---------- 2. Hub lists ---------- */
