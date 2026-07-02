@@ -35,7 +35,7 @@ nav.top .nav-coffee{display:none}
   .nav-toggle span{display:block;height:2px;width:100%;background:var(--moss);border-radius:2px;transition:transform .25s ease,opacity .2s ease}
   .bar-right{gap:4px}
   .wordmark .logo-img{height:38px}
-  .btn-coffee{display:none}
+  .bar-right .btn-coffee{display:none} /* .bar-right prefix so this outranks the base .btn rule below */
   header{position:relative}
   body.nav-open nav.top{display:flex;flex-direction:column;align-items:stretch;position:absolute;top:100%;left:0;right:0;background:var(--cream);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px var(--edge) 22px;z-index:60;box-shadow:0 12px 26px rgba(43,58,51,.09)}
   body.nav-open nav.top a{margin:0;padding:14px 2px;font-size:14px;border-bottom:1px solid var(--line)}
@@ -398,7 +398,7 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .hub-cta{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;background:#EEF2EC;border-radius:14px;padding:clamp(24px,3.5vw,34px) clamp(24px,4vw,40px);margin-top:clamp(28px,4vw,40px)}
 .hub-cta-title{font-family:var(--display);font-weight:500;font-size:clamp(20px,2.6vw,26px);line-height:1.1;letter-spacing:-.01em;color:var(--moss);margin:0 0 6px}
 .hub-cta-text{font-size:15.5px;line-height:1.6;color:var(--ink);margin:0;max-width:46ch}
-.hub-cta .btn{flex:none;margin-top:0}
+.hub-cta .btn{flex:none;margin-top:0;max-width:100%} /* cap so the long label wraps instead of poking past the card on phones */
 .hub-note{text-align:center;font-size:15px;line-height:1.6;color:var(--sage-deep);background:#EEF2EC;border-radius:10px;padding:12px 20px;margin:0 0 22px}
 .hub-note strong{color:var(--moss)}
 .hub-cta + .hub-cta{margin-top:14px}
