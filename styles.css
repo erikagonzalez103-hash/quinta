@@ -51,7 +51,7 @@ nav.top a:hover{color:var(--moss)}
 .btn-ghost:hover{background:var(--sage);color:var(--cream)}
 
 /* ====== HERO — full-width photo + moss overlay, white text ====== */
-.hero{position:relative;isolation:isolate;background:#1a2620 url("images/hero-group.jpg") center/cover no-repeat}
+.hero{position:relative;isolation:isolate;background:#1a2620 url("images/hero-group.webp") center/cover no-repeat}
 .hero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(22,32,27,.61) 0%,rgba(22,32,27,.73) 100%)}
 .hero-content{position:relative;z-index:2;color:#fff;padding:96px 0 84px;text-align:center}
 .hero-eyebrow{color:rgba(255,255,255,.82);margin-bottom:20px}
@@ -105,10 +105,10 @@ nav.top a:hover{color:var(--moss)}
 
 /* Hub-page banner — light foliage photo + cream wash so the dark text stays legible */
 .hub-banner{position:relative;isolation:isolate;background:#EEF2EC center/cover no-repeat;padding:clamp(60px,8vw,108px) 0 clamp(48px,6vw,82px)}
-.banner-foundations{background-image:url("images/banner-2.jpg");background-position:right center}
-.banner-practice{background-image:url("images/banner-1.jpg");background-position:right bottom}
-.banner-about{background-image:url("images/banner-5.jpg");background-position:right center}
-.banner-blog{background-image:url("images/banner-7.jpg");background-position:center}
+.banner-foundations{background-image:url("images/banner-2.webp");background-position:right center}
+.banner-practice{background-image:url("images/banner-1.webp");background-position:right bottom}
+.banner-about{background-image:url("images/banner-5.webp");background-position:right center}
+.banner-blog{background-image:url("images/banner-7.webp");background-position:center}
 .hub-banner h1{font-family:var(--display);font-weight:500;font-size:clamp(32px,6vw,52px);line-height:1.04;letter-spacing:-.02em;color:var(--moss);max-width:18ch}
 .hub-banner::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(250,250,246,.95) 0%,rgba(250,250,246,.86) 38%,rgba(250,250,246,.46) 72%,rgba(250,250,246,.15) 100%)}
 .hub-banner .wrap{position:relative;z-index:1}
@@ -238,7 +238,7 @@ nav.top a:hover{color:var(--moss)}
 .flourish-line{width:64px;height:1px;background:var(--line)}
 .flourish-sprout{width:26px;height:auto;color:var(--sage);flex:none}
 
-.coffee{position:relative;isolation:isolate;min-height:150vh;background:#1a2620 url("images/group-class.jpg") center/cover no-repeat;color:var(--cream)}
+.coffee{position:relative;isolation:isolate;min-height:150vh;background:#1a2620 url("images/group-class.webp") center/cover no-repeat;color:var(--cream)}
 .coffee::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(20,29,24,.60) 0%,rgba(20,29,24,.64) 50%,rgba(20,29,24,.82) 100%)}
 .coffee-inner{position:sticky;top:calc(100vh - 446px);z-index:2;text-align:center;padding:0 16px}
 .coffee-eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:clamp(13px,1.45vw,16px);color:var(--sage);margin-bottom:20px;white-space:nowrap}

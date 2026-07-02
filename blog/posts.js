@@ -29,7 +29,7 @@ const QUINTA_POSTS = [
     date: "2026-06-28",
     author: "Erika Gonzalez Harrison",
     excerpt: "More women are starting businesses than ever, because AI dropped the cost of trying — but starting isn't the same as staying open. Here's what actually changed, and what didn't.",
-    image: "blog-more-women.jpg"
+    image: "blog-more-women.webp"
   },
   {
     slug: "not-replacing-experience",
@@ -37,7 +37,7 @@ const QUINTA_POSTS = [
     date: "2026-04-19",
     author: "Erika Gonzalez Harrison",
     excerpt: "After leaving corporate advertising to co-found a construction company, I found AI's real value isn't replacing expertise — it's recreating the departmental support I lost.",
-    image: "blog-not-replacing-experience.jpg"
+    image: "blog-not-replacing-experience.webp"
   },
   {
     slug: "ai-gap-women-owned-businesses",
@@ -45,7 +45,7 @@ const QUINTA_POSTS = [
     date: "2026-06-04",
     author: "Erika Gonzalez Harrison",
     excerpt: "Women adopt AI at half the rate of men, but our businesses are growing 3x faster. The math doesn't add up — and neither does ignoring it.",
-    image: "blog-ai-gap.jpg"
+    image: "blog-ai-gap.webp"
   },
   {
     slug: "three-women-building-ai",
@@ -53,7 +53,7 @@ const QUINTA_POSTS = [
     date: "2026-06-21",
     author: "Erika Gonzalez Harrison",
     excerpt: "Mira Murati, Fei-Fei Li, and the women shaping AI's next chapter aren't talking about robots replacing you.",
-    image: "blog-three-women.jpg"
+    image: "blog-three-women.webp"
   },
   {
     slug: "three-ai-quick-wins",
@@ -61,6 +61,6 @@ const QUINTA_POSTS = [
     date: "2026-06-14",
     author: "Erika Gonzalez Harrison",
     excerpt: "Skip the strategy sessions and automation overwhelm. Start with the pain that keeps you up at 2 AM — and the simple tools that solve it in under four hours.",
-    image: "blog-quick-wins.jpg"
+    image: "blog-quick-wins.webp"
   }
 ];
