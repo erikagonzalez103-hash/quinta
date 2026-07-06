@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "where-to-start-with-ai",
+    title: "You Don't Need to Understand AI to Use It. You Need to Know Where to Start.",
+    date: "2026-07-06",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "“I'm not technical.” “Too expensive.” “No time.” None of the three is really about AI — they're about starting. Here are the three low-stakes tasks to start with.",
+    image: "blog-where-to-start.webp"
+  },
+  {
     slug: "more-women-starting-businesses",
     title: "More Women Are Starting Businesses Than Ever — Here's What AI Actually Changed.",
     date: "2026-06-28",

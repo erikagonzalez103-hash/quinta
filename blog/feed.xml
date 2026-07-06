@@ -8,6 +8,13 @@
     <atom:link href="https://quintaand.co/blog/feed.xml" rel="self" type="application/rss+xml" />
     <!-- NEWEST ITEM AT THE TOP. To add a post, copy one <item> block, change the 5 fields. -->
     <item>
+      <title>You Don&apos;t Need to Understand AI to Use It. You Need to Know Where to Start.</title>
+      <link>https://quintaand.co/blog/where-to-start-with-ai.html</link>
+      <guid>https://quintaand.co/blog/where-to-start-with-ai.html</guid>
+      <pubDate>Mon, 06 Jul 2026 09:00:00 +0000</pubDate>
+      <description>&quot;I&apos;m not technical.&quot; &quot;Too expensive.&quot; &quot;No time.&quot; None of the three is really about AI — they&apos;re about starting. Here are the three low-stakes tasks to start with.</description>
+    </item>
+    <item>
       <title>More Women Are Starting Businesses Than Ever — Here&apos;s What AI Actually Changed.</title>
       <link>https://quintaand.co/blog/more-women-starting-businesses.html</link>
       <guid>https://quintaand.co/blog/more-women-starting-businesses.html</guid>
