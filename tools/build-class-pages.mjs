@@ -66,6 +66,35 @@ function page(c) {
 
   const disclaimer = c.disclaimer ? `\n      <p class="class-disclaimer">${esc(c.disclaimer)}</p>` : "";
 
+  // Per-class FAQ — derived from the class data, so it can only say true things.
+  const stageAnswer = {
+    "Just starting": "Women founders who are just starting out — no prior experience assumed.",
+    "Up and running": "Women founders whose business is up and running and who want to strengthen this part of it.",
+    "Established": "Established women founders ready to take this further.",
+  }[c.stage] || "Women founders at any stage.";
+  const trackFlavor = c.track === "foundations"
+    ? " It's part of The Foundations, the plain-language business fundamentals track."
+    : " It's part of The Practice, the hands-on AI track — no technical background needed.";
+  const faqs = [
+    { q: `Who is ${c.name} for?`, a: stageAnswer + trackFlavor },
+    { q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." },
+    ...(c.walkout ? [{ q: "What will I walk out with?", a: `${c.walkout} Every Quinta & Co. class ends with something real you keep.` }] : []),
+    soon
+      ? { q: "When can I take this class?", a: "Enrollment opens Fall 2026. Join the waitlist at quintaand.co/waitlist to hear first — and the free monthly Coffee with Quinta is open in the meantime." }
+      : { q: "When can I take this class?", a: `It's open now — ${c.format || "live, small group"}. Dates and booking are right on this page.` },
+  ];
+  const faqHtml = faqs.map((f, i) => `      <div class="faq-item">
+        <span class="faq-num" aria-hidden="true">${i + 1}</span>
+        <div class="faq-qa">
+          <h3>${esc(f.q)}</h3>
+          <p>${esc(f.a)}</p>
+        </div>
+      </div>`).join("\n");
+  const faqSchema = JSON.stringify({
+    "@context": "https://schema.org", "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  });
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,6 +120,7 @@ function page(c) {
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../styles.css?v=3">
 <script type="application/ld+json" data-course-schema>${schema}</script>
+<script type="application/ld+json">${faqSchema}</script>
 </head>
 <body data-page="class" data-class="${esc(c.slug)}" data-root="../">
 
@@ -125,6 +155,14 @@ ${covers}
       <p class="syl-prereq">${esc(c.prereq)}</p>\n` : ""}${booking}${disclaimer}
     </section>
   </div>
+
+  <section class="faq wrap">
+    <p class="label">Questions, answered</p>
+    <h2 class="faq-title">About this class</h2>
+    <div class="faq-list">
+${faqHtml}
+    </div>
+  </section>
 </main>
 
 <footer>
