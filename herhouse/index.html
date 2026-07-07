@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=2">
+<link rel="stylesheet" href="../styles.css?v=3">
 </head>
 <body>
 
@@ -51,12 +51,18 @@
     </div>
   </section>
 
+  <!-- Pre-event note — hides itself automatically after the panel (see inline script below) -->
+  <section class="wrap" style="padding-top:0" id="panelNote">
+    <p class="hub-note">Joining us at HER Texas House <strong>this Saturday, July&nbsp;11</strong>? Come sit in on the Quinta &amp; Co. panel — practitioners, not gurus, on where to actually start with AI. Grab a tag before you leave; it's worth real money below. 🌱</p>
+  </section>
+  <script>if (new Date() > new Date("2026-07-12T00:00:00-05:00")) document.getElementById("panelNote").style.display = "none";</script>
+
   <!-- The payoff: redeem the HERHOUSE code -->
   <section class="wrap" style="padding-top:0">
     <div class="hub-cta">
       <div class="hub-cta-text-wrap">
         <p class="label" style="margin-bottom:6px">Your code</p>
-        <h3 class="hub-cta-title">HERHOUSE</h3>
+        <h2 class="hub-cta-title">HERHOUSE</h2>
         <p class="hub-cta-text">Your tag is worth <strong>25% off Module 1</strong> — <strong>$112.50</strong> instead of $150, good for any Module&nbsp;1 session through December. Bringing a friend? You each get <strong>50% off</strong> — <a href="mailto:hello@quintaand.co?subject=HERHOUSE%20duo%20%E2%80%94%20two%20of%20us%20for%20Module%201&amp;body=Hi%20Quinta%20%26%20Co.%2C%20we%20found%20you%20at%20HER%20House%20and%20we%27d%20both%20like%20the%20HERHOUSE%20duo%20rate%20for%20Module%201.">email us</a> and we'll send your $75-each links.</p>
       </div>
       <a href="https://cal.com/quintaandco/module-1-herhouse" class="btn btn-solid">Book Module 1 at your HERHOUSE rate &rarr;</a>
@@ -109,6 +115,7 @@
         <a href="../foundations.html">The Foundations</a>
         <a href="../practice.html">The Practice</a>
         <a href="../about.html">About</a>
+        <a href="../teach.html">Teach</a>
         <a href="../coffee.html">Book</a>
         <a href="mailto:hello@quintaand.co">Contact</a>
         <a href="../privacy.html">Privacy</a>
@@ -121,8 +128,8 @@
   </div>
 </footer>
 
-<script src="../config.js?v=2"></script>
-<script src="../icons.js?v=2"></script>
-<script src="../app.js?v=2" defer></script>
+<script src="../config.js?v=3"></script>
+<script src="../icons.js?v=3"></script>
+<script src="../app.js?v=3" defer></script>
 </body>
 </html>

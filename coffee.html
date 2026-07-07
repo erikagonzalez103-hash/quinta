@@ -18,10 +18,13 @@
 <meta name="twitter:description" content="A free monthly hour for women founders: build one small, working tool with Claude — on your phone, start to finish.">
 <meta name="twitter:image" content="https://quintaand.co/images/og-practice.jpg">
 <link rel="canonical" href="https://quintaand.co/coffee.html">
+<script type="application/ld+json" data-course-schema>
+{"@context":"https://schema.org","@type":"Course","name":"Coffee with Quinta","description":"A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.","provider":{"@type":"EducationalOrganization","name":"Quinta & Co.","sameAs":"https://quintaand.co/"},"url":"https://quintaand.co/coffee.html","isAccessibleForFree":true}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=2">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body data-page="class" data-class="coffee">
 
@@ -41,8 +44,32 @@
 </header>
 
 <main>
-  <!-- Filled in from classes.js by app.js — this page pins the "coffee" class via data-class on <body> -->
-  <div id="class-detail"></div>
+  <!-- Static content below matches what app.js renders from classes.js, so crawlers and
+       AI answer engines get the full page without JS. app.js re-renders it on load (keep
+       the copy here in sync with the coffee entry in classes.js when it changes). -->
+  <div id="class-detail">
+    <nav class="crumb wrap"><a href="practice.html">&larr; The Practice</a></nav>
+    <section class="detail wrap">
+      <p class="phase-label">The Practice</p>
+      <h1>Coffee with Quinta</h1>
+      <p class="desc">A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.</p>
+      <p class="syl-format">60 minutes · free · live, small group · monthly</p>
+      <p class="syl-label">What we'll cover</p>
+      <ul class="syl-list">
+        <li>What AI can actually do for a small business (no hype)</li>
+        <li>Building one small, working tool together — on your phone</li>
+        <li>How to keep going after the hour</li>
+      </ul>
+      <p class="syl-label">What you'll walk out with</p>
+      <p class="syl-walkout">One small, working tool, built start to finish.</p>
+      <p class="syl-label">Know before you go</p>
+      <p class="syl-prereq">Nothing. Just bring coffee.</p>
+      <div class="book">
+        <a class="btn btn-solid" href="https://cal.com/quintaandco/coffee">Save your seat</a>
+        <span class="free-note">Free</span>
+      </div>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -56,6 +83,7 @@
         <a href="foundations.html">The Foundations</a>
         <a href="practice.html">The Practice</a>
         <a href="about.html">About</a>
+        <a href="teach.html">Teach</a>
         <a href="coffee.html">Book</a>
         <a href="mailto:hello@quintaand.co">Contact</a>
         <a href="privacy.html">Privacy</a>
@@ -68,9 +96,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=2"></script>
-<script src="classes.js?v=2"></script>
-<script src="icons.js?v=2"></script>
-<script src="app.js?v=2" defer></script>
+<script src="config.js?v=3"></script>
+<script src="classes.js?v=3"></script>
+<script src="icons.js?v=3"></script>
+<script src="app.js?v=3" defer></script>
 </body>
 </html>

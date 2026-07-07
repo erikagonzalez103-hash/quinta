@@ -194,7 +194,7 @@
   function classRow(c) {
     var a = document.createElement("a");
     a.className = "cls";
-    a.href = c.url || "class.html?c=" + encodeURIComponent(c.slug);
+    a.href = c.url || "classes/" + encodeURIComponent(c.slug) + ".html";
 
     var name = document.createElement("span");
     name.className = "cls-name";
@@ -225,7 +225,7 @@
   function classRowCompact(c) {
     var a = document.createElement("a");
     a.className = "cls-mini";
-    a.href = c.url || "class.html?c=" + encodeURIComponent(c.slug);
+    a.href = c.url || "classes/" + encodeURIComponent(c.slug) + ".html";
     var name = document.createElement("span");
     name.className = "cls-mini-name";
     name.textContent = c.name;
@@ -277,8 +277,13 @@
   function soonLabel(c) {
     return c.track === "foundations" ? "Coming this fall" : "Coming soon";
   }
+  // Pages in subfolders (the generated classes/ pages) set data-root="../" on <body>
+  // so links we build here resolve correctly from anywhere.
+  function pageRoot() {
+    return document.body.getAttribute("data-root") || "";
+  }
   function soonNoteHTML(c) {
-    var coffee = '<a href="index.html#coffee">Coffee with Quinta</a>';
+    var coffee = '<a href="' + pageRoot() + 'coffee.html">Coffee with Quinta</a>';
     return c.track === "foundations"
       ? "The Foundations open this fall (2026). Be first to hear — and grab a free hour in the meantime — at " + coffee + "."
       : "Not open just yet. Be first to hear at " + coffee + ".";
@@ -375,7 +380,7 @@
     }
     var more = document.createElement("a");
     more.className = "acc-more";
-    more.href = "class.html?c=" + encodeURIComponent(c.slug);
+    more.href = c.url || "classes/" + encodeURIComponent(c.slug) + ".html";
     more.textContent = "Full details →";
     foot.appendChild(more);
     body.appendChild(foot);
@@ -457,7 +462,7 @@
   function practiceCard(c) {
     var a = document.createElement("a");
     a.className = "pcard";
-    a.href = "class.html?c=" + encodeURIComponent(c.slug);
+    a.href = c.url || "classes/" + encodeURIComponent(c.slug) + ".html";
     a.setAttribute("data-stage", c.stage || "");
     var html = '<span class="pcard-badges">';
     if (c.free) html += '<span class="pcard-free">Free</span>';
@@ -657,10 +662,10 @@
     });
   }
 
-  // A class's public URL — most live at class.html?c=<slug>, but a class can claim
-  // its own page (e.g. Coffee with Quinta at coffee.html) with a `url` field.
+  // A class's public URL — each class has a pre-rendered static page under classes/,
+  // unless it claims its own page (e.g. Coffee with Quinta at coffee.html) via `url`.
   function classUrl(c) {
-    return "https://quintaand.co/" + (c.url || "class.html?c=" + encodeURIComponent(c.slug));
+    return "https://quintaand.co/" + (c.url || "classes/" + encodeURIComponent(c.slug) + ".html");
   }
 
   function renderClassDetail() {
@@ -695,7 +700,7 @@
     injectCourseSchema(c);
 
     // Breadcrumb back to the right hub
-    var hubHref = c.track === "foundations" ? "foundations.html" : "practice.html";
+    var hubHref = pageRoot() + (c.track === "foundations" ? "foundations.html" : "practice.html");
     var hubName = c.track === "foundations" ? "The Foundations" : "The Practice";
 
     var crumb = document.createElement("nav");
@@ -782,12 +787,12 @@
       cbook.className = "book";
       var wbtn = document.createElement("a");
       wbtn.className = "btn btn-solid";
-      wbtn.href = "waitlist.html?c=" + encodeURIComponent(c.slug);
+      wbtn.href = pageRoot() + "waitlist.html?c=" + encodeURIComponent(c.slug);
       wbtn.textContent = "Join the waitlist";
       cbook.appendChild(wbtn);
       var cbtn = document.createElement("a");
       cbtn.className = "btn btn-ghost";
-      cbtn.href = "coffee.html";
+      cbtn.href = pageRoot() + "coffee.html";
       cbtn.textContent = "Start free: Coffee with Quinta";
       cbook.appendChild(cbtn);
       detail.appendChild(cbook);
@@ -832,6 +837,9 @@
     l.setAttribute("href", url);
   }
   function injectCourseSchema(c) {
+    // Pages with the schema baked in statically (coffee.html, generated class pages)
+    // shouldn't get a duplicate injected on top.
+    if (document.querySelector("script[data-course-schema]")) return;
     var data = {
       "@context": "https://schema.org",
       "@type": "Course",
