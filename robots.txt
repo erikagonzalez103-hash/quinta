@@ -17,7 +17,19 @@ Allow: /
 User-agent: Claude-SearchBot
 Allow: /
 
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
 User-agent: Google-Extended
 Allow: /
+
+# Site overview for AI engines
+# https://quintaand.co/llms.txt
 
 Sitemap: https://quintaand.co/sitemap.xml

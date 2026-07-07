@@ -46,7 +46,7 @@ function page(c) {
   const schema = JSON.stringify({
     "@context": "https://schema.org", "@type": "Course",
     name: c.name, description: c.desc,
-    provider: { "@type": "EducationalOrganization", name: "Quinta & Co.", sameAs: "https://quintaand.co/" },
+    provider: { "@type": "EducationalOrganization", name: "Quinta & Co.", url: "https://quintaand.co/", sameAs: ["https://www.linkedin.com/company/quintaandco/", "https://www.instagram.com/quintapractice/"] },
     url, ...(c.free ? { isAccessibleForFree: true } : {}),
   });
 

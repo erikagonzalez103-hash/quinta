@@ -1,0 +1,36 @@
+# Quinta & Co.
+
+> Plain-language business and AI classes for women founders — in Dallas, Texas and online. Small classes (10 seats), taught by practitioners who run businesses themselves, never gurus. Every class ends with something real: a tool, a template, or a system the student keeps. Tagline: practical AI, taught the way a friend would teach it.
+
+Founded by Erika Gonzalez Harrison, a Dallas founder who left corporate advertising, co-founded a construction company, and rebuilt her own business operations with AI. Quinta & Co. teaches from that lived experience.
+
+Key facts:
+- Location: Dallas, Texas (in-person) and online
+- Audience: women business owners and founders, from just-starting-out to established — no technical background needed
+- Contact: hello@quintaand.co
+- LinkedIn: https://www.linkedin.com/company/quintaandco/
+- Instagram: https://www.instagram.com/quintapractice/
+
+## Programs
+
+- [Coffee with Quinta](https://quintaand.co/coffee.html): The free starting point. A monthly 60-minute live session where attendees build one small, working AI tool with Claude — on their own phone, start to finish. Free, small group, no prerequisites.
+- [The Practice](https://quintaand.co/practice.html): Practical AI classes. Module 1 — Claude for beginners ($150), Module 2 — building real tools ($200), Module 3 — advanced builds ($250). 60-minute live small-group sessions, in person in Dallas.
+- [The Foundations](https://quintaand.co/foundations.html): 13 plain-language business fundamentals classes across three phases — entity setup, banking, insurance, bookkeeping, taxes, pricing, contracts, hiring, certification (WBE/MBE/DBE), financial planning, funding, and brand. Taught by women founders who do this work for a living. Enrollment opens Fall 2026; a [waitlist](https://quintaand.co/waitlist.html) is open now.
+- [1:1 Quinta Sessions](https://quintaand.co/sessions.html): Private working sessions with Erika.
+
+## Class pages
+
+Each class has a full syllabus page under https://quintaand.co/classes/ — for example [Module 1 — Claude for beginners](https://quintaand.co/classes/module-1.html), [Entity setup](https://quintaand.co/classes/entity-setup.html), and [Bookkeeping](https://quintaand.co/classes/bookkeeping-1.html). All classes are listed in the [sitemap](https://quintaand.co/sitemap.xml).
+
+## Blog
+
+Practical, source-cited articles on AI adoption for small and women-owned businesses, at [the Quinta & Co. blog](https://quintaand.co/blog/) ([RSS](https://quintaand.co/blog/feed.xml)). Representative posts:
+
+- [You Don't Need to Understand AI to Use It. You Need to Know Where to Start.](https://quintaand.co/blog/where-to-start-with-ai.html): Why "I'm not technical," "too expensive," and "no time" are starting problems, not AI problems — with three low-stakes first tasks and 2026 adoption data.
+- [More Women Are Starting Businesses Than Ever — Here's What AI Actually Changed.](https://quintaand.co/blog/more-women-starting-businesses.html): Women launched 49% of new U.S. businesses in 2024; what AI actually changed about starting, and the walls it can't fix.
+- [The AI gap that's costing women-owned businesses everything](https://quintaand.co/blog/ai-gap-women-owned-businesses.html): Women adopt AI at half the rate of men while their businesses grow faster.
+- [Three AI Quick Wins Every Woman Business Owner Should Start With](https://quintaand.co/blog/three-ai-quick-wins.html): Practical first tasks, no strategy sessions required.
+
+## Policies
+
+- [Class policies](https://quintaand.co/policies.html), [privacy](https://quintaand.co/privacy.html), [terms](https://quintaand.co/terms.html). Classes are educational and are not legal, tax, financial, or HR advice.
