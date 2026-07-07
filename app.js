@@ -780,8 +780,13 @@
       detail.appendChild(soon);
       var cbook = document.createElement("div");
       cbook.className = "book";
+      var wbtn = document.createElement("a");
+      wbtn.className = "btn btn-solid";
+      wbtn.href = "waitlist.html?c=" + encodeURIComponent(c.slug);
+      wbtn.textContent = "Join the waitlist";
+      cbook.appendChild(wbtn);
       var cbtn = document.createElement("a");
-      cbtn.className = "btn btn-solid";
+      cbtn.className = "btn btn-ghost";
       cbtn.href = "coffee.html";
       cbtn.textContent = "Start free: Coffee with Quinta";
       cbook.appendChild(cbtn);

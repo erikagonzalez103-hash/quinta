@@ -1,0 +1,18 @@
+# Supabase's free tier pauses projects after ~1 week without traffic.
+# This pings a tiny public read-only table twice a week so the waitlist
+# (and signup) database never falls asleep. The key below is the public
+# "publishable" key — safe to commit by design.
+name: Keep Supabase awake
+on:
+  schedule:
+    - cron: "17 12 * * 1,4" # Mondays & Thursdays, 12:17 UTC
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping keepalive table
+        run: |
+          curl -sf "https://pmpaslevwimofohirves.supabase.co/rest/v1/keepalive?select=id&limit=1" \
+            -H "apikey: sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf" \
+            -H "Authorization: Bearer sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
