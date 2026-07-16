@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty Portal — Quinta &amp; Co.</title>
+<meta name="description" content="Private faculty portal for Quinta &amp; Co. instructors.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .portal-head{padding-top:48px}
+  .portal-head h1{margin:6px 0 4px}
+  .portal-sub{color:#5A5E55;margin:0 0 8px}
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+  .pcard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:24px 26px}
+  .pcard.full{grid-column:1 / -1}
+  .pcard h2{font-size:1.15rem;margin:0 0 4px}
+  .pcard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 16px}
+  .doc-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .doc-row:last-child{border-bottom:none}
+  .doc-name{font-weight:500}
+  .doc-status{font-size:.82rem;font-family:var(--label);letter-spacing:.14em;text-transform:uppercase}
+  .st-done{color:var(--sage-deep)}
+  .st-todo{color:#A6791F}
+  .btn-sm{display:inline-block;padding:7px 15px;border-radius:999px;font-size:.88rem;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+  .btn-sm.solid{background:var(--sage-deep);color:var(--cream)}
+  .btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+  .gusto-callout{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px;font-size:.95rem}
+  #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
+  #portal{display:none}
+  .signout{font-size:.9rem}
+  @media(max-width:720px){.card-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="faculty-portal" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="gusto-guide.html">Gusto guide</a>
+        <a href="#" id="signout" class="signout" style="display:none">Sign out</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Shown while checking the session, or when there isn't one -->
+  <div id="gate">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <!-- The portal itself; filled in from the faculty table after sign-in -->
+  <section class="detail wrap portal-head" id="portal">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="welcome">Welcome</h1>
+    <p class="portal-sub" id="teaching-line"></p>
+
+    <div class="card-grid">
+
+      <div class="pcard full">
+        <h2>Taxes &amp; getting paid</h2>
+        <p class="hint">Quinta &amp; Co. pays faculty through Gusto. Your tax paperwork happens there — securely, once.</p>
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">Set up payments &amp; W-9 with Gusto</div>
+            <div class="doc-status" id="gusto-status">—</div>
+          </div>
+          <a class="btn-sm solid" href="gusto-guide.html">Read the setup guide</a>
+        </div>
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">How your 1099 works — plain-language guide</div>
+            <div class="doc-status st-done">Available</div>
+          </div>
+          <a class="btn-sm" href="gusto-guide.html#faq">Read the FAQ</a>
+        </div>
+        <div class="gusto-callout">
+          <em>Why Gusto?</em> When you finish onboarding there, your W-9 is collected securely, direct deposit is set up, and your 1099-NEC arrives automatically each January — nothing to chase.
+        </div>
+      </div>
+
+      <div class="pcard">
+        <h2>My documents</h2>
+        <p class="hint">Signed agreements on file with Quinta &amp; Co.</p>
+        <div class="doc-row">
+          <div class="doc-name">Instructor agreement</div>
+          <span class="doc-status" id="doc-agreement">—</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Media release</div>
+          <span class="doc-status" id="doc-media">—</span>
+        </div>
+      </div>
+
+      <div class="pcard full">
+        <h2>My social profiles</h2>
+        <p class="hint">Social is Quinta &amp; Co.'s main marketing avenue — we tag and feature faculty when promoting classes. We need at least your LinkedIn plus either Facebook or Instagram, set to <strong>public</strong> so students can find you. Business pages count too (and help even more).</p>
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">LinkedIn <span style="font-weight:400;color:#8A8E83">(required)</span></div>
+            <div class="doc-status" id="soc-linkedin">—</div>
+          </div>
+          <span class="doc-status" id="soc-linkedin-vis"></span>
+        </div>
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">Instagram <span style="font-weight:400;color:#8A8E83">(this or Facebook)</span></div>
+            <div class="doc-status" id="soc-instagram">—</div>
+          </div>
+          <span class="doc-status" id="soc-instagram-vis"></span>
+        </div>
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">Facebook <span style="font-weight:400;color:#8A8E83">(this or Instagram)</span></div>
+            <div class="doc-status" id="soc-facebook">—</div>
+          </div>
+          <span class="doc-status" id="soc-facebook-vis"></span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Business pages <span style="font-weight:400;color:#8A8E83">(if you have them)</span></div>
+          <span class="doc-status" id="soc-business">—</span>
+        </div>
+        <p class="hint" style="margin-top:14px">Don't have one of these yet? That's okay — you'll need to create it before your class is promoted. Email your handles to <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> for now; profile editing is coming.</p>
+      </div>
+
+      <div class="pcard">
+        <h2>My public profile</h2>
+        <p class="hint">What students will see on quintaand.co.</p>
+        <div class="doc-row">
+          <div class="doc-name">Headshot</div>
+          <span class="doc-status" id="doc-headshot">—</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Bio &amp; credentials</div>
+          <span class="doc-status" id="doc-bio">—</span>
+        </div>
+        <p class="hint" style="margin-top:14px">Profile editing is coming — for now, email changes to <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>
+      </div>
+
+    </div>
+
+    <p class="class-disclaimer" style="margin-top:34px">This portal is private to you and Quinta &amp; Co. Tax documents are handled through Gusto — never posted publicly.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  var gateTitle = document.getElementById("gate-title");
+  var gateText = document.getElementById("gate-text");
+  var gateAction = document.getElementById("gate-action");
+
+  function showGate(title, text) {
+    gateTitle.textContent = title;
+    gateText.textContent = text;
+    gateAction.style.display = "block";
+  }
+
+  function setStatus(id, done, doneText, todoText) {
+    var el = document.getElementById(id);
+    el.textContent = done ? doneText : todoText;
+    el.className = "doc-status " + (done ? "st-done" : "st-todo");
+  }
+
+  function renderPortal(session, row) {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("portal").style.display = "block";
+    document.getElementById("signout").style.display = "inline";
+
+    var name = (row && (row.display_name || row.full_name)) || session.user.email;
+    document.getElementById("welcome").textContent = "Welcome back, " + name.split(" ")[0];
+
+    var classes = row && row.classes && row.classes.length ? row.classes.join(" · ") : null;
+    document.getElementById("teaching-line").textContent = classes ? "Teaching " + classes : "";
+
+    // Socials: URL on file = done; visibility chip shows public/private/unconfirmed.
+    function setSocial(key) {
+      var url = row && row[key + "_url"];
+      var isPublic = row ? row[key + "_is_public"] : null;
+      setStatus("soc-" + key, !!url, "On file", "Needed");
+      var vis = document.getElementById("soc-" + key + "-vis");
+      if (!url) { vis.textContent = ""; return; }
+      if (isPublic === true) { vis.textContent = "Public"; vis.className = "doc-status st-done"; }
+      else if (isPublic === false) { vis.textContent = "Private — needs to be public"; vis.className = "doc-status st-todo"; }
+      else { vis.textContent = "Visibility unconfirmed"; vis.className = "doc-status st-todo"; }
+    }
+    setSocial("linkedin");
+    setSocial("instagram");
+    setSocial("facebook");
+    var hasBiz = row && (row.business_linkedin_url || row.business_instagram_url || row.business_facebook_url);
+    setStatus("soc-business", !!hasBiz, "On file", "None yet");
+
+    var gustoDone = row && row.w9_status && row.w9_status !== "not_received";
+    setStatus("gusto-status", gustoDone, "Complete", "Action needed");
+    setStatus("doc-agreement", !!(row && row.agreement_signed_on), "Signed", "Not yet signed");
+    setStatus("doc-media", !!(row && row.media_release_signed_on), "Signed", "Not yet signed");
+    setStatus("doc-headshot", !!(row && row.headshot_on_file), "On file", "Needed");
+    setStatus("doc-bio", !!(row && row.bio_short), "On file", "Needed");
+  }
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  document.getElementById("signout").addEventListener("click", function (ev) {
+    ev.preventDefault();
+    sb.auth.signOut().then(function () { window.location.replace("login.html"); });
+  });
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) {
+      showGate("You're not signed in", "Faculty sign-in uses a one-time email link — no password to remember.");
+      return;
+    }
+    // RLS means this only ever returns the signed-in instructor's own row.
+    sb.from("faculty").select("*").eq("email", session.user.email.toLowerCase()).maybeSingle()
+      .then(function (r) { renderPortal(session, r.data || null); })
+      .catch(function (err) { console.error(err); renderPortal(session, null); });
+  });
+})();
+</script>
+</body>
+</html>

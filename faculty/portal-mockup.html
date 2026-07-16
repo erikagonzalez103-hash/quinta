@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- MOCK-UP ONLY — private faculty portal concept (what an instructor sees after logging in). Buttons are non-functional. -->
+<title>Faculty Portal (mock-up) — Quinta &amp; Co.</title>
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .portal-head{padding-top:48px}
+  .portal-head h1{margin:6px 0 4px}
+  .portal-sub{color:#5A5E55;margin:0 0 8px}
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+  .pcard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:24px 26px}
+  .pcard.full{grid-column:1 / -1}
+  .pcard h2{font-size:1.15rem;margin:0 0 4px}
+  .pcard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 16px}
+  .doc-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .doc-row:last-child{border-bottom:none}
+  .doc-name{font-weight:500}
+  .doc-status{font-size:.82rem;font-family:var(--label);letter-spacing:.14em;text-transform:uppercase}
+  .st-done{color:var(--sage-deep)}
+  .st-todo{color:#A6791F}
+  .btn-sm{display:inline-block;padding:7px 15px;border-radius:999px;font-size:.88rem;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+  .btn-sm.solid{background:var(--sage-deep);color:var(--cream)}
+  .btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+  .gusto-callout{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px;font-size:.95rem}
+  .train-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+  .train-row:last-child{border-bottom:none}
+  .train-date{color:#8A8E83;font-size:.88rem}
+  @media(max-width:720px){.card-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="faculty-portal" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="profile-mockup.html">My public profile</a>
+        <a href="#">Sign out</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="detail wrap portal-head">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1>Welcome back, Nery</h1>
+    <p class="portal-sub">Teaching <strong>Insurance</strong> · The Foundations · Fall 2026</p>
+
+    <div class="card-grid">
+
+      <div class="pcard full">
+        <h2>Taxes &amp; getting paid</h2>
+        <p class="hint">Quinta &amp; Co. pays faculty through Gusto. Your tax paperwork happens there — securely, once.</p>
+
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">Set up payments &amp; W-9 with Gusto</div>
+            <div class="doc-status st-todo">Action needed</div>
+          </div>
+          <a class="btn-sm solid" href="#">Start Gusto onboarding</a>
+        </div>
+
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">How your 1099 works — plain-language guide</div>
+            <div class="doc-status st-done">Available</div>
+          </div>
+          <a class="btn-sm" href="#">Download the guide (PDF)</a>
+        </div>
+
+        <div class="doc-row">
+          <div>
+            <div class="doc-name">Already have a completed W-9?</div>
+            <div class="doc-status st-todo">Not received</div>
+          </div>
+          <button class="btn-sm" type="button">Upload W-9 (secure)</button>
+        </div>
+
+        <div class="gusto-callout">
+          <em>Why Gusto?</em> When you finish onboarding there, your W-9 is collected securely, direct deposit is set up, and your 1099-NEC arrives automatically each January — nothing to chase.
+        </div>
+      </div>
+
+      <div class="pcard">
+        <h2>My documents</h2>
+        <p class="hint">Signed agreements on file with Quinta &amp; Co.</p>
+        <div class="doc-row">
+          <div class="doc-name">Instructor agreement</div>
+          <span class="doc-status st-done">Signed · Jun 2026</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Media release</div>
+          <span class="doc-status st-done">Signed · Jun 2026</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Proof of liability insurance</div>
+          <span class="doc-status st-todo">Expires Sep 2026</span>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <h2>My public profile</h2>
+        <p class="hint">What students see on quintaand.co.</p>
+        <div class="doc-row">
+          <div class="doc-name">Headshot</div>
+          <span class="doc-status st-done">On file</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Bio &amp; credentials</div>
+          <span class="doc-status st-todo">Review requested</span>
+        </div>
+        <div class="doc-row">
+          <div class="doc-name">Booking link</div>
+          <span class="doc-status st-done">Live</span>
+        </div>
+        <a class="btn-sm" href="profile-mockup.html" style="margin-top:14px">Update my profile</a>
+      </div>
+
+      <div class="pcard full">
+        <h2>Faculty training</h2>
+        <p class="hint">Required before your first class each year.</p>
+        <div class="train-row">
+          <div class="doc-name">Quinta orientation — how we teach</div>
+          <span class="train-date">Completed Jun 12, 2026</span>
+          <span class="doc-status st-done">Done</span>
+        </div>
+        <div class="train-row">
+          <div class="doc-name">Module 1 — Claude for beginners</div>
+          <span class="train-date">—</span>
+          <span class="doc-status st-todo">To do</span>
+        </div>
+        <div class="train-row">
+          <div class="doc-name">Annual agreement renewal</div>
+          <span class="train-date">Due Jun 2027</span>
+          <span class="doc-status st-done">Current</span>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="class-disclaimer" style="margin-top:34px">This portal is private to you and Quinta &amp; Co. Tax documents are handled through Gusto or encrypted storage — never posted publicly.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculty sign-in — Quinta &amp; Co.</title>
+<meta name="description" content="Sign in to the Quinta &amp; Co. faculty portal.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .login-wrap{max-width:480px;margin:0 auto;padding-top:64px;padding-bottom:40px}
+  .login-card{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:32px 34px;margin-top:26px}
+  .login-card label{display:block;font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:8px}
+  .login-card input[type=email]{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:1rem;background:var(--cream)}
+  .login-card input[type=email]:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+  .login-card button{margin-top:16px;width:100%}
+  .login-note{color:#8A8E83;font-size:.9rem;margin-top:16px}
+  .msg{margin-top:16px;padding:13px 16px;border-radius:8px;font-size:.95rem;display:none}
+  .msg.ok{display:block;background:#EEF2EC;border:1px solid var(--sage-deep);color:#2F332E}
+  .msg.err{display:block;background:#F7EFEA;border:1px solid #B0713F;color:#5A4632}
+</style>
+</head>
+<body data-page="faculty-login" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+  </div>
+</header>
+
+<main>
+  <section class="detail wrap login-wrap">
+    <p class="phase-label">Faculty Portal</p>
+    <h1>Sign in</h1>
+    <p class="desc">No passwords here — enter the email Erika has on file for you and we'll send a one-time sign-in link.</p>
+
+    <form class="login-card" id="login-form" novalidate>
+      <label for="email">Your email</label>
+      <input type="email" id="email" name="email" autocomplete="email" required placeholder="you@example.com">
+      <button type="submit" class="btn btn-solid" id="send-btn">Email me a sign-in link</button>
+      <div class="msg" id="msg" role="status"></div>
+      <p class="login-note">The link works once and expires after an hour. Faculty only — if your email isn't recognized, write <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and Erika will add you.</p>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<!-- supabase-js is self-hosted (pinned 2.110.1), same copy the waitlist uses -->
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var form = document.getElementById("login-form");
+  var btn = document.getElementById("send-btn");
+  var msg = document.getElementById("msg");
+  var sb = null;
+
+  function show(kind, text) { msg.className = "msg " + kind; msg.textContent = text; }
+
+  // Guarded client creation — if the library didn't load, the form degrades to the email-us note.
+  try {
+    if (typeof supabase !== "undefined") {
+      // Same Supabase project as the waitlist; this key is the public "publishable" one.
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); sb = null; }
+
+  // Already signed in? Go straight to the portal.
+  if (sb) {
+    sb.auth.getSession().then(function (res) {
+      if (res.data && res.data.session) window.location.replace("portal.html");
+    });
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = document.getElementById("email").value.trim().toLowerCase();
+    if (!email || email.indexOf("@") < 1) { show("err", "That doesn't look like an email address — mind checking it?"); return; }
+    if (!sb) { show("err", "Sign-in isn't loading right now. Please email hello@quintaand.co and we'll sort it out."); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+
+    sb.auth.signInWithOtp({
+      email: email,
+      options: {
+        // Only emails Erika has invited can sign in — no self-signup.
+        shouldCreateUser: false,
+        emailRedirectTo: new URL("portal.html", window.location.href).href
+      }
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      btn.textContent = "Link sent";
+      show("ok", "Check your email — your sign-in link is on its way. (Give it a minute, and peek at spam if it's shy.)");
+    }).catch(function (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = "Email me a sign-in link";
+      var m = err && err.message ? String(err.message) : "";
+      if (m.toLowerCase().indexOf("signup") !== -1) {
+        show("err", "That email isn't on the faculty list yet. Email hello@quintaand.co and Erika will add you.");
+      } else if (m.toLowerCase().indexOf("rate") !== -1) {
+        show("err", "Too many link requests in a row — wait a minute or two, then try once more.");
+      } else {
+        show("err", "Something hiccuped sending the link. Please try again — or email hello@quintaand.co.");
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
