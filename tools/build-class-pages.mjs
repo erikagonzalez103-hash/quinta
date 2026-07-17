@@ -121,6 +121,7 @@ function page(c) {
 <link rel="stylesheet" href="../styles.css?v=3">
 <script type="application/ld+json" data-course-schema>${schema}</script>
 <script type="application/ld+json">${faqSchema}</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body data-page="class" data-class="${esc(c.slug)}" data-root="../">
 
