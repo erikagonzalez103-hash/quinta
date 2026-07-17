@@ -198,18 +198,49 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    name: "Financial planning & estate",
-    desc: "Pay yourself first and protect what you build, and walk out with a financial-plan outline ready for a fee-only advisor.",
+    name: "Financial planning",
+    desc: "Pay yourself first, plan for the long run, and walk out with a financial-plan outline ready for a fee-only advisor.",
     format: "90 minutes · live, small group",
     covers: [
       "Paying yourself first — and how much",
       "Separating business and personal finances for the long run",
-      "Protecting what you build (basic estate considerations)",
+      "Retirement when you're the boss — the lay of the land",
       "What to bring to a fee-only advisor"
     ],
     walkout: "A financial-plan outline ready for a fee-only advisor.",
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
+  },
+  {
+    slug: "estate-succession", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    name: "Estate & succession planning",
+    desc: "What happens to your business if something happens to you? Make the plan — wills, beneficiaries, and who could step in — so the answer is never \"nobody knows.\"",
+    format: "90 minutes · live, small group",
+    covers: [
+      "What happens to an LLC (or sole prop) when its owner can't run it",
+      "Wills, beneficiaries, and powers of attorney — the business edition",
+      "Succession basics: who could step in, and what they'd need from you",
+      "The one-page \"if something happens\" file every owner should keep"
+    ],
+    walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
+    prereq: "Nothing — pairs well with Financial planning.",
+    booking: "https://cal.com/quintaandco/estate-succession",
+    disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
+  },
+  {
+    slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
+    name: "Trademarks",
+    desc: "Learn what a trademark actually protects, search properly before you fall in love with a name, and leave knowing whether filing is worth it for you.",
+    format: "90 minutes · live, small group",
+    covers: [
+      "Trademarks vs. LLC names vs. domains — what each one actually protects",
+      "How to search properly before you commit to a name",
+      "When a DIY federal filing makes sense — and when to hire an attorney",
+      "Keeping your mark alive once you have it"
+    ],
+    walkout: "A search-and-file roadmap for your business name.",
+    booking: "https://cal.com/quintaandco/trademarks",
+    disclaimer: "Educational only — not legal advice. Confirm your filing with a trademark attorney."
   },
   {
     slug: "funding", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
