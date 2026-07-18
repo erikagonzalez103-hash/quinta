@@ -27,6 +27,7 @@ Each class has a full syllabus page under https://quintaand.co/classes/ — for 
 
 Practical, source-cited articles on AI adoption for small and women-owned businesses, at [the Quinta & Co. blog](https://quintaand.co/blog/) ([RSS](https://quintaand.co/blog/feed.xml)). Representative posts:
 
+- [What Does It Actually Cost to Form an LLC in Texas?](https://quintaand.co/blog/texas-llc-cost.html): The only required cost is the $300 Form 205 filing fee. What's required vs. optional, why a flat-rate registered agent is the one upsell worth buying, and how "$0 LLC" checkouts climb to $5,000.
 - [You Don't Need to Understand AI to Use It. You Need to Know Where to Start.](https://quintaand.co/blog/where-to-start-with-ai.html): Why "I'm not technical," "too expensive," and "no time" are starting problems, not AI problems — with three low-stakes first tasks and 2026 adoption data.
 - [More Women Are Starting Businesses Than Ever — Here's What AI Actually Changed.](https://quintaand.co/blog/more-women-starting-businesses.html): Women launched 49% of new U.S. businesses in 2024; what AI actually changed about starting, and the walls it can't fix.
 - [The AI gap that's costing women-owned businesses everything](https://quintaand.co/blog/ai-gap-women-owned-businesses.html): Women adopt AI at half the rate of men while their businesses grow faster.

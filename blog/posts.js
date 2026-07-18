@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "texas-llc-cost",
+    title: "What Does It Actually Cost to Form an LLC in Texas?",
+    date: "2026-07-18",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "The only required cost is the $300 filing fee. Everything else — the $99 EIN, the $249 agent, the $2,000 package — is optional, and most of it is markup. Here's the real math.",
+    image: "blog-llc-cost.webp"
+  },
+  {
     slug: "where-to-start-with-ai",
     title: "You Don't Need to Understand AI to Use It. You Need to Know Where to Start.",
     date: "2026-07-06",
