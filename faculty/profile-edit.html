@@ -100,17 +100,17 @@
         <p class="hint">Social is our main marketing avenue — we tag and feature faculty when promoting classes. We need at least LinkedIn plus one of Instagram/Facebook, and the profiles we promote must be set to public. Check the box only if you've confirmed the profile is public.</p>
 
         <div class="soc-row"><div class="frow">
-          <label for="f-li">LinkedIn URL (required)</label>
+          <label for="f-li">Personal LinkedIn (required)</label>
           <input type="url" id="f-li" placeholder="https://www.linkedin.com/in/yourname">
         </div><label class="pub-check"><input type="checkbox" id="f-li-pub"> It's public</label></div>
 
         <div class="soc-row"><div class="frow">
-          <label for="f-ig">Instagram URL</label>
+          <label for="f-ig">Personal Instagram</label>
           <input type="url" id="f-ig" placeholder="https://www.instagram.com/yourhandle">
         </div><label class="pub-check"><input type="checkbox" id="f-ig-pub"> It's public</label></div>
 
         <div class="soc-row"><div class="frow">
-          <label for="f-fb">Facebook URL</label>
+          <label for="f-fb">Personal Facebook</label>
           <input type="url" id="f-fb" placeholder="https://www.facebook.com/yourpage">
         </div><label class="pub-check"><input type="checkbox" id="f-fb-pub"> It's public</label></div>
 
@@ -122,13 +122,21 @@
 
       <div class="ecard">
         <h2>Headshot</h2>
-        <p class="hint">High-resolution, roughly square, plain background if you have one. This goes on your public profile.</p>
+        <p class="hint">High-resolution, plain background if you have one. This goes on your public profile.</p>
         <div class="headshot-row">
-          <img id="f-headshot-preview" class="headshot-preview" alt="Your headshot preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
+          <img id="f-headshot-preview" class="headshot-preview" alt="Your current headshot" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
           <div>
             <input type="file" id="f-headshot" accept="image/*">
             <p class="sub" style="color:#8A8E83;font-size:.85rem;margin-top:8px">JPG or PNG, up to 8&nbsp;MB.</p>
           </div>
+        </div>
+        <div id="crop-wrap" style="display:none;margin-top:20px">
+          <canvas id="crop-canvas" width="260" height="260" style="touch-action:none;cursor:grab;border-radius:8px;max-width:100%"></canvas>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:10px;max-width:260px">
+            <span style="font-size:.85rem;color:#8A8E83">Zoom</span>
+            <input type="range" id="crop-zoom" min="100" max="300" value="100" style="flex:1;accent-color:#4F6B5C">
+          </div>
+          <p class="sub" style="color:#8A8E83;font-size:.85rem;margin-top:8px">Drag the photo to position it. The circle is exactly what will show on your page.</p>
         </div>
       </div>
 
@@ -214,11 +222,104 @@
     });
   });
 
-  // Live preview when a new headshot is chosen
+  // --- Headshot cropper: drag to position, slide to zoom; the circle = the final crop ---
+  var crop = { img: null, scale: 1, min: 1, x: 0, y: 0 };
+  var cropCv = document.getElementById("crop-canvas");
+  var cropCtx = cropCv.getContext("2d");
+  var CROP = 260;
+
+  function clampCrop() {
+    var w = crop.img.width * crop.scale, h = crop.img.height * crop.scale;
+    crop.x = Math.min(0, Math.max(CROP - w, crop.x));
+    crop.y = Math.min(0, Math.max(CROP - h, crop.y));
+  }
+  function drawCrop() {
+    clampCrop();
+    cropCtx.clearRect(0, 0, CROP, CROP);
+    cropCtx.drawImage(crop.img, crop.x, crop.y, crop.img.width * crop.scale, crop.img.height * crop.scale);
+    cropCtx.save();
+    cropCtx.beginPath();
+    cropCtx.rect(0, 0, CROP, CROP);
+    cropCtx.arc(CROP / 2, CROP / 2, CROP / 2, 0, Math.PI * 2, true);
+    cropCtx.fillStyle = "rgba(250,250,246,0.78)";
+    cropCtx.fill("evenodd");
+    cropCtx.restore();
+    cropCtx.beginPath();
+    cropCtx.arc(CROP / 2, CROP / 2, CROP / 2 - 1, 0, Math.PI * 2);
+    cropCtx.strokeStyle = "#4F6B5C";
+    cropCtx.stroke();
+  }
+  function loadBitmap(file) {
+    // from-image respects phone photo rotation; fall back for older browsers
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: "from-image" })
+        .catch(function () { return createImageBitmap(file); });
+    }
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   document.getElementById("f-headshot").addEventListener("change", function () {
     var file = this.files && this.files[0];
-    if (file) document.getElementById("f-headshot-preview").src = URL.createObjectURL(file);
+    if (!file) return;
+    loadBitmap(file).then(function (img) {
+      crop.img = img;
+      crop.min = Math.max(CROP / img.width, CROP / img.height);
+      crop.scale = crop.min;
+      crop.x = (CROP - img.width * crop.scale) / 2;
+      crop.y = (CROP - img.height * crop.scale) / 2;
+      document.getElementById("crop-zoom").value = 100;
+      document.getElementById("crop-wrap").style.display = "block";
+      document.getElementById("f-headshot-preview").style.display = "none";
+      drawCrop();
+    }).catch(function (e) { console.error(e); show("err", "Couldn't read that image — try a JPG or PNG."); });
   });
+
+  document.getElementById("crop-zoom").addEventListener("input", function () {
+    if (!crop.img) return;
+    var newScale = crop.min * (Number(this.value) / 100);
+    var f = newScale / crop.scale;
+    // zoom around the circle's center so the photo doesn't jump
+    crop.x = CROP / 2 - (CROP / 2 - crop.x) * f;
+    crop.y = CROP / 2 - (CROP / 2 - crop.y) * f;
+    crop.scale = newScale;
+    drawCrop();
+  });
+
+  var dragging = null;
+  cropCv.addEventListener("pointerdown", function (ev) {
+    if (!crop.img) return;
+    dragging = { x: ev.clientX, y: ev.clientY };
+    cropCv.setPointerCapture(ev.pointerId);
+    cropCv.style.cursor = "grabbing";
+  });
+  cropCv.addEventListener("pointermove", function (ev) {
+    if (!dragging || !crop.img) return;
+    // account for CSS scaling of the canvas on small screens
+    var rw = cropCv.getBoundingClientRect().width;
+    var k = rw > 0 ? CROP / rw : 1;
+    crop.x += (ev.clientX - dragging.x) * k;
+    crop.y += (ev.clientY - dragging.y) * k;
+    dragging = { x: ev.clientX, y: ev.clientY };
+    drawCrop();
+  });
+  ["pointerup", "pointercancel"].forEach(function (t) {
+    cropCv.addEventListener(t, function () { dragging = null; cropCv.style.cursor = "grab"; });
+  });
+
+  function exportCrop() {
+    var out = document.createElement("canvas");
+    out.width = 512; out.height = 512;
+    var k = 512 / CROP;
+    out.getContext("2d").drawImage(crop.img,
+      crop.x * k, crop.y * k,
+      crop.img.width * crop.scale * k, crop.img.height * crop.scale * k);
+    return new Promise(function (resolve) { out.toBlob(resolve, "image/jpeg", 0.9); });
+  }
 
   document.getElementById("pform").addEventListener("submit", function (ev) {
     ev.preventDefault();
@@ -243,15 +344,17 @@
 
     var file = document.getElementById("f-headshot").files[0];
     var uploadStep = Promise.resolve();
-    if (file) {
+    if (file && crop.img) {
       if (file.size > 8 * 1024 * 1024) {
         show("err", "That photo is over 8 MB — most phones can export a smaller version, or email it to hello@quintaand.co.");
         saveBtn.disabled = false; saveBtn.textContent = "Save my profile";
         return;
       }
-      var ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      var path = userId + "/headshot." + ext;
-      uploadStep = sb.storage.from("headshots").upload(path, file, { upsert: true }).then(function (r) {
+      // Upload exactly what's framed in the circle — a 512px square crop, always JPG.
+      var path = userId + "/headshot.jpg";
+      uploadStep = exportCrop().then(function (blob) {
+        return sb.storage.from("headshots").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+      }).then(function (r) {
         if (r.error) throw r.error;
         var pub = sb.storage.from("headshots").getPublicUrl(path);
         updates.headshot_url = pub.data.publicUrl + "?t=" + Date.now();
