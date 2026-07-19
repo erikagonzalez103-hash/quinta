@@ -194,6 +194,43 @@
 
   function monthKey(d) { return d.slice(0, 7); }
 
+  // --- Calendar invites (client-side .ics + Google Calendar link) ---
+  function sessionDates(s) {
+    var start = new Date(s.session_date + "T" + s.start_time.slice(0, 5) + ":00"); // local (CT) time
+    var end = new Date(start.getTime() + 90 * 60000); // 90-minute classes
+    return { start: start, end: end };
+  }
+  function icsStamp(d) { return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
+  function icsFor(s) {
+    var t = sessionDates(s);
+    var loc = s.format === "in-person" ? "HER House, Dallas, TX" : "Online (link to follow)";
+    return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Quinta & Co.//Faculty//EN", "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      "UID:" + s.id + "@quintaand.co",
+      "DTSTAMP:" + icsStamp(new Date()),
+      "DTSTART:" + icsStamp(t.start),
+      "DTEND:" + icsStamp(t.end),
+      "SUMMARY:Teach: " + s.class_name + " — Quinta & Co.",
+      "LOCATION:" + loc,
+      "DESCRIPTION:Your Quinta & Co. class session. Manage your schedule at https://quintaand.co/faculty/schedule.html",
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  }
+  function downloadICS(s) {
+    var blob = new Blob([icsFor(s)], { type: "text/calendar" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "quinta-" + s.class_slug + "-" + s.session_date + ".ics";
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function gcalUrl(s) {
+    var t = sessionDates(s);
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent("Teach: " + s.class_name + " — Quinta & Co.") +
+      "&dates=" + icsStamp(t.start) + "/" + icsStamp(t.end) +
+      "&location=" + encodeURIComponent(s.format === "in-person" ? "HER House, Dallas, TX" : "Online") +
+      "&details=" + encodeURIComponent("Manage your schedule at https://quintaand.co/faculty/schedule.html");
+  }
+
   function renderMonths() {
     var now = new Date();
     var chips = [];
@@ -222,9 +259,17 @@
         '<div class="sess-what">' + s.class_name + '</div>' +
         '<div class="sess-meta">' + fmtDate(s.session_date) + " · " + fmtTime(s.start_time.slice(0, 5)) + " · " + s.format + "</div></div>" +
         '<span class="tag ' + s.daypart + '">' + s.daypart + "</span>" +
+        '<button class="btn-sm" data-cal="' + s.id + '" type="button">Add to calendar</button>' +
+        '<a class="btn-sm" data-gcal="' + s.id + '" href="' + gcalUrl(s) + '" target="_blank" rel="noopener">Google Cal</a>' +
         (canCancel ? '<button class="btn-sm" data-id="' + s.id + '" type="button">Cancel</button>' : '<span class="sess-meta">within 14 days — email us</span>') +
         "</div>";
     }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-cal]"), function (b) {
+      b.addEventListener("click", function () {
+        var s = mySessions.find(function (x) { return x.id === b.getAttribute("data-cal"); });
+        if (s) downloadICS(s);
+      });
+    });
     Array.prototype.forEach.call(box.querySelectorAll("button[data-id]"), function (b) {
       b.addEventListener("click", function () {
         if (!window.confirm("Remove this class from the schedule?")) return;
@@ -310,7 +355,7 @@
         }
         return;
       }
-      show("ok", "Scheduled! " + (daypartOf(time) === "day" ? "Daytime" : "Evening") + " class added — thank you for keeping the calendar humming.");
+      show("ok", "Scheduled! " + (daypartOf(time) === "day" ? "Daytime" : "Evening") + " class added — grab the calendar invite from your list below so it's on your calendar too.");
       loadSessions();
     });
   });
