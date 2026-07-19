@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Classes — Faculty — Quinta &amp; Co.</title>
+<meta name="description" content="Schedule your Quinta &amp; Co. classes.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .sched-head{padding-top:48px}
+  .scard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-top:22px}
+  .scard h2{font-size:1.12rem;margin:0 0 4px}
+  .scard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 16px}
+  .month-chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .mchip{border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:150px;background:var(--cream)}
+  .mchip .mname{font-family:var(--label);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep)}
+  .mchip .mstat{margin-top:6px;font-size:.92rem}
+  .ok{color:var(--sage-deep)} .todo{color:#A6791F}
+  .frow{margin-bottom:16px}
+  .frow label{display:block;font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:7px}
+  .frow select,.frow input[type=date]{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:1rem;background:var(--cream)}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .radio-row{display:flex;gap:18px;align-items:center;font-size:.95rem;color:#2F332E}
+  .radio-row input{accent-color:#4F6B5C}
+  .sess-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .sess-row:last-child{border-bottom:none}
+  .sess-what{font-weight:500}
+  .sess-meta{color:#8A8E83;font-size:.88rem}
+  .tag{font-size:.78rem;font-family:var(--label);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
+  .tag.day{color:#A6791F} .tag.evening{color:var(--sage-deep)}
+  .btn-sm{display:inline-block;padding:7px 15px;border-radius:999px;font-size:.88rem;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+  .btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+  .msg{padding:12px 16px;border-radius:8px;font-size:.95rem;display:none;margin-top:14px}
+  .msg.ok{display:block;background:#EEF2EC;border:1px solid var(--sage-deep)}
+  .msg.err{display:block;background:#F7EFEA;border:1px solid #B0713F;color:#5A4632}
+  #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
+  #sched{display:none}
+  @media(max-width:640px){.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="faculty-schedule" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="portal.html">Back to portal</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap sched-head" id="sched">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1>My classes</h1>
+    <p class="desc">Your teaching, your schedule — pick the dates and times that work for you. The monthly rhythm is two classes: one daytime, one evening.</p>
+
+    <div class="scard">
+      <h2>This month &amp; next</h2>
+      <div class="month-chips" id="month-chips"></div>
+    </div>
+
+    <div class="scard">
+      <h2>Schedule a class</h2>
+      <p class="hint">Daytime = starts before 5pm · Evening = 5pm or later. In-person slots are first-come — the room hosts one class at a time.</p>
+      <form id="sform" novalidate>
+        <div class="fgrid">
+          <div class="frow">
+            <label for="s-class">Class</label>
+            <select id="s-class" required></select>
+          </div>
+          <div class="frow">
+            <label for="s-date">Date</label>
+            <input type="date" id="s-date" required>
+          </div>
+          <div class="frow">
+            <label for="s-time">Start time</label>
+            <select id="s-time" required></select>
+          </div>
+          <div class="frow">
+            <label>Format</label>
+            <div class="radio-row">
+              <label><input type="radio" name="s-format" value="in-person" checked> In person</label>
+              <label><input type="radio" name="s-format" value="online"> Online</label>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-solid" id="s-btn">Add to my schedule</button>
+        <div class="msg" id="s-msg" role="status"></div>
+      </form>
+    </div>
+
+    <div class="scard">
+      <h2>My upcoming classes</h2>
+      <p class="hint">Need to cancel? You can remove anything more than 14 days out — closer than that, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> so we can reschedule students.</p>
+      <div id="sess-list"><p class="sess-meta">Loading…</p></div>
+    </div>
+
+    <p class="class-disclaimer" style="margin-top:30px">Sessions save instantly to the shared schedule. Student booking (Cal.com) sync is coming — until then Erika opens bookings for each scheduled session.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  var gateTitle = document.getElementById("gate-title");
+  var gateText = document.getElementById("gate-text");
+  var gateAction = document.getElementById("gate-action");
+  var msg = document.getElementById("s-msg");
+  var userEmail = null;
+  var mySessions = [];
+
+  function showGate(t, x) { gateTitle.textContent = t; gateText.textContent = x; gateAction.style.display = "block"; }
+  function show(kind, text) { msg.className = "msg " + kind; msg.textContent = text; }
+
+  // Build the start-time menu: 8:00 AM – 8:30 PM, half-hour steps
+  (function () {
+    var sel = document.getElementById("s-time");
+    for (var h = 8; h <= 20; h++) {
+      [0, 30].forEach(function (m) {
+        if (h === 20 && m > 30) return;
+        var v = ("0" + h).slice(-2) + ":" + ("0" + m).slice(-2);
+        var ampm = h < 12 ? "AM" : "PM";
+        var hh = h % 12 === 0 ? 12 : h % 12;
+        var o = document.createElement("option");
+        o.value = v;
+        o.textContent = hh + (m ? ":30 " : ":00 ") + ampm + (h < 17 ? "  · daytime" : "  · evening");
+        sel.appendChild(o);
+      });
+    }
+    sel.value = "12:00";
+  })();
+
+  function daypartOf(t) { return t < "17:00" ? "day" : "evening"; }
+
+  function fmtDate(d) {
+    return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  }
+  function fmtTime(t) {
+    var h = parseInt(t.slice(0, 2), 10), m = t.slice(3, 5);
+    var hh = h % 12 === 0 ? 12 : h % 12;
+    return hh + ":" + m + (h < 12 ? " AM" : " PM");
+  }
+
+  function monthKey(d) { return d.slice(0, 7); }
+
+  function renderMonths() {
+    var now = new Date();
+    var chips = [];
+    for (var k = 0; k < 2; k++) {
+      var dt = new Date(now.getFullYear(), now.getMonth() + k, 1);
+      var key = dt.toISOString().slice(0, 7);
+      var name = dt.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      var day = mySessions.some(function (s) { return monthKey(s.session_date) === key && s.daypart === "day"; });
+      var eve = mySessions.some(function (s) { return monthKey(s.session_date) === key && s.daypart === "evening"; });
+      chips.push('<div class="mchip"><div class="mname">' + name + '</div>' +
+        '<div class="mstat ' + (day ? "ok" : "todo") + '">' + (day ? "✓ Daytime scheduled" : "○ Daytime — pick a date") + '</div>' +
+        '<div class="mstat ' + (eve ? "ok" : "todo") + '">' + (eve ? "✓ Evening scheduled" : "○ Evening — pick a date") + '</div></div>');
+    }
+    document.getElementById("month-chips").innerHTML = chips.join("");
+  }
+
+  function renderSessions() {
+    var box = document.getElementById("sess-list");
+    var future = mySessions.filter(function (s) { return s.session_date >= new Date().toISOString().slice(0, 10); });
+    if (!future.length) { box.innerHTML = '<p class="sess-meta">Nothing scheduled yet — your future classes will appear here.</p>'; return; }
+    var cutoff = new Date(); cutoff.setDate(cutoff.getDate() + 14);
+    var cutoffStr = cutoff.toISOString().slice(0, 10);
+    box.innerHTML = future.map(function (s) {
+      var canCancel = s.session_date > cutoffStr;
+      return '<div class="sess-row"><div>' +
+        '<div class="sess-what">' + s.class_name + '</div>' +
+        '<div class="sess-meta">' + fmtDate(s.session_date) + " · " + fmtTime(s.start_time.slice(0, 5)) + " · " + s.format + "</div></div>" +
+        '<span class="tag ' + s.daypart + '">' + s.daypart + "</span>" +
+        (canCancel ? '<button class="btn-sm" data-id="' + s.id + '" type="button">Cancel</button>' : '<span class="sess-meta">within 14 days — email us</span>') +
+        "</div>";
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-id]"), function (b) {
+      b.addEventListener("click", function () {
+        if (!window.confirm("Remove this class from the schedule?")) return;
+        sb.from("class_sessions").delete().eq("id", b.getAttribute("data-id")).then(function (r) {
+          if (r.error) { console.error(r.error); show("err", "Couldn't cancel that one — email hello@quintaand.co."); return; }
+          loadSessions();
+        });
+      });
+    });
+  }
+
+  function loadSessions() {
+    sb.from("class_sessions").select("*").eq("instructor_email", userEmail).neq("status", "canceled")
+      .order("session_date").then(function (r) {
+        mySessions = r.data || [];
+        renderMonths();
+        renderSessions();
+      });
+  }
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { showGate("You're not signed in", "Sign in first, then come back to schedule your classes."); return; }
+    userEmail = session.user.email.toLowerCase();
+
+    sb.from("faculty").select("*").eq("email", userEmail).maybeSingle().then(function (r) {
+      var row = r.data;
+      if (!row) { showGate("Almost there", "Your faculty record isn't set up yet — email hello@quintaand.co."); return; }
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("sched").style.display = "block";
+
+      var sel = document.getElementById("s-class");
+      (row.classes && row.classes.length ? row.classes : ["My class"]).forEach(function (c) {
+        var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
+      });
+      var dateEl = document.getElementById("s-date");
+      var min = new Date(); min.setDate(min.getDate() + 15);
+      dateEl.min = min.toISOString().slice(0, 10);
+
+      loadSessions();
+    });
+  });
+
+  document.getElementById("sform").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var cls = document.getElementById("s-class").value;
+    var date = document.getElementById("s-date").value;
+    var time = document.getElementById("s-time").value;
+    var format = document.querySelector('input[name="s-format"]:checked').value;
+    if (!date) { show("err", "Pick a date first."); return; }
+    if (date < document.getElementById("s-date").min) {
+      show("err", "New classes need at least 15 days of lead time so we can fill the seats. For anything sooner, email hello@quintaand.co.");
+      return;
+    }
+    var btn = document.getElementById("s-btn");
+    btn.disabled = true; btn.textContent = "Saving…";
+
+    sb.from("class_sessions").insert({
+      instructor_email: userEmail,
+      class_slug: cls.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      class_name: cls,
+      session_date: date,
+      start_time: time,
+      daypart: daypartOf(time),
+      format: format
+    }).then(function (r) {
+      btn.disabled = false; btn.textContent = "Add to my schedule";
+      if (r.error) {
+        console.error(r.error);
+        if (String(r.error.code) === "23505") {
+          show("err", "That in-person slot is already taken by another class — pick a different time or date, or go online for that one.");
+        } else {
+          show("err", "Something hiccuped saving that — try again, or email hello@quintaand.co. (" + (r.error.message || "") + ")");
+        }
+        return;
+      }
+      show("ok", "Scheduled! " + (daypartOf(time) === "day" ? "Daytime" : "Evening") + " class added — thank you for keeping the calendar humming.");
+      loadSessions();
+    });
+  });
+})();
+</script>
+</body>
+</html>
