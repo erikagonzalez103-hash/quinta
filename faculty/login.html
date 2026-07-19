@@ -96,6 +96,13 @@
     ev.preventDefault();
     var email = document.getElementById("email").value.trim().toLowerCase();
     if (!email || email.indexOf("@") < 1) { show("err", "That doesn't look like an email address — mind checking it?"); return; }
+    // Twenty years of typing ".com" doesn't surrender quietly.
+    if (/@quintaand\.com$/.test(email)) {
+      email = email.replace(/@quintaand\.com$/, "@quintaand.co");
+      document.getElementById("email").value = email;
+      show("ok", "Small fix: our addresses end in .co (no m) — we've corrected it. Click the button again to send your link.");
+      return;
+    }
     if (!sb) { show("err", "Sign-in isn't loading right now. Please email hello@quintaand.co and we'll sort it out."); return; }
 
     btn.disabled = true;
