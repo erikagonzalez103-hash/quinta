@@ -149,7 +149,18 @@
   var userEmail = null;
   var mySessions = [];
 
-  function showGate(t, x) { gateTitle.textContent = t; gateText.textContent = x; gateAction.style.display = "block"; }
+  function showGate(t, x, offerReset) {
+    gateTitle.textContent = t; gateText.textContent = x; gateAction.style.display = "block";
+    if (offerReset && !document.getElementById("gate-reset")) {
+      var b = document.createElement("button");
+      b.id = "gate-reset"; b.className = "btn btn-ghost"; b.style.marginLeft = "10px";
+      b.textContent = "Sign out & start fresh";
+      b.addEventListener("click", function () {
+        sb.auth.signOut().then(function () { window.location.replace("login.html"); });
+      });
+      gateAction.appendChild(b);
+    }
+  }
   function show(kind, text) { msg.className = "msg " + kind; msg.textContent = text; }
 
   // Build the start-time menu: 8:00 AM – 8:30 PM, half-hour steps
@@ -242,8 +253,15 @@
     userEmail = session.user.email.toLowerCase();
 
     sb.from("faculty").select("*").eq("email", userEmail).maybeSingle().then(function (r) {
+      if (r.error) {
+        console.error(r.error);
+        showGate("Hmm — the database said no",
+          "Signed in as " + userEmail + ", but your record couldn't be read. Technical note: \"" +
+          (r.error.message || r.error.code || "unknown") + "\". Try signing out and back in — if it persists, email hello@quintaand.co with this message.", true);
+        return;
+      }
       var row = r.data;
-      if (!row) { showGate("Almost there", "Your faculty record isn't set up yet — email hello@quintaand.co."); return; }
+      if (!row) { showGate("Almost there", "You're signed in as " + userEmail + ", but there's no faculty record under that email yet — email hello@quintaand.co and Erika will finish it.", true); return; }
       document.getElementById("gate").style.display = "none";
       document.getElementById("sched").style.display = "block";
 

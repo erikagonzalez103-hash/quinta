@@ -193,10 +193,21 @@
   var gateText = document.getElementById("gate-text");
   var gateAction = document.getElementById("gate-action");
 
-  function showGate(title, text) {
+  function showGate(title, text, offerReset) {
     gateTitle.textContent = title;
     gateText.textContent = text;
     gateAction.style.display = "block";
+    if (offerReset && !document.getElementById("gate-reset")) {
+      var btn = document.createElement("button");
+      btn.id = "gate-reset";
+      btn.className = "btn btn-ghost";
+      btn.style.marginLeft = "10px";
+      btn.textContent = "Sign out & start fresh";
+      btn.addEventListener("click", function () {
+        sb.auth.signOut().then(function () { window.location.replace("login.html"); });
+      });
+      gateAction.appendChild(btn);
+    }
   }
 
   function setStatus(id, done, doneText, todoText) {
@@ -256,8 +267,21 @@
     }
     // RLS means this only ever returns the signed-in instructor's own row.
     sb.from("faculty").select("*").eq("email", session.user.email.toLowerCase()).maybeSingle()
-      .then(function (r) { renderPortal(session, r.data || null); })
-      .catch(function (err) { console.error(err); renderPortal(session, null); });
+      .then(function (r) {
+        if (r.error) {
+          console.error(r.error);
+          showGate("Hmm — the database said no",
+            "Signed in as " + session.user.email + ", but your record couldn't be read. Technical note: \"" +
+            (r.error.message || r.error.code || "unknown") + "\". Try signing out and back in — if it persists, email hello@quintaand.co with this message.", true);
+          return;
+        }
+        renderPortal(session, r.data || null);
+      })
+      .catch(function (err) {
+        console.error(err);
+        showGate("Hmm — something interrupted loading",
+          "Signed in as " + session.user.email + ", but the connection hiccuped (" + (err && err.message ? err.message : "unknown") + "). Refresh to retry, or sign out and back in.", true);
+      });
   });
 })();
 </script>
