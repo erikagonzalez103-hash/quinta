@@ -212,8 +212,8 @@ const QUINTA_CLASSES = [
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
   },
   {
-    slug: "estate-succession", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    name: "Estate & succession planning",
+    slug: "legacy-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    name: "Legacy planning",
     desc: "What happens to your business if something happens to you? Make the plan — wills, beneficiaries, and who could step in — so the answer is never \"nobody knows.\"",
     format: "90 minutes · live, small group",
     covers: [
@@ -224,7 +224,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
     prereq: "Nothing — pairs well with Financial planning.",
-    booking: "https://cal.com/quintaandco/estate-succession",
+    booking: "https://cal.com/quintaandco/legacy-planning",
     disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
   },
   {
