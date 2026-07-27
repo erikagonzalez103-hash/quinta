@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "why-women-dont-start-businesses",
+    title: "Why Haven't More Women Started Businesses? It's Fear, Not the Idea — and the #1 Fear Might Surprise You.",
+    date: "2026-07-26",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "65% of women have never started a business — and the #1 fear isn't money, it's losing yourself. What the data says about fear, pricing, and starting scared anyway.",
+    image: "blog-fear-not-the-idea.webp"
+  },
+  {
     slug: "texas-llc-cost",
     title: "What Does It Actually Cost to Form an LLC in Texas?",
     date: "2026-07-18",
