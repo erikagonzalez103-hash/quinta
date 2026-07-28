@@ -74,6 +74,15 @@
         <a class="btn-sm solid" href="schedule.html">Schedule my classes</a>
       </div>
 
+      <div class="pcard full" id="ref-card" style="display:none">
+        <h2>Your referral link</h2>
+        <p class="hint">Every woman who reaches the site through your link is credited to you when she signs up — your seats pay you 85%, a colleague's class pays you 35%. It works on any page, from any city, starting now.</p>
+        <div class="doc-row">
+          <span class="doc-name" id="ref-link" style="word-break:break-all"></span>
+          <button class="btn-sm solid" id="ref-copy" type="button">Copy my link</button>
+        </div>
+      </div>
+
       <div class="pcard full">
         <h2>Taxes &amp; getting paid</h2>
         <p class="hint">Quinta &amp; Co. pays faculty through Gusto. Your tax paperwork happens there — securely, once.</p>
@@ -226,6 +235,25 @@
 
     var classes = row && row.classes && row.classes.length ? row.classes.join(" · ") : null;
     document.getElementById("teaching-line").textContent = classes ? "Teaching " + classes : "";
+
+    // Referral link: the code is her first name, lowercased — same codes as the
+    // caption kits. Only shown when we have a real name on file (not an email).
+    var refName = row && (row.display_name || row.full_name);
+    var refCode = refName ? refName.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+    if (refCode) {
+      var refUrl = "https://quintaand.co/?ref=" + refCode;
+      document.getElementById("ref-card").style.display = "block";
+      document.getElementById("ref-link").textContent = refUrl;
+      var copyBtn = document.getElementById("ref-copy");
+      copyBtn.addEventListener("click", function () {
+        function done() { copyBtn.textContent = "Copied ✓"; setTimeout(function () { copyBtn.textContent = "Copy my link"; }, 2000); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(refUrl).then(done).catch(function () { window.prompt("Copy your link:", refUrl); });
+        } else {
+          window.prompt("Copy your link:", refUrl);
+        }
+      });
+    }
 
     // Socials: URL on file = done; visibility chip shows public/private/unconfirmed.
     function setSocial(key) {

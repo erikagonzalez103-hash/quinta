@@ -14,6 +14,19 @@
 (function () {
   "use strict";
 
+  /* Referral attribution: faculty share links like quintaand.co/?ref=tara —
+     the code works on ANY page (class page, blog post, homepage). It's kept
+     for 60 days so the visitor can browse, leave, and come back with the
+     referring teacher still credited. Most recent link clicked wins. The
+     waitlist form reads it back when she signs up. */
+  try {
+    var refParam = new URLSearchParams(window.location.search).get("ref");
+    if (refParam) {
+      refParam = refParam.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+      if (refParam) localStorage.setItem("quinta_ref", JSON.stringify({ code: refParam, at: Date.now() }));
+    }
+  } catch (e) { /* private browsing etc. — attribution is best-effort, never breaks the page */ }
+
   /* The brand sprout — drawn once here so every wordmark (header, footer,
      holding screen, any future page) carries it. Brand recognition first. */
   var SPROUT_SVG = '<svg class="sprout" viewBox="0 0 18 13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" aria-hidden="true"><path d="M9 8.5 V 13.5"/><path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/><path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/><circle cx="9" cy="3.5" r="0.8" fill="currentColor" stroke="none"/></svg>';

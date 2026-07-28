@@ -165,7 +165,7 @@
 <script src="config.js?v=3"></script>
 <script src="classes.js?v=5"></script>
 <script src="icons.js?v=3"></script>
-<script src="app.js?v=3" defer></script>
+<script src="app.js?v=4" defer></script>
 
 <!-- supabase-js is self-hosted (pinned 2.110.1) so no third-party CDN can break or tamper with the form -->
 <script src="js/supabase-2.110.1.min.js"></script>
@@ -216,6 +216,16 @@
   var pre = params.get("c");
   if (pre && quintaBySlug(pre)) select.value = pre;
 
+  // Referral credit: ?ref=<code> on this page wins; otherwise use the code app.js
+  // saved when she arrived anywhere on the site through a teacher's link (60 days).
+  var ref = (params.get("ref") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+  if (!ref) {
+    try {
+      var stored = JSON.parse(localStorage.getItem("quinta_ref") || "null");
+      if (stored && stored.code && Date.now() - stored.at < 60 * 24 * 60 * 60 * 1000) ref = stored.code;
+    } catch (e) { /* best-effort */ }
+  }
+
   // 2) Attach the submit handler BEFORE touching Supabase, so the form can never
   //    fall back to a silent native submit that loses what the visitor typed.
   var sb = null;
@@ -243,7 +253,8 @@
       email: email,
       class_slug: slug,
       class_name: cls ? cls.name : "All classes",
-      source: source
+      source: source,
+      ref: ref || null
     };
 
     // Honeypot: bots fill the hidden field — pretend success, save nothing.
@@ -258,6 +269,22 @@
     }).catch(function (err) {
       // 23505 = already on the list for this class — that's a success in our book.
       if (err && String(err.code) === "23505") { finish(); return; }
+      // If the ref column isn't in the database yet, never lose the signup —
+      // save it without the referral credit rather than failing the visitor.
+      if (payload.ref && err && /ref/.test(String(err.message || ""))) {
+        var retry = Object.assign({}, payload); delete retry.ref;
+        sb.from("waitlist").insert(retry).then(function (res2) {
+          if (res2.error) throw res2.error;
+          finish();
+        }).catch(function (err2) {
+          if (err2 && String(err2.code) === "23505") { finish(); return; }
+          console.error(err2);
+          btn.disabled = false;
+          btn.textContent = "Put me on the list";
+          showError("Something hiccuped saving that. Please try again — or email hello@quintaand.co and we'll add you by hand.");
+        });
+        return;
+      }
       console.error(err);
       btn.disabled = false;
       btn.textContent = "Put me on the list";
