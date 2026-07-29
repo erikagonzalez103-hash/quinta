@@ -239,7 +239,11 @@
     // Referral link: the code is her first name, lowercased — same codes as the
     // caption kits. Only shown when we have a real name on file (not an email).
     var refName = row && (row.display_name || row.full_name);
+    // "26" = the 2026 program year, so referral totals can be tracked by year.
+    // Bump this one constant when the next school year's codes begin.
+    var REF_YEAR = "26";
     var refCode = refName ? refName.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+    if (refCode) refCode += REF_YEAR;
     if (refCode) {
       var refUrl = "https://quintaand.co/?ref=" + refCode;
       document.getElementById("ref-card").style.display = "block";
