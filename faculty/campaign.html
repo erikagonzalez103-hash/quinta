@@ -286,6 +286,21 @@
     copyBtn(function () { return me.link; }, document.getElementById("copy-link"));
 
     var todayIdx = dayIndexFor(new Date());
+
+    // Before launch day, faculty see a teaser (their referral link still shows
+    // and works). Erika always sees the full page — demo and QA any time. The
+    // gate lifts itself at midnight into Monday, August 3; no redeploy needed.
+    var isAdmin = session && session.user && session.user.email &&
+      session.user.email.toLowerCase() === "erika@quintaand.co";
+    if (todayIdx < 0 && !isAdmin) {
+      document.getElementById("tb-label").textContent = "Coming Monday";
+      document.getElementById("tb-title").textContent = "Your daily posts unlock Monday, August 3 🌱";
+      document.getElementById("tb-text").textContent = "Every morning that week, this page will hand you your exact posts — your name, your link, that day's featured teacher, all filled in. Nothing to write, nothing to look up. Until then: your referral link above is live NOW, and every share already counts.";
+      var dp = document.querySelector(".daypick");
+      if (dp) dp.style.display = "none";
+      return;
+    }
+
     renderDay(me, todayIdx);
 
     var sel = document.getElementById("day-select");
