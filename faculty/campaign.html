@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>August Campaign — Faculty Portal — Quinta &amp; Co.</title>
+<meta name="description" content="Private faculty campaign assistant for Quinta &amp; Co. instructors.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .camp-head{padding-top:48px}
+  .camp-head h1{margin:6px 0 4px}
+  .camp-sub{color:#5A5E55;margin:0 0 8px;font-size:1.02rem}
+  .today-banner{background:#3D544A;color:#F5F1E6;border-radius:12px;padding:20px 24px;margin-top:26px}
+  .today-banner .tb-label{font-family:var(--label);letter-spacing:.22em;text-transform:uppercase;font-size:11px;color:#C9A868;margin:0 0 6px}
+  .today-banner h2{color:#F5F1E6;font-size:1.35rem;margin:0 0 4px}
+  .today-banner p{color:#DFE7E0;font-size:.95rem;margin:0;line-height:1.55}
+  .task{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:18px}
+  .task h3{font-size:1.05rem;margin:0 0 2px}
+  .task .when{font-family:var(--label);letter-spacing:.18em;text-transform:uppercase;font-size:10.5px;color:#A6791F;display:block;margin-bottom:6px}
+  .task .why{color:#8A8E83;font-size:.88rem;margin:4px 0 12px;line-height:1.5}
+  .copybox{background:#F7F6F1;border:1px solid var(--line);border-left:3px solid var(--sage-deep);border-radius:8px;padding:14px 16px;font-size:.95rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .copyrow{display:flex;justify-content:flex-end;margin-top:8px;gap:10px;flex-wrap:wrap}
+  .btn-copy{display:inline-block;padding:8px 18px;border-radius:999px;font-size:.9rem;border:1px solid var(--sage-deep);background:var(--sage-deep);color:var(--cream);cursor:pointer;font-family:inherit}
+  .btn-copy:hover{background:var(--moss);border-color:var(--moss)}
+  .variant-tabs{display:flex;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+  .vtab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:.85rem;cursor:pointer;font-family:inherit;color:#5A5E55}
+  .vtab.on{background:var(--sage-deep);border-color:var(--sage-deep);color:var(--cream)}
+  .daypick{margin-top:26px;font-size:.9rem;color:#8A8E83}
+  .daypick select{margin-left:8px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff}
+  .mylink{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .mylink .lnk{font-weight:600;word-break:break-all}
+  #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
+  #camp{display:none}
+  @media(max-width:600px){.today-banner{padding:16px 18px}.task{padding:16px 16px}}
+</style>
+</head>
+<body data-page="faculty-campaign" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="portal.html">My portal</a>
+        <a href="schedule.html">My classes</a>
+        <a href="#" id="signout" style="display:none;font-size:.9rem">Sign out</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap camp-head" id="camp">
+    <p class="phase-label">August Campaign · Week 1 · Meet Your Faculty</p>
+    <h1>Your posts for today</h1>
+    <p class="camp-sub">Everything below is already filled in — your name, your link, today's featured teacher. Tap copy, paste, post. Ten minutes, tops.</p>
+
+    <div class="mylink">
+      <div><span style="font-family:var(--label);letter-spacing:.16em;text-transform:uppercase;font-size:10.5px;color:#4F6B5C;display:block">Your referral link — 85% your class, 35% a colleague's</span>
+      <span class="lnk" id="my-link"></span></div>
+      <button class="btn-copy" id="copy-link" type="button">Copy link</button>
+    </div>
+
+    <div class="today-banner">
+      <p class="tb-label" id="tb-label">Today</p>
+      <h2 id="tb-title"></h2>
+      <p id="tb-text"></p>
+    </div>
+
+    <div id="tasks"></div>
+
+    <p class="daypick">Planning ahead? Preview another day:
+      <select id="day-select"></select>
+    </p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---- Week 1 schedule: who's featured each day, and the words that go with her ----
+  var REF_YEAR = "26";
+  var WEEK1 = [
+    { date: "2026-08-03", first: "erika", name: "Erika González", cls: "the reveal — Quinta has a faculty",
+      featCls: "Entity Set-up, Get Certified, and the AI Modules",
+      vouch: "the founder building the room she never had", topic: "actually using AI in your business" },
+    { date: "2026-08-04", first: "tara", name: "Tara Johnson", cls: "Bookkeeping I & II",
+      featCls: "Bookkeeping I & II",
+      vouch: "the bookkeeper who makes QuickBooks finally make sense", topic: "your books" },
+    { date: "2026-08-05", first: "nery", name: "Nery Ceron Charles", cls: "Insurance",
+      featCls: "Insurance",
+      vouch: "the broker who reads the fine print so you don't pay for it later", topic: "your coverage" },
+    { date: "2026-08-06", first: "natalie", name: "Natalie Verhalen", cls: "Your First Hire",
+      featCls: "Your First Hire",
+      vouch: "the HR pro for the scariest hire you'll ever make: the first one", topic: "your first hire" },
+    { date: "2026-08-07", first: "stephanie", name: "Stephanie Tatum Wagner", cls: "Brand 101",
+      featCls: "Brand 101",
+      vouch: "the strategist who makes small brands look like they mean it", topic: "your brand" },
+    { date: "2026-08-08", first: "nik", name: "Nik Sallie", cls: "Legacy Planning · Trademarks",
+      featCls: "Legacy Planning and Trademarks",
+      vouch: "the attorney who protects your name and what you're building", topic: "your trademark" },
+    { date: "2026-08-09", first: "joshlyn", name: "Joshlyn Ross", cls: "Financial Planning",
+      featCls: "Financial Planning",
+      vouch: "the planner who treats your business like the asset it is", topic: "your financial plan" }
+  ];
+
+  function featuredLinkedIn(me, day) {
+    return "Well — it's official. This fall I'm joining the founding faculty of Quinta & Co. — practical business + AI classes for women founders, in Dallas and online. 🌱\n\n" +
+      "I'm teaching " + day.featCls + " — one hour, ten seats, and every single thing I wish someone had told me before founders started learning it the expensive way.\n\n" +
+      "Quinta has one rule for every class: answer the question nobody answers — what's the one thing no one tells you? Friends… I have ANSWERS. Come get them.\n\n" +
+      "First semester opens September 1, and the rooms are genuinely small — that's the point. Save your seat: " + me.link;
+  }
+  function featuredInstagram(me, day) {
+    return "The secret's out 🌱 This fall I'm teaching " + day.featCls + " at @quintapractice — practical business + AI classes for women founders. Ten seats. Plain language. The stuff nobody tells you until it's cost you money. I cannot WAIT to be in this room. September 1 — waitlist link in my bio!";
+  }
+  function colleagueScripts(me, day) {
+    return [
+      { label: "The brag",
+        text: "Can I brag on a colleague for a second? " + day.name + " is " + day.vouch + " — and this fall she's teaching " + day.cls + " at Quinta & Co. If you've ever wished someone would just TELL you how this stuff actually works… that's literally her class. Ten seats. September 1. Go: " + me.link },
+      { label: "The team",
+        text: "I still can't quite believe I get to teach beside this woman 🌱 Introducing " + day.name + " — she's teaching " + day.cls + " at Quinta & Co. this fall. Practical classes for women founders, zero jargon, ten seats at a time. This faculty is something special and I'm saying it out loud. September 1: " + me.link },
+      { label: "The nudge",
+        text: "You know that thing you keep putting off? " + day.topic + "… yeah, that one. Meet the woman who makes it un-scary: " + day.name + ". Her " + day.cls + " class at Quinta & Co. is one warm, plain-English hour that will save you real money. Waitlist's open: " + me.link }
+    ];
+  }
+
+  function copyBtn(getText, btn) {
+    btn.addEventListener("click", function () {
+      function done() { var t = btn.textContent; btn.textContent = "Copied ✓"; setTimeout(function () { btn.textContent = t; }, 2000); }
+      var text = getText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { window.prompt("Copy:", text); });
+      } else { window.prompt("Copy:", text); }
+    });
+  }
+
+  function taskCard(container, when, title, why, text, extraVariants) {
+    var card = document.createElement("div");
+    card.className = "task";
+    var current = { text: text };
+    var html = '<span class="when">' + when + '</span><h3>' + title + '</h3><p class="why">' + why + '</p>';
+    if (extraVariants) {
+      html += '<div class="variant-tabs">' + extraVariants.map(function (v, i) {
+        return '<button type="button" class="vtab' + (i === 0 ? ' on' : '') + '" data-i="' + i + '">' + v.label + '</button>';
+      }).join("") + '</div>';
+    }
+    html += '<div class="copybox"></div><div class="copyrow"><button class="btn-copy" type="button">Copy this</button></div>';
+    card.innerHTML = html;
+    var box = card.querySelector(".copybox");
+    box.textContent = extraVariants ? extraVariants[0].text : text;
+    if (extraVariants) {
+      current.text = extraVariants[0].text;
+      Array.prototype.forEach.call(card.querySelectorAll(".vtab"), function (tab) {
+        tab.addEventListener("click", function () {
+          Array.prototype.forEach.call(card.querySelectorAll(".vtab"), function (t2) { t2.classList.remove("on"); });
+          tab.classList.add("on");
+          current.text = extraVariants[parseInt(tab.dataset.i, 10)].text;
+          box.textContent = current.text;
+        });
+      });
+    }
+    copyBtn(function () { return current.text; }, card.querySelector(".btn-copy"));
+    container.appendChild(card);
+  }
+
+  function renderDay(me, dayIndex) {
+    var tasks = document.getElementById("tasks");
+    tasks.innerHTML = "";
+    var tbLabel = document.getElementById("tb-label");
+    var tbTitle = document.getElementById("tb-title");
+    var tbText = document.getElementById("tb-text");
+
+    if (dayIndex < 0) {
+      tbLabel.textContent = "Starting Monday, August 3";
+      tbTitle.textContent = "Week 1 hasn't started yet";
+      tbText.textContent = "When it does, this page will show you exactly what to post each day — already filled in with your name and your link. Use the preview below to see any day now.";
+      return;
+    }
+    if (dayIndex > 6) {
+      tbLabel.textContent = "Week 1 complete";
+      tbTitle.textContent = "You did it 🌱";
+      tbText.textContent = "Week 2 — “the one thing no one tells you” — starts Monday, August 10. This page will update with your Week 2 posts.";
+      return;
+    }
+
+    var day = WEEK1[dayIndex];
+    var isMyDay = day.first === me.first;
+
+    if (isMyDay) {
+      tbLabel.textContent = "Today is YOUR day";
+      tbTitle.textContent = "It's your day, " + day.name.split(" ")[0] + " — you're the star 🌱";
+      tbText.textContent = "At 9 AM Quinta posts your card. Accept the Instagram Collab invite (notification: “quintapractice invited you to be a collaborator” — tap Accept). Then the two posts below. At lunch, reply to every comment — one sentence each. Tonight, share the IG post to your Story with a Link sticker carrying your referral link.";
+      taskCard(tasks, "Before 10 AM · LinkedIn", "Repost Quinta's post with these words",
+        "Find Quinta's post via the faculty group text → tap Repost → “Repost with your thoughts” → paste → post.",
+        featuredLinkedIn(me, day));
+      taskCard(tasks, "Anytime today · Instagram", "If you also post your own (beyond the Collab)",
+        "Optional but powerful — your own audience hears it in your own voice. Your referral link stays in your bio all August.",
+        featuredInstagram(me, day));
+    } else {
+      tbLabel.textContent = "Today · " + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dayIndex] + " " + (dayIndex + 3) + " Aug";
+      tbTitle.textContent = "It's " + day.name.split(" ")[0] + "'s day — you're The Swarm";
+      tbText.textContent = "Two tasks, five minutes: (1) between 9 and 10 AM, like Quinta's post and leave one real comment — the box below is ready. (2) Anytime today, repost with one of the three scripts — your referral link is already inside, and a seat it fills pays YOU 35%.";
+      taskCard(tasks, "9–10 AM · both platforms · 2 minutes", "Your comment (the Swarm minimum)",
+        "One true sentence beats ten emojis. The first hour decides how far her card travels.",
+        "This is exactly right — " + day.name.split(" ")[0] + " is " + day.vouch + ". So glad women get to learn from her this fall.");
+      taskCard(tasks, "Anytime 11 AM – 8 PM · 3 minutes", "Your repost — pick the one that sounds like you",
+        "Tweak freely — your voice beats our polish. Your link is already in the text.",
+        null, colleagueScripts(me, day));
+    }
+  }
+
+  // ---- auth boilerplate (same as portal) ----
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  var gateTitle = document.getElementById("gate-title");
+  var gateText = document.getElementById("gate-text");
+  var gateAction = document.getElementById("gate-action");
+  function showGate(title, text, offerReset) {
+    gateTitle.textContent = title;
+    gateText.textContent = text;
+    gateAction.style.display = "block";
+    if (offerReset && !document.getElementById("gate-reset")) {
+      var btn = document.createElement("button");
+      btn.id = "gate-reset";
+      btn.className = "btn btn-ghost";
+      btn.style.marginLeft = "10px";
+      btn.textContent = "Sign out & start fresh";
+      btn.addEventListener("click", function () {
+        sb.auth.signOut().then(function () { window.location.replace("login.html"); });
+      });
+      gateAction.appendChild(btn);
+    }
+  }
+
+  function dayIndexFor(now) {
+    var start = new Date(2026, 7, 3); // Aug 3, 2026 local
+    var d = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - start) / 86400000);
+    return d; // <0 before the week, 0-6 during, >6 after
+  }
+
+  function boot(session, row) {
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("camp").style.display = "block";
+    document.getElementById("signout").style.display = "inline";
+
+    var name = (row && (row.display_name || row.full_name)) || "";
+    var first = name ? name.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+    var me = { first: first, link: "https://quintaand.co/?ref=" + first + REF_YEAR };
+    document.getElementById("my-link").textContent = me.link;
+    copyBtn(function () { return me.link; }, document.getElementById("copy-link"));
+
+    var todayIdx = dayIndexFor(new Date());
+    renderDay(me, todayIdx);
+
+    var sel = document.getElementById("day-select");
+    var labels = ["Mon Aug 3 — Erika", "Tue Aug 4 — Tara", "Wed Aug 5 — Nery", "Thu Aug 6 — Natalie",
+                  "Fri Aug 7 — Stephanie", "Sat Aug 8 — Nik", "Sun Aug 9 — Joshlyn"];
+    var opt0 = document.createElement("option");
+    opt0.value = "today"; opt0.textContent = "Today";
+    sel.appendChild(opt0);
+    labels.forEach(function (l, i) {
+      var o = document.createElement("option");
+      o.value = String(i); o.textContent = l;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () {
+      renderDay(me, sel.value === "today" ? dayIndexFor(new Date()) : parseInt(sel.value, 10));
+    });
+  }
+
+  window.qcDebug = { renderDay: renderDay, boot: boot };
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); }
+  else {
+    document.getElementById("signout").addEventListener("click", function (ev) {
+      ev.preventDefault();
+      sb.auth.signOut().then(function () { window.location.replace("login.html"); });
+    });
+    sb.auth.getSession().then(function (res) {
+      var session = res.data ? res.data.session : null;
+      if (!session) {
+        showGate("You're not signed in", "Faculty sign-in uses a one-time email link — no password to remember.");
+        return;
+      }
+      sb.from("faculty").select("*").eq("email", session.user.email.toLowerCase()).maybeSingle()
+        .then(function (r) {
+          if (r.error) {
+            console.error(r.error);
+            showGate("Hmm — the database said no",
+              "Signed in as " + session.user.email + ", but your record couldn't be read. Technical note: \"" +
+              (r.error.message || r.error.code || "unknown") + "\". Try signing out and back in — if it persists, email hello@quintaand.co.", true);
+            return;
+          }
+          boot(session, r.data || null);
+        })
+        .catch(function (err) {
+          console.error(err);
+          showGate("Hmm — something interrupted loading",
+            "Signed in as " + session.user.email + ", but the connection hiccuped (" + (err && err.message ? err.message : "unknown") + "). Refresh to retry.", true);
+        });
+    });
+  }
+})();
+</script>
+</body>
+</html>
