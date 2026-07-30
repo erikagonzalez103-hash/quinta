@@ -190,10 +190,10 @@ ${faqHtml}
   </div>
 </footer>
 
-<script src="../config.js?v=3"></script>
+<script src="../config.js?v=5"></script>
 <script src="../classes.js?v=5"></script>
 <script src="../icons.js?v=3"></script>
-<script src="../app.js?v=3" defer></script>
+<script src="../app.js?v=5" defer></script>
 </body>
 </html>
 `;

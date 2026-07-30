@@ -20,7 +20,7 @@ window.QUINTA_CONFIG = {
   // Book button — the full curriculum is visible, but not yet open to enroll.
   // Flip to true when the Foundations open. (To open one class early before
   // then, add `open: true` to that class in classes.js.)
-  FOUNDATIONS_OPEN: false,
+  FOUNDATIONS_OPEN: true,
 
   // Shown on the "launching soon" screen when SITE_LIVE is false.
   LAUNCH_NOTE: "Launching soon"

@@ -27,6 +27,23 @@
     }
   } catch (e) { /* private browsing etc. — attribution is best-effort, never breaks the page */ }
 
+  /* Carry that code through to Cal.com on every "book" button. Each class
+     event has a hidden "ref" booking field, and Cal.com fills it from the
+     ?ref= in the URL — so the booking itself records who sent her, which is
+     what the faculty leaderboard counts. Same 60-day window as the waitlist. */
+  function storedRef() {
+    try {
+      var s = JSON.parse(localStorage.getItem("quinta_ref") || "null");
+      if (s && s.code && Date.now() - s.at < 60 * 24 * 60 * 60 * 1000) return s.code;
+    } catch (e) { /* best-effort */ }
+    return "";
+  }
+  function bookingUrl(url) {
+    var code = storedRef();
+    if (!url || !code) return url;
+    return url + (url.indexOf("?") === -1 ? "?" : "&") + "ref=" + encodeURIComponent(code);
+  }
+
   /* The brand sprout — drawn once here so every wordmark (header, footer,
      holding screen, any future page) carries it. Brand recognition first. */
   var SPROUT_SVG = '<svg class="sprout" viewBox="0 0 18 13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" aria-hidden="true"><path d="M9 8.5 V 13.5"/><path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/><path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/><circle cx="9" cy="3.5" r="0.8" fill="currentColor" stroke="none"/></svg>';
@@ -385,7 +402,7 @@
       bk.className = "book";
       var b = document.createElement("a");
       b.className = "btn btn-solid";
-      b.href = c.booking;
+      b.href = bookingUrl(c.booking);
       b.textContent = c.free ? "Save your seat" : "See dates & book";
       bk.appendChild(b);
       if (c.free) { var fn = document.createElement("span"); fn.className = "free-note"; fn.textContent = "Free"; bk.appendChild(fn); }
@@ -814,7 +831,7 @@
       book.className = "book";
       var btn = document.createElement("a");
       btn.className = "btn btn-solid";
-      btn.href = c.booking;
+      btn.href = bookingUrl(c.booking);
       btn.textContent = c.free ? "Save your seat" : "See dates & book";
       book.appendChild(btn);
       if (c.free) {
