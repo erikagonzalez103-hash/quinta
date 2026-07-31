@@ -51,6 +51,7 @@ function page(c) {
   });
 
   const covers = (c.covers || []).map((i) => `        <li>${esc(i)}</li>`).join("\n");
+  const requires = (c.requires || []).map((i) => `        <li>${esc(i)}</li>`).join("\n");
 
   const booking = soon
     ? `      <p class="soon-note">${c.track === "foundations"
@@ -77,7 +78,11 @@ function page(c) {
     : " It's part of The Practice, the hands-on AI track — no technical background needed.";
   const faqs = [
     { q: `Who is ${c.name} for?`, a: stageAnswer + trackFlavor },
-    { q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." },
+    // A class with outside eligibility rules gets asked a different question —
+    // "do I need experience?" is not what someone facing WBENC criteria is asking.
+    ...(c.requires && c.requires.length
+      ? [{ q: `Who is eligible to take ${c.name}?`, a: `${c.requiresLabel || "Before you register"} ${c.requires.join(". ")}.${c.requiresNote ? " " + c.requiresNote.replace(/:$/, ".") : ""}` }]
+      : [{ q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." }]),
     ...(c.walkout ? [{ q: "What will I walk out with?", a: `${c.walkout} Every Quinta & Co. class ends with something real you keep.` }] : []),
     soon
       ? { q: "When can I take this class?", a: "Enrollment opens Fall 2026. Join the waitlist at quintaand.co/waitlist to hear first — and the free monthly Coffee with Quinta is open in the meantime." }
@@ -152,7 +157,10 @@ ${c.format ? `      <p class="syl-format">${esc(c.format)}</p>\n` : ""}${covers 
       <ul class="syl-list">
 ${covers}
       </ul>\n` : ""}${c.walkout ? `      <p class="syl-label">What you'll walk out with</p>
-      <p class="syl-walkout">${esc(c.walkout)}</p>\n` : ""}${c.prereq ? `      <p class="syl-label">Know before you go</p>
+      <p class="syl-walkout">${esc(c.walkout)}</p>\n` : ""}${requires ? `      <p class="syl-label">${esc(c.requiresLabel || "Before you register")}</p>
+      <ul class="syl-list">
+${requires}
+      </ul>\n${c.requiresNote ? `      <p class="syl-prereq">${esc(c.requiresNote)}${(c.requiresLinks || []).map((l, i) => `${i === 0 ? " " : " &middot; "}<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("")}</p>\n` : ""}` : ""}${c.prereq ? `      <p class="syl-label">Know before you go</p>
       <p class="syl-prereq">${esc(c.prereq)}</p>\n` : ""}${booking}${disclaimer}
     </section>
   </div>
@@ -193,7 +201,7 @@ ${faqHtml}
 <script src="../config.js?v=5"></script>
 <script src="../classes.js?v=5"></script>
 <script src="../icons.js?v=3"></script>
-<script src="../app.js?v=5" defer></script>
+<script src="../app.js?v=6" defer></script>
 </body>
 </html>
 `;

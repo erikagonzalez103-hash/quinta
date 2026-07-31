@@ -186,7 +186,7 @@ const QUINTA_CLASSES = [
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Get certified — WBE / MBE / DBE",
     desc: "Learn what certification unlocks and exactly how to get it, taught by someone who's been through it, and leave with your roadmap.",
-    format: "90 minutes · live, small group",
+    format: "120 minutes · live, small group",
     covers: [
       "What WBE / MBE / DBE certification can unlock (contracts, programs)",
       "Whether it's worth it for your business",
@@ -194,22 +194,37 @@ const QUINTA_CLASSES = [
       "Lessons from someone who's been through it"
     ],
     walkout: "Your certification roadmap.",
+    requiresLabel: "Before you register, WBENC requires:",
+    requires: [
+      "Your business is already formed and operating — certification is for a business that exists, not an idea",
+      "At least 51% of the business is owned by one or more women",
+      "A woman owner runs the day to day — and you’ll be asked to prove it in a face-to-face interview, not just on paper",
+      "You are a U.S. citizen or lawful permanent resident",
+      "You can produce the paperwork: formation documents, ownership records, tax returns, financial statements, and proof of citizenship"
+    ],
+    requiresNote: "In North Texas, WBENC certification runs through the Women’s Business Council – Southwest (WBCS). MBE and DBE are separate programs with their own requirements. Check the current rules before you apply:",
+    requiresLinks: [
+      { label: "WBENC (national)", url: "https://www.wbenc.org" },
+      { label: "Women’s Business Council – Southwest", url: "https://wbcsouthwest.org" }
+    ],
     booking: "https://cal.com/quintaandco/certification"
   },
   {
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    name: "Financial planning",
-    desc: "Pay yourself first, plan for the long run, and walk out with a financial-plan outline ready for a fee-only advisor.",
-    format: "90 minutes · live, small group",
+    name: "Investing — How to pay yourself first",
+    desc: "Your business is not your retirement plan. Learn how to build wealth outside the company — starting with your first $100 — and leave with a pay-yourself-first investing plan built on your own numbers.",
+    format: "120 minutes · live, small group",
     covers: [
-      "Paying yourself first — and how much",
-      "Separating business and personal finances for the long run",
-      "Retirement when you're the boss — the lay of the land",
-      "What to bring to a fee-only advisor"
+      "What investing really means, and why waiting costs you time you can’t buy back",
+      "Which investments suit someone new to the stock market",
+      "The mistakes new investors make — and how to avoid them",
+      "Retirement accounts when you’re the boss: SEP IRA, Solo 401(k), Roth IRA, in plain words",
+      "Taking a real first step, starting with $100"
     ],
-    walkout: "A financial-plan outline ready for a fee-only advisor.",
+    walkout: "A pay-yourself-first investing plan built on your own numbers — your first account chosen or opened, and a monthly amount to start with.",
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
+  
   },
   {
     slug: "legacy-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
@@ -223,7 +238,7 @@ const QUINTA_CLASSES = [
       "The one-page \"if something happens\" file every owner should keep"
     ],
     walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
-    prereq: "Nothing — pairs well with Financial planning.",
+    prereq: "Nothing — pairs well with Investing — How to pay yourself first.",
     booking: "https://cal.com/quintaandco/legacy-planning",
     disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
   },

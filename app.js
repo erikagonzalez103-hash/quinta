@@ -796,6 +796,38 @@
       walk.textContent = c.walkout;
       detail.appendChild(walk);
     }
+    /* Hard eligibility rules set by an outside body (e.g. what WBENC requires
+       before you can even apply). Shown right above the Book button on purpose —
+       this is what stops someone paying for a class she can't act on. */
+    if (c.requires && c.requires.length) {
+      var reqLabel = document.createElement("p");
+      reqLabel.className = "syl-label";
+      reqLabel.textContent = c.requiresLabel || "Before you register";
+      detail.appendChild(reqLabel);
+      var reqList = document.createElement("ul");
+      reqList.className = "syl-list";
+      c.requires.forEach(function (item) {
+        var li = document.createElement("li");
+        li.textContent = item;
+        reqList.appendChild(li);
+      });
+      detail.appendChild(reqList);
+      if (c.requiresNote) {
+        var reqNote = document.createElement("p");
+        reqNote.className = "syl-prereq";
+        reqNote.appendChild(document.createTextNode(c.requiresNote));
+        (c.requiresLinks || []).forEach(function (l, i) {
+          reqNote.appendChild(document.createTextNode(i === 0 ? " " : " · "));
+          var a = document.createElement("a");
+          a.href = l.url;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.textContent = l.label;
+          reqNote.appendChild(a);
+        });
+        detail.appendChild(reqNote);
+      }
+    }
     if (c.prereq) {
       var prereqLabel = document.createElement("p");
       prereqLabel.className = "syl-label";
