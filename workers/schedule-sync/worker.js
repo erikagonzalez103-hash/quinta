@@ -19,7 +19,8 @@
  *   WEBHOOK_SECRET  - what Supabase sends so we know a request is really from it
  *
  * VARS (plain, safe to see)
- *   SUPABASE_URL, SUPABASE_ANON_KEY, CAL_USERNAME, SHARED_EMPTY_SCHEDULE_ID
+ *   SUPABASE_URL, SUPABASE_ANON_KEY, SHARED_EMPTY_SCHEDULE_ID
+ *   CAL_USERNAME is optional - discovered from Cal.com if absent
  */
 
 const CAL_API = "https://api.cal.com/v2";
@@ -96,11 +97,24 @@ function inDallas(utcIso) {
 
 /* ---------- the work ---------- */
 
-async function syncClass(env, slug) {
+/**
+ * Who we are on Cal.com. CAL_USERNAME is only a hint — if it's missing or wrong
+ * we ask Cal.com directly, because getting it wrong fails in the nastiest way:
+ * `?username=undefined` returns Cal.com's three sample events instead of an
+ * error, so every class looks like it "doesn't exist".
+ */
+async function resolveUsername(env) {
+  if (env.CAL_USERNAME) return env.CAL_USERNAME;
+  const me = await calGet(env, "/me");
+  return (me.data || {}).username;
+}
+
+async function syncClass(env, slug, username) {
   const report = { slug, ok: false, sessions: [], notes: [] };
 
-  // 1. The class in Cal.com
-  const all = await calGet(env, `/event-types?username=${env.CAL_USERNAME}`);
+  // 1. The class in Cal.com. No username filter — with the key alone this
+  //    returns our own event types, and it can't be broken by a bad variable.
+  const all = await calGet(env, `/event-types`);
   const event = (all.data || []).find((e) => e.slug === slug);
   if (!event) {
     report.notes.push(`No Cal.com class with the slug "${slug}" — nothing to sync.`);
@@ -178,7 +192,7 @@ async function syncClass(env, slug) {
   if (dates.length) {
     const from = `${dates[0]}T00:00:00.000Z`;
     const to = `${dates[dates.length - 1]}T23:59:59.000Z`;
-    const q = `/slots/available?eventTypeSlug=${slug}&usernameList[]=${env.CAL_USERNAME}` +
+    const q = `/slots/available?eventTypeSlug=${slug}&usernameList[]=${username}` +
               `&startTime=${from}&endTime=${to}`;
     const s = await calGet(env, q);
     for (const day of Object.values((s.data || {}).slots || {})) {
@@ -233,10 +247,13 @@ export default {
       slugs = [slug];
     }
 
+    const username = await resolveUsername(env);
+    if (!username) return json({ error: "could not determine the Cal.com username" }, 500);
+
     const results = [];
     for (const slug of slugs) {
       try {
-        results.push(await syncClass(env, slug));
+        results.push(await syncClass(env, slug, username));
       } catch (e) {
         results.push({ slug, ok: false, error: e.message });
       }
