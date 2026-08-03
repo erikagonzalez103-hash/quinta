@@ -1,0 +1,18 @@
+name = "quinta-schedule-sync"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Plain settings — safe to read, no secrets here.
+[vars]
+SUPABASE_URL = "https://pmpaslevwimofohirves.supabase.co"
+SUPABASE_ANON_KEY = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+CAL_USERNAME = "quintaandco"
+# The schedule shared by every class that has no dates yet. The sync must never
+# write dates into this one — all 14 classes would inherit them.
+SHARED_EMPTY_SCHEDULE_ID = "2187337"
+
+# Secrets are NOT set here. Set them once, from a terminal:
+#   npx wrangler secret put CAL_API_KEY
+#   npx wrangler secret put SYNC_TOKEN
+#   npx wrangler secret put WEBHOOK_SECRET
+# ...or in the Cloudflare dashboard under Settings → Variables and Secrets.
