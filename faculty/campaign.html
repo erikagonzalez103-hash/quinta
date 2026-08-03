@@ -110,24 +110,38 @@
   var REF_YEAR = "26";
   var WEEK1 = [
     { date: "2026-08-03", first: "erika", name: "Erika González", cls: "the reveal — Quinta has a faculty",
+      igMine: "My turn 🌱 The room I wish I'd had. Sept 1 — link in bio",
+      igNote: "The woman who built the room 🌱 Sept 1 — @quintapractice",
       featCls: "Entity Set-up, Get Certified, and the AI Modules",
       vouch: "the founder building the room she never had", topic: "actually using AI in your business" },
     { date: "2026-08-04", first: "tara", name: "Tara Johnson", cls: "Bookkeeping I & II",
+      igMine: "My day 🌱 Bookkeeping I & II this fall — link in bio",
+      igNote: "Meet Tara — bookkeeping that finally makes sense 🌱",
       featCls: "Bookkeeping I & II",
       vouch: "the bookkeeper who makes QuickBooks finally make sense", topic: "your books" },
     { date: "2026-08-05", first: "nery", name: "Nery Ceron Charles", cls: "Insurance",
+      igMine: "My day 🌱 Teaching Insurance this fall — link in bio",
+      igNote: "Meet Nery — the broker who reads the fine print 🌱",
       featCls: "Insurance",
       vouch: "the broker who reads the fine print so you don't pay for it later", topic: "your coverage" },
     { date: "2026-08-06", first: "natalie", name: "Natalie Verhalen", cls: "Your First Hire",
+      igMine: "My day 🌱 Teaching Your First Hire — link in bio",
+      igNote: "Meet Natalie — first hires, minus the fear 🌱",
       featCls: "Your First Hire",
       vouch: "the HR pro for the scariest hire you'll ever make: the first one", topic: "your first hire" },
     { date: "2026-08-07", first: "stephanie", name: "Stephanie Tatum Wagner", cls: "Brand 101",
+      igMine: "My day 🌱 Teaching Brand 101 — link in bio",
+      igNote: "Meet Stephanie — brands that mean it 🌱",
       featCls: "Brand 101",
       vouch: "the strategist who makes small brands look like they mean it", topic: "your brand" },
     { date: "2026-08-08", first: "nik", name: "Nik Sallie", cls: "Legacy Planning · Trademarks",
+      igMine: "My day 🌱 Trademarks + Legacy Planning — link in bio",
+      igNote: "Meet Nik — protecting your name + legacy 🌱",
       featCls: "Legacy Planning and Trademarks",
       vouch: "the attorney who protects your name and what you're building", topic: "your trademark" },
     { date: "2026-08-09", first: "joshlyn", name: "Joshlyn Ross", cls: "Investing — How to Pay Yourself First",
+      igMine: "My day 🌱 Teaching Investing this fall — link in bio",
+      igNote: "Meet Joshlyn — pay yourself first 🌱",
       featCls: "Investing — How to Pay Yourself First",
       vouch: "the planner who treats your business like the asset it is", topic: "paying yourself first" }
   ];
@@ -224,6 +238,9 @@
       taskCard(tasks, "Anytime today · Instagram", "If you also post your own (beyond the Collab)",
         "Optional but powerful — your own audience hears it in your own voice. Your referral link stays in your bio all August.",
         featuredInstagram(me, day));
+      taskCard(tasks, "Instagram repost note · 60-character limit", "If you repost the Quinta post on IG, this is the note",
+        "Instagram caps repost notes at 60 characters — this one fits exactly. The longer script above is for a fresh post of your own.",
+        day.igMine);
     } else {
       tbLabel.textContent = "Today · " + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][dayIndex] + " " + (dayIndex + 3) + " Aug";
       tbTitle.textContent = "It's " + day.name.split(" ")[0] + "'s day — you're The Swarm";
@@ -232,8 +249,11 @@
         "One true sentence beats ten emojis. The first hour decides how far her card travels.",
         "This is exactly right — " + day.name.split(" ")[0] + " is " + day.vouch + ". So glad women get to learn from her this fall.");
       taskCard(tasks, "Anytime 11 AM – 8 PM · 3 minutes", "Your repost — pick the one that sounds like you",
-        "Tweak freely — your voice beats our polish. Your link is already in the text.",
+        "Tweak freely — your voice beats our polish. Your link is already in the text. These three are for LinkedIn, where there's room to talk.",
         null, colleagueScripts(me, day));
+      taskCard(tasks, "Instagram repost note · 60-character limit", "For the IG repost — short on purpose",
+        "Instagram caps repost notes at 60 characters. Your referral link can't ride an IG repost — keep it in your bio, and use the link sticker on Stories.",
+        day.igNote);
     }
   }
 
