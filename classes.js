@@ -47,6 +47,7 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
+    open: true,   // real September dates are set - bookable
     name: "Entity setup",
     desc: "Pick the right entity, get your EIN, and leave with a licensing checklist built for your exact business — plain English, no scare tactics.",
     format: "90 minutes · live, small group",
@@ -184,6 +185,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    open: true,   // real September dates are set - bookable
     name: "Get certified — WBE / MBE / DBE",
     desc: "Learn what certification unlocks and exactly how to get it, taught by someone who's been through it, and leave with your roadmap.",
     format: "120 minutes · live, small group",
@@ -196,7 +198,7 @@ const QUINTA_CLASSES = [
     walkout: "Your certification roadmap.",
     requiresLabel: "Before you register, WBENC requires:",
     requires: [
-      "Your business is already formed and operating — certification is for a business that exists, not an idea",
+      "Your business is already formed and operating as a for-profit business — certification is for a business that exists, not an idea",
       "At least 51% of the business is owned by one or more women",
       "A woman owner runs the day to day — and you’ll be asked to prove it in a face-to-face interview, not just on paper",
       "You are a U.S. citizen or lawful permanent resident",
@@ -333,6 +335,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "module-3", track: "practice", phase: null, phaseNum: null, stage: "Established",
+    soon: true,   // no dates set yet - waitlist until Module 3 is scheduled
     name: "Module 3 — Real databases & automation",
     desc: "Add a real database and a little automation so your tools start running quietly in the background — keeping track of things and handling the busywork without needing you.",
     format: "120 minutes · live, small group",

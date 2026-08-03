@@ -210,6 +210,12 @@
       "DTSTAMP:" + icsStamp(new Date()),
       "DTSTART:" + icsStamp(t.start),
       "DTEND:" + icsStamp(t.end),
+      // Free, not busy, on purpose. This invite is a visual hold so you can see
+      // the session on your calendar — but Cal.com checks your calendar for
+      // conflicts, and a "busy" hold would hide the very class it's holding,
+      // so students could never book it. When someone does book, Cal.com adds
+      // its own busy event, which is what should block your time.
+      "TRANSP:TRANSPARENT",
       "SUMMARY:Teach: " + s.class_name + " — Quinta & Co.",
       "LOCATION:" + loc,
       "DESCRIPTION:Your Quinta & Co. class session. Manage your schedule at https://quintaand.co/faculty/schedule.html",
