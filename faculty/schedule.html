@@ -730,7 +730,16 @@
         }
         return;
       }
-      show("ok", "Scheduled! " + (daypartOf(time) === "day" ? "Daytime" : "Evening") + " class added — grab the calendar invite from your list below so it's on your calendar too.");
+      /* Clear the date. Leaving the form loaded meant it immediately flagged a
+         conflict with the class it had just created — success in green and a
+         collision in red, same slot. Worse, the class stayed selected while the
+         date and time changed, so an evening session landed on the wrong class
+         entirely. Saying back what was saved makes that mistake visible now
+         rather than in September. */
+      document.getElementById("s-date").value = "";
+      renderPlanFeedback();
+      show("ok", "Scheduled! " + cls + " — " + fmtDate(date) + " at " + fmtTime(time) +
+        ". Grab the calendar invite from your list below so it's on your calendar too.");
       loadSessions();
     });
   });
