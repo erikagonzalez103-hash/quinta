@@ -113,7 +113,7 @@
 
       <div class="pcard">
         <h2>My documents</h2>
-        <p class="hint">Signed agreements on file with Quinta &amp; Co.</p>
+        <p class="hint">Signed agreements on file with Quinta &amp; Co. Only you and Erika can see these.</p>
         <div class="doc-row">
           <div class="doc-name">Instructor agreement</div>
           <span class="doc-status" id="doc-agreement">—</span>
@@ -122,6 +122,7 @@
           <div class="doc-name">Media release</div>
           <span class="doc-status" id="doc-media">—</span>
         </div>
+        <a class="btn-sm solid" href="documents.html" style="margin-top:14px">Upload a signed document</a>
       </div>
 
       <div class="pcard">
@@ -291,8 +292,22 @@
 
     var gustoDone = row && row.w9_status && row.w9_status !== "not_received";
     setStatus("gusto-status", gustoDone, "Complete", "Action needed");
+    /* Three states, not two. "Signed" is Erika's call and only she can set the
+       date; an instructor who has sent their agreement in should see that it
+       arrived rather than a flat "Not yet signed" that reads like it was lost.
+       The table may not exist yet on an older database — fall back quietly. */
     setStatus("doc-agreement", !!(row && row.agreement_signed_on), "Signed", "Not yet signed");
     setStatus("doc-media", !!(row && row.media_release_signed_on), "Signed", "Not yet signed");
+    sb.from("faculty_documents").select("kind").then(function (d) {
+      if (d.error || !d.data) return;
+      var kinds = d.data.map(function (x) { return x.kind; });
+      if (!(row && row.agreement_signed_on) && kinds.indexOf("agreement") !== -1) {
+        setStatus("doc-agreement", true, "Uploaded — with Erika for review", "");
+      }
+      if (!(row && row.media_release_signed_on) && kinds.indexOf("media_release") !== -1) {
+        setStatus("doc-media", true, "Uploaded — with Erika for review", "");
+      }
+    });
     setStatus("doc-headshot", !!(row && row.headshot_on_file), "On file", "Needed");
     setStatus("doc-bio", !!(row && row.bio_short), "On file", "Needed");
   }

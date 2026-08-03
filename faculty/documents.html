@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Documents — Faculty — Quinta &amp; Co.</title>
+<meta name="description" content="Upload your signed Quinta &amp; Co. agreements.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=3">
+<style>
+  .docs-head{padding-top:48px}
+  .scard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-top:22px}
+  .scard h2{font-size:1.12rem;margin:0 0 4px}
+  .scard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 16px}
+  .frow{margin-bottom:14px}
+  .frow label{display:block;font-family:var(--label);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage);margin-bottom:6px}
+  .frow select,.frow input[type=text]{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:1rem;background:var(--cream);color:inherit}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  input[type=file]{font-family:inherit;font-size:.95rem}
+  .file-note{color:#8A8E83;font-size:.86rem;margin-top:6px}
+
+  .doc-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .doc-row:last-child{border-bottom:none}
+  .doc-what{font-weight:500}
+  .doc-meta{color:#8A8E83;font-size:.88rem}
+  .kind-tag{font-size:.72rem;font-family:var(--label);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--sage-deep)}
+  .btn-sm{display:inline-block;padding:7px 15px;border-radius:999px;font-size:.88rem;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+  .btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+  #d-btn:disabled{opacity:.38;filter:grayscale(.5);cursor:not-allowed;box-shadow:none}
+
+  .msg{padding:12px 16px;border-radius:8px;font-size:.95rem;display:none;margin-top:14px}
+  .msg.ok{display:block;background:#EEF2EC;border:1px solid var(--sage-deep)}
+  .msg.err{display:block;background:#F7EFEA;border:1px solid #B0713F;color:#5A4632}
+  .privacy{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:15px 18px;margin-top:16px;font-size:.92rem;line-height:1.5}
+  #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
+  #docs{display:none}
+  @media(max-width:640px){.fgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="faculty-documents" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="portal.html">Back to portal</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap docs-head" id="docs">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1>My documents</h1>
+    <p class="desc">Send us your signed agreement and media release. Only you and Erika can ever see what you upload here.</p>
+
+    <div class="scard">
+      <h2>Upload a document</h2>
+      <p class="hint">PDF is easiest. A clear photo or scan of the signed pages works too.</p>
+      <form id="dform" novalidate>
+        <div class="fgrid">
+          <div class="frow">
+            <label for="d-kind">What is it?</label>
+            <select id="d-kind">
+              <option value="agreement">Instructor agreement</option>
+              <option value="media_release">Media release</option>
+              <option value="other">Something else</option>
+            </select>
+          </div>
+          <div class="frow" id="label-row" style="display:none">
+            <label for="d-label">What should we call it?</label>
+            <input type="text" id="d-label" placeholder="e.g. Certificate of insurance" maxlength="80">
+          </div>
+        </div>
+        <div class="frow">
+          <label for="d-file">Choose the file</label>
+          <input type="file" id="d-file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg">
+          <div class="file-note">PDF, PNG or JPG · up to 15 MB</div>
+        </div>
+        <button type="submit" class="btn btn-solid" id="d-btn">Upload</button>
+        <div class="msg" id="d-msg" role="status"></div>
+      </form>
+
+      <div class="privacy">
+        <strong>Uploading isn't signing.</strong> Sending a file here doesn't mark your
+        agreement as signed — Erika does that once she's read and countersigned it, and
+        your portal will update then. If you upload the wrong file, just remove it below.
+      </div>
+    </div>
+
+    <div class="scard">
+      <h2>What you've sent us</h2>
+      <p class="hint">Download links are private and expire after a minute, so they can't be forwarded or shared by accident.</p>
+      <div id="doc-list"><p class="doc-meta">Loading…</p></div>
+    </div>
+
+    <p class="class-disclaimer" style="margin-top:30px">Stored privately — there is no public address for these files. Questions about any document? Email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var BUCKET = "faculty-docs";
+  var MAX_BYTES = 15 * 1024 * 1024;
+  var OK_EXT = ["pdf", "png", "jpg", "jpeg"];
+
+  var KIND_LABEL = {
+    agreement: "Instructor agreement",
+    media_release: "Media release",
+    other: "Other"
+  };
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  var gateTitle = document.getElementById("gate-title");
+  var gateText = document.getElementById("gate-text");
+  var gateAction = document.getElementById("gate-action");
+  var msg = document.getElementById("d-msg");
+  var userId = null;
+  var userEmail = null;
+  var myName = "";
+
+  function showGate(t, x) {
+    gateTitle.textContent = t; gateText.textContent = x; gateAction.style.display = "block";
+  }
+  function show(kind, text) {
+    msg.className = "msg " + kind; msg.textContent = text;
+  }
+  function clearMsg() { msg.className = "msg"; msg.textContent = ""; }
+
+  function fmtWhen(iso) {
+    var d = new Date(iso);
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) +
+      " at " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+  function fmtSize(n) {
+    if (!n) return "";
+    return n < 1024 * 1024
+      ? Math.max(1, Math.round(n / 1024)) + " KB"
+      : (n / 1024 / 1024).toFixed(1) + " MB";
+  }
+  function extOf(name) {
+    var p = String(name).toLowerCase().split(".");
+    return p.length > 1 ? p.pop() : "";
+  }
+  /* Storage object keys are a URL path. Spaces, ampersands and stray unicode in
+     a filename make links that break in ways nobody can debug later. */
+  function safeName(name) {
+    return String(name).toLowerCase()
+      .replace(/[^a-z0-9.]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(-60);
+  }
+
+  document.getElementById("d-kind").addEventListener("change", function () {
+    document.getElementById("label-row").style.display =
+      this.value === "other" ? "block" : "none";
+  });
+
+  function renderDocs(rows) {
+    var box = document.getElementById("doc-list");
+    if (!rows.length) {
+      box.innerHTML = '<p class="doc-meta">Nothing uploaded yet — anything you send will be listed here.</p>';
+      return;
+    }
+    box.innerHTML = rows.map(function (r) {
+      var name = r.kind === "other" && r.label ? r.label : KIND_LABEL[r.kind] || r.kind;
+      return '<div class="doc-row">' +
+        '<div><div class="doc-what">' + name + "</div>" +
+        '<div class="doc-meta">' + r.file_name + " · " + fmtWhen(r.uploaded_at) +
+        (r.size_bytes ? " · " + fmtSize(r.size_bytes) : "") + "</div></div>" +
+        '<span class="kind-tag">' + (KIND_LABEL[r.kind] || r.kind) + "</span>" +
+        '<button class="btn-sm" type="button" data-get="' + r.file_path + '">Download</button>' +
+        '<button class="btn-sm" type="button" data-del="' + r.id + '" data-path="' + r.file_path + '">Remove</button>' +
+        "</div>";
+    }).join("");
+
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-get]"), function (b) {
+      b.addEventListener("click", function () {
+        b.disabled = true; b.textContent = "Opening…";
+        sb.storage.from(BUCKET).createSignedUrl(b.getAttribute("data-get"), 60).then(function (r) {
+          b.disabled = false; b.textContent = "Download";
+          if (r.error || !r.data) { show("err", "Couldn't open that file — try again, or email hello@quintaand.co."); return; }
+          window.open(r.data.signedUrl, "_blank", "noopener");
+        });
+      });
+    });
+
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-del]"), function (b) {
+      b.addEventListener("click", function () {
+        if (!window.confirm("Remove this document? You can upload it again afterwards.")) return;
+        b.disabled = true;
+        /* Remove the file first. If the row went first and this failed, the
+           list would look clean while the document was still sitting there. */
+        sb.storage.from(BUCKET).remove([b.getAttribute("data-path")]).then(function (r) {
+          if (r.error) { console.error(r.error); b.disabled = false; show("err", "Couldn't remove that one — email hello@quintaand.co."); return; }
+          return sb.from("faculty_documents").delete().eq("id", b.getAttribute("data-del")).then(function (r2) {
+            if (r2.error) { console.error(r2.error); }
+            clearMsg();
+            loadDocs();
+          });
+        });
+      });
+    });
+  }
+
+  function loadDocs() {
+    sb.from("faculty_documents").select("*").order("uploaded_at", { ascending: false })
+      .then(function (r) {
+        if (r.error) {
+          console.error(r.error);
+          document.getElementById("doc-list").innerHTML =
+            '<p class="doc-meta">Couldn\'t load your documents. Refresh, or email hello@quintaand.co.</p>';
+          return;
+        }
+        renderDocs(r.data || []);
+      });
+  }
+
+  document.getElementById("dform").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    clearMsg();
+
+    var kind = document.getElementById("d-kind").value;
+    var label = document.getElementById("d-label").value.trim();
+    var input = document.getElementById("d-file");
+    var file = input.files && input.files[0];
+
+    if (!file) { show("err", "Choose a file first."); return; }
+    if (kind === "other" && !label) { show("err", "Give it a name so we know what it is."); return; }
+    if (OK_EXT.indexOf(extOf(file.name)) === -1) {
+      show("err", "That file type isn't supported — send a PDF, PNG or JPG.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      show("err", "That file is " + fmtSize(file.size) + ", and the limit is 15 MB. A PDF is usually much smaller than a photo.");
+      return;
+    }
+
+    var btn = document.getElementById("d-btn");
+    btn.disabled = true; btn.textContent = "Uploading…";
+
+    var path = userId + "/" + kind + "-" + Date.now() + "-" + safeName(file.name);
+
+    sb.storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
+      .then(function (up) {
+        if (up.error) {
+          console.error(up.error);
+          btn.disabled = false; btn.textContent = "Upload";
+          show("err", "The upload didn't go through — try again, or email hello@quintaand.co. (" + (up.error.message || "") + ")");
+          return;
+        }
+        return sb.from("faculty_documents").insert({
+          user_id: userId,
+          instructor_email: userEmail,
+          instructor_name: myName || null,
+          kind: kind,
+          label: kind === "other" ? label : null,
+          file_path: path,
+          file_name: file.name,
+          size_bytes: file.size
+        }).then(function (r) {
+          btn.disabled = false; btn.textContent = "Upload";
+          if (r.error) {
+            console.error(r.error);
+            /* The file landed but we couldn't record what it was. Take it back
+               out rather than leave an unlabelled orphan in the bucket. */
+            sb.storage.from(BUCKET).remove([path]);
+            show("err", "Saved the file but couldn't file it properly, so we removed it. Try again, or email hello@quintaand.co.");
+            return;
+          }
+          input.value = "";
+          document.getElementById("d-label").value = "";
+          show("ok", "Got it — " + (kind === "other" ? label : KIND_LABEL[kind]) +
+            " uploaded. Erika will confirm once she's reviewed it.");
+          loadDocs();
+        });
+      });
+  });
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { showGate("You're not signed in", "Sign in first, then come back to upload your documents."); return; }
+    userId = session.user.id;
+    userEmail = session.user.email.toLowerCase();
+
+    sb.from("faculty").select("*").eq("email", userEmail).maybeSingle().then(function (r) {
+      if (r.error) {
+        console.error(r.error);
+        showGate("Hmm — the database said no",
+          "Signed in as " + userEmail + ", but your record couldn't be read. Try signing out and back in — if it persists, email hello@quintaand.co.");
+        return;
+      }
+      if (!r.data) {
+        showGate("Almost there",
+          "You're signed in as " + userEmail + ", but there's no faculty record under that email yet — email hello@quintaand.co and Erika will finish it.");
+        return;
+      }
+      myName = r.data.display_name || r.data.full_name || "";
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("docs").style.display = "block";
+      loadDocs();
+    });
+  });
+})();
+</script>
+</body>
+</html>
