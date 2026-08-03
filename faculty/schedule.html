@@ -50,6 +50,8 @@
   .plan-item.warn{background:#FBF6E8;border:1px solid #E2D3A6;color:#6B551C}
   .plan-item.ok{background:var(--cream);border:1px solid var(--line);color:var(--sage-deep)}
   .plan-item .plan-why{display:block;opacity:.85;margin-top:3px;font-size:.86rem}
+  .plan-item .plan-jump{display:inline-block;margin-top:7px;font-family:inherit;font-size:.86rem;background:none;border:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
+  .plan-item .plan-jump:hover{opacity:.7}
 
   .month-chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
   .mchip{border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:150px;background:var(--cream)}
@@ -64,12 +66,20 @@
   .radio-row input{accent-color:#4F6B5C}
   .sess-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .sess-row:last-child{border-bottom:none}
+  /* The class you're colliding with, marked in the list so you don't have to
+     hunt for it by name. */
+  .sess-row.conflict{background:#FBEEEC;box-shadow:inset 0 0 0 1px #E4B7AE;border-radius:8px;padding-left:11px;padding-right:11px}
+  .sess-row.flash{animation:flashRow 1.8s ease-out}
+  @keyframes flashRow{0%,35%{background:#F3D9D1}100%{background:#FBEEEC}}
   .sess-what{font-weight:500}
   .sess-meta{color:#8A8E83;font-size:.88rem}
   .tag{font-size:.78rem;font-family:var(--label);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
   .tag.day{color:#A6791F} .tag.evening{color:var(--sage-deep)}
   .btn-sm{display:inline-block;padding:7px 15px;border-radius:999px;font-size:.88rem;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
   .btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+  /* A blocked submit button must LOOK blocked. It was full-strength green while
+     disabled, so it read as "click me to fix it" and did nothing. */
+  #s-btn:disabled{opacity:.38;filter:grayscale(.5);cursor:not-allowed;box-shadow:none}
   .msg{padding:12px 16px;border-radius:8px;font-size:.95rem;display:none;margin-top:14px}
   .msg.ok{display:block;background:#EEF2EC;border:1px solid var(--sage-deep)}
   .msg.err{display:block;background:#F7EFEA;border:1px solid #B0713F;color:#5A4632}
@@ -338,7 +348,7 @@
     var cutoffStr = cutoff.toISOString().slice(0, 10);
     box.innerHTML = future.map(function (s) {
       var canCancel = s.session_date > cutoffStr;
-      return '<div class="sess-row"><div>' +
+      return '<div class="sess-row" data-sid="' + s.id + '"><div>' +
         '<div class="sess-what">' + s.class_name + '</div>' +
         '<div class="sess-meta">' + fmtDate(s.session_date) + " · " + fmtTime(s.start_time.slice(0, 5)) + " · " + s.format + "</div></div>" +
         '<span class="tag ' + s.daypart + '">' + s.daypart + "</span>" +
@@ -377,6 +387,7 @@
         renderMonths();
         renderSessions();
         renderSharedCalendar();
+        renderPlanFeedback();   // re-running the list wipes the tint; put it back
       });
   }
 
@@ -560,7 +571,8 @@
         out.errors.push({
           text: "That overlaps " + who + " " + s.class_name + ".",
           why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " is already in the room, and " +
-               "yours would run " + minToLabel(start) + "–" + minToLabel(end) + "."
+               "yours would run " + minToLabel(start) + "–" + minToLabel(end) + ".",
+          sessionId: s.id, mine: mine
         });
         return;
       }
@@ -569,7 +581,8 @@
         out.errors.push({
           text: "You're already teaching " + s.class_name + " then.",
           why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " overlaps " +
-               minToLabel(start) + "–" + minToLabel(end) + "."
+               minToLabel(start) + "–" + minToLabel(end) + ".",
+          sessionId: s.id, mine: mine
         });
         return;
       }
@@ -580,7 +593,8 @@
           out.warnings.push({
             text: "Only " + gap + " minutes between this and your " + s.class_name + ".",
             why: "Classes carry a 30-minute buffer either side, so they need a full hour " +
-                 "between them — otherwise booking one can hide the other."
+                 "between them — otherwise booking one can hide the other.",
+            sessionId: s.id, mine: mine
           });
         }
       }
@@ -607,24 +621,63 @@
         minToLabel(plan.startMin) + " – " + minToLabel(plan.endMin) + "</b> (" +
         minutesFor(cls) + " minutes)</div>";
     }
+    /* Only your OWN classes get a jump link — someone else's isn't in your list,
+       and offering to take you to a row that doesn't exist is worse than saying
+       nothing. */
+    function jumpLink(x) {
+      return x.sessionId && x.mine
+        ? '<button type="button" class="plan-jump" data-jump="' + x.sessionId +
+          '">Take me to that class ↓</button>'
+        : "";
+    }
     plan.errors.forEach(function (e) {
       html += '<div class="plan-item stop"><strong>' + e.text +
-        '</strong><span class="plan-why">' + e.why + "</span></div>";
+        '</strong><span class="plan-why">' + e.why + "</span>" + jumpLink(e) + "</div>";
     });
     plan.warnings.forEach(function (w) {
       html += '<div class="plan-item warn"><strong>' + w.text +
-        '</strong><span class="plan-why">' + w.why + "</span></div>";
+        '</strong><span class="plan-why">' + w.why + "</span>" + jumpLink(w) + "</div>";
     });
     if (plan.startMin !== null && !plan.errors.length && !plan.warnings.length) {
       html += '<div class="plan-item ok">That slot is clear.</div>';
     }
 
     box.innerHTML = html;
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-jump]"), function (b) {
+      b.addEventListener("click", function () { jumpToSession(b.getAttribute("data-jump")); });
+    });
+
+    markConflicts(plan.errors.concat(plan.warnings).map(function (x) {
+      return x.sessionId;
+    }).filter(Boolean));
+
     if (btn) {
       btn.disabled = plan.errors.length > 0;
       btn.textContent = plan.errors.length ? "Fix the conflict above" : "Add to my schedule";
     }
     return plan;
+  }
+
+  /* Tint whichever of your classes you're colliding with, so "That overlaps your
+     Get Certified" doesn't mean scrolling a list matching names by eye. */
+  function markConflicts(ids) {
+    Array.prototype.forEach.call(
+      document.querySelectorAll("#sess-list .sess-row"),
+      function (row) {
+        var hit = ids.indexOf(row.getAttribute("data-sid")) !== -1;
+        row.classList.toggle("conflict", hit);
+        if (!hit) row.classList.remove("flash");
+      }
+    );
+  }
+
+  function jumpToSession(id) {
+    var row = document.querySelector('#sess-list .sess-row[data-sid="' + id + '"]');
+    if (!row) return;
+    row.scrollIntoView({ behavior: "smooth", block: "center" });
+    row.classList.remove("flash");
+    void row.offsetWidth;              // restart the animation if it's already run
+    row.classList.add("flash");
   }
 
   ["s-class", "s-date", "s-time"].forEach(function (id) {
