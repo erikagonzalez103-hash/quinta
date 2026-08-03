@@ -3,6 +3,12 @@ main = "worker.js"
 compatibility_date = "2026-01-01"
 
 # Plain settings — safe to read, no secrets here.
+#
+# WARNING: this file is read ONLY by command-line deploys (`npx wrangler deploy`).
+# If the Worker was created by pasting code into the Cloudflare dashboard, NONE
+# of these apply and you must add each one by hand under Settings → Variables
+# and Secrets. Getting this wrong cost an afternoon: SUPABASE_URL came through
+# as undefined and the Worker built the URL "undefined/rest/v1/rpc/...".
 [vars]
 SUPABASE_URL = "https://pmpaslevwimofohirves.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"

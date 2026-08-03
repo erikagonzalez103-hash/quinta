@@ -229,9 +229,32 @@ export default {
       return json({ ok: true, service: "quinta-schedule-sync" });
     }
 
+    /* Without this you get an unfixable 401 loop: nothing you type can match a
+       secret that was never set. */
+    if (!env.WEBHOOK_SECRET) {
+      return json({ error: "WEBHOOK_SECRET is not set on this Worker." }, 500);
+    }
+
     // Only Supabase (or you, with the secret) may trigger a sync.
     const given = request.headers.get("x-sync-secret") || url.searchParams.get("secret") || "";
     if (given !== env.WEBHOOK_SECRET) return json({ error: "unauthorized" }, 401);
+
+    /* Missing settings used to surface as nonsense — a missing SUPABASE_URL
+       read as `Invalid URL: undefined/rest/v1/rpc/schedule_sync_read`, which
+       says nothing about the actual cause. Worse, a missing
+       SHARED_EMPTY_SCHEDULE_ID silently disarms the guard that keeps this
+       Worker from writing dates into the schedule every dateless class shares.
+       Name what's missing instead. */
+    const missing = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SHARED_EMPTY_SCHEDULE_ID",
+                     "CAL_API_KEY", "SYNC_TOKEN"].filter((k) => !env[k]);
+    if (missing.length) {
+      return json({
+        error: "Missing settings on this Worker: " + missing.join(", ") +
+               ". Add them under Settings → Variables and Secrets. Note that the " +
+               "vars in wrangler.toml do NOT apply to a Worker pasted into the " +
+               "dashboard — that file is only read by command-line deploys.",
+      }, 500);
+    }
 
     /* A wrong SYNC_TOKEN makes schedule_sync_read return nothing for EVERY
        class — which this Worker would read as "no dates, delete them all".
