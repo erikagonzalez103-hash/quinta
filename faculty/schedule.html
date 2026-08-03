@@ -16,6 +16,30 @@
   .scard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-top:22px}
   .scard h2{font-size:1.12rem;margin:0 0 4px}
   .scard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 16px}
+  /* ----- shared faculty calendar ----- */
+  .legend-key{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin:0 2px 0 6px}
+  .legend-key.mine{background:var(--sage-deep)}
+  .legend-key.theirs{background:#C9CFC6}
+  #shared-cal{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px}
+  .cal-month{flex:1 1 320px;min-width:300px}
+  .cal-title{font-family:var(--label);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:8px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+  .cal-dow{font-family:var(--label);font-size:9.5px;letter-spacing:.1em;color:var(--sage);text-align:center;padding-bottom:3px}
+  .cal-cell{min-height:58px;border:1px solid var(--line);border-radius:7px;padding:3px 4px;background:#fff;cursor:pointer;transition:.12s}
+  .cal-cell:hover{border-color:var(--sage-deep);box-shadow:0 2px 8px rgba(78,107,92,.13)}
+  .cal-cell.empty{border:none;background:none;cursor:default;box-shadow:none}
+  .cal-cell.empty:hover{border:none;box-shadow:none}
+  .cal-cell.today{border-color:var(--sage-deep);border-width:1.5px}
+  .cal-cell.has{background:var(--cream)}
+  .cal-num{font-size:10.5px;color:var(--sage);text-align:right;line-height:1.2}
+  .cal-ev{margin-top:2px;border-radius:4px;padding:2px 4px;font-size:9.5px;line-height:1.25;overflow:hidden}
+  .cal-ev.mine{background:var(--sage-deep);color:#fff}
+  .cal-ev.theirs{background:#E6E9E4;color:var(--ink)}
+  .cal-ev .cal-t{font-weight:600;display:block}
+  .cal-ev .cal-c{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev .cal-who{display:block;opacity:.75;font-style:italic}
+  @media(max-width:620px){ .cal-cell{min-height:46px} .cal-ev .cal-who{display:none} }
+
   .month-chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
   .mchip{border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:150px;background:var(--cream)}
   .mchip .mname{font-family:var(--label);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep)}
@@ -75,6 +99,12 @@
     </div>
 
     <div class="scard">
+      <h2>The shared calendar</h2>
+      <p class="hint">Everything the faculty has scheduled — so you can see the room before you pick. <span class="legend-key mine"></span> yours · <span class="legend-key theirs"></span> another instructor's. Click any day to load that date into the form.</p>
+      <div id="shared-cal"><p class="sess-meta">Loading the calendar…</p></div>
+    </div>
+
+    <div class="scard">
       <h2>Schedule a class</h2>
       <p class="hint">Daytime = starts before 5pm · Evening = 5pm or later. In-person slots are first-come — the room hosts one class at a time.</p>
       <form id="sform" novalidate>
@@ -129,9 +159,39 @@
 </footer>
 
 <script src="../js/supabase-2.110.1.min.js"></script>
+<script src="../classes.js?v=6"></script>
 <script>
 (function () {
   "use strict";
+
+  /* The real class list, so a scheduled session carries the SAME slug the rest
+     of the site and Cal.com use. Before this, the slug was invented by
+     slugifying the display name ("Get Certified" -> "get-certified"), which
+     matched no class and would have broken the Cal.com sync for everyone. */
+  var CATALOG = (window.QUINTA_CLASSES || []).map(function (c) {
+    var mins = parseInt(String(c.format || "").replace(/[^0-9]/g, ""), 10);
+    return { slug: c.slug, name: c.name, minutes: isNaN(mins) ? 90 : mins };
+  });
+  function norm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  function lookupClass(displayName) {
+    var n = norm(displayName);
+    var hit = null;
+    CATALOG.forEach(function (c) {
+      if (hit) return;
+      if (norm(c.name) === n || norm(c.slug) === n) hit = c;
+    });
+    if (!hit) {                        // fall back to a loose contains-match
+      CATALOG.forEach(function (c) {
+        if (hit) return;
+        if (norm(c.name).indexOf(n) === 0 || n.indexOf(norm(c.name)) === 0) hit = c;
+      });
+    }
+    return hit;
+  }
+  function minutesFor(displayName) {
+    var c = lookupClass(displayName);
+    return c ? c.minutes : 90;
+  }
   var sb = null;
   try {
     if (typeof supabase !== "undefined") {
@@ -148,6 +208,8 @@
   var msg = document.getElementById("s-msg");
   var userEmail = null;
   var mySessions = [];
+  var allSessions = [];
+  var myName = "";
 
   function showGate(t, x, offerReset) {
     gateTitle.textContent = t; gateText.textContent = x; gateAction.style.display = "block";
@@ -203,7 +265,7 @@
   function icsStamp(d) { return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
   function icsFor(s) {
     var t = sessionDates(s);
-    var loc = s.format === "in-person" ? "HER House, Dallas, TX" : "Online (link to follow)";
+    var loc = s.format === "in-person" ? "Kiln — Preston Hollow, Dallas, TX" : "Online (link to follow)";
     return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Quinta & Co.//Faculty//EN", "METHOD:PUBLISH",
       "BEGIN:VEVENT",
       "UID:" + s.id + "@quintaand.co",
@@ -233,7 +295,7 @@
     return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
       "&text=" + encodeURIComponent("Teach: " + s.class_name + " — Quinta & Co.") +
       "&dates=" + icsStamp(t.start) + "/" + icsStamp(t.end) +
-      "&location=" + encodeURIComponent(s.format === "in-person" ? "HER House, Dallas, TX" : "Online") +
+      "&location=" + encodeURIComponent(s.format === "in-person" ? "Kiln — Preston Hollow, Dallas, TX" : "Online") +
       "&details=" + encodeURIComponent("Manage your schedule at https://quintaand.co/faculty/schedule.html");
   }
 
@@ -287,13 +349,103 @@
     });
   }
 
+  /* Everyone's sessions — not just mine. Faculty are allowed to read the whole
+     table on purpose (see docs/faculty-scheduler-setup.md); a shared room can
+     only be shared if you can see who's already in it. */
   function loadSessions() {
-    sb.from("class_sessions").select("*").eq("instructor_email", userEmail).neq("status", "canceled")
+    sb.from("class_sessions").select("*").neq("status", "canceled")
       .order("session_date").then(function (r) {
-        mySessions = r.data || [];
+        allSessions = r.data || [];
+        mySessions = allSessions.filter(function (s) {
+          return String(s.instructor_email || "").toLowerCase() === userEmail;
+        });
         renderMonths();
         renderSessions();
+        renderSharedCalendar();
       });
+  }
+
+  function firstNameOf(s) {
+    if (s.instructor_name) return String(s.instructor_name).split(/\s+/)[0];
+    var e = String(s.instructor_email || "");
+    var local = e.split("@")[0].replace(/[._-].*$/, "");
+    return local ? local.charAt(0).toUpperCase() + local.slice(1) : "Faculty";
+  }
+
+  function endTimeOf(s) {
+    var hm = String(s.start_time || "").slice(0, 5).split(":");
+    var d = new Date(2000, 0, 1, parseInt(hm[0], 10), parseInt(hm[1], 10));
+    d.setMinutes(d.getMinutes() + minutesFor(s.class_name));
+    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+  }
+
+  /* Two months of shared calendar. Each day lists every scheduled class with
+     the time, the class and who's teaching it. */
+  function renderSharedCalendar() {
+    var box = document.getElementById("shared-cal");
+    var byDate = {};
+    allSessions.forEach(function (s) {
+      (byDate[s.session_date] = byDate[s.session_date] || []).push(s);
+    });
+    var now = new Date();
+    var todayStr = now.toISOString().slice(0, 10);
+    var html = "";
+
+    for (var k = 0; k < 2; k++) {
+      var first = new Date(now.getFullYear(), now.getMonth() + k, 1);
+      var year = first.getFullYear(), month = first.getMonth();
+      var label = first.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      var startPad = first.getDay();
+      var daysIn = new Date(year, month + 1, 0).getDate();
+
+      html += '<div class="cal-month"><div class="cal-title">' + label + "</div>";
+      html += '<div class="cal-grid">';
+      ["S", "M", "T", "W", "T", "F", "S"].forEach(function (d) {
+        html += '<div class="cal-dow">' + d + "</div>";
+      });
+      for (var p = 0; p < startPad; p++) html += '<div class="cal-cell empty"></div>';
+
+      for (var day = 1; day <= daysIn; day++) {
+        var iso = year + "-" + ("0" + (month + 1)).slice(-2) + "-" + ("0" + day).slice(-2);
+        var items = (byDate[iso] || []).sort(function (a, b) {
+          return String(a.start_time).localeCompare(String(b.start_time));
+        });
+        var cls = "cal-cell";
+        if (iso === todayStr) cls += " today";
+        if (items.length) cls += " has";
+        html += '<div class="' + cls + '" data-date="' + iso + '">';
+        html += '<div class="cal-num">' + day + "</div>";
+        items.forEach(function (s) {
+          var mine = String(s.instructor_email || "").toLowerCase() === userEmail;
+          html += '<div class="cal-ev ' + (mine ? "mine" : "theirs") + '" title="' +
+            s.class_name + " · " + fmtTime(String(s.start_time).slice(0, 5)) + "–" +
+            fmtTime(endTimeOf(s)) + " · " + firstNameOf(s) + " · " + s.format + '">' +
+            '<span class="cal-t">' + fmtTime(String(s.start_time).slice(0, 5)) + "</span> " +
+            '<span class="cal-c">' + s.class_name + "</span>" +
+            '<span class="cal-who">' + firstNameOf(s) + "</span>" +
+            "</div>";
+        });
+        html += "</div>";
+      }
+      html += "</div></div>";
+    }
+
+    box.innerHTML = html;
+
+    // clicking a day loads it into the form
+    Array.prototype.forEach.call(box.querySelectorAll(".cal-cell[data-date]"), function (cell) {
+      cell.addEventListener("click", function () {
+        var d = cell.getAttribute("data-date");
+        var input = document.getElementById("s-date");
+        if (input.min && d < input.min) {
+          show("err", "That date is inside the 15-day lead time — pick something further out, or email hello@quintaand.co.");
+          return;
+        }
+        input.value = d;
+        input.dispatchEvent(new Event("change"));
+        document.getElementById("s-class").focus();
+      });
+    });
   }
 
   if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
@@ -315,6 +467,8 @@
       if (!row) { showGate("Almost there", "You're signed in as " + userEmail + ", but there's no faculty record under that email yet — email hello@quintaand.co and Erika will finish it.", true); return; }
       document.getElementById("gate").style.display = "none";
       document.getElementById("sched").style.display = "block";
+
+      myName = row.display_name || row.full_name || "";
 
       var sel = document.getElementById("s-class");
       (row.classes && row.classes.length ? row.classes : ["My class"]).forEach(function (c) {
@@ -344,7 +498,8 @@
 
     sb.from("class_sessions").insert({
       instructor_email: userEmail,
-      class_slug: cls.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      class_slug: (lookupClass(cls) || {}).slug || cls.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      instructor_name: myName || null,
       class_name: cls,
       session_date: date,
       start_time: time,
