@@ -40,6 +40,17 @@
   .cal-ev .cal-who{display:block;opacity:.75;font-style:italic}
   @media(max-width:620px){ .cal-cell{min-height:46px} .cal-ev .cal-who{display:none} }
 
+  /* ----- live conflict feedback ----- */
+  #plan-feedback{margin:14px 0 4px}
+  #plan-feedback:empty{margin:0}
+  .plan-when{font-size:.95rem;color:var(--sage-deep);margin-bottom:8px}
+  .plan-when b{color:var(--ink)}
+  .plan-item{border-radius:8px;padding:9px 12px;margin-top:7px;font-size:.92rem;line-height:1.45}
+  .plan-item.stop{background:#FBEEEC;border:1px solid #E4B7AE;color:#7A2E1E}
+  .plan-item.warn{background:#FBF6E8;border:1px solid #E2D3A6;color:#6B551C}
+  .plan-item.ok{background:var(--cream);border:1px solid var(--line);color:var(--sage-deep)}
+  .plan-item .plan-why{display:block;opacity:.85;margin-top:3px;font-size:.86rem}
+
   .month-chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
   .mchip{border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:150px;background:var(--cream)}
   .mchip .mname{font-family:var(--label);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--sage-deep)}
@@ -129,6 +140,7 @@
             </div>
           </div>
         </div>
+        <div id="plan-feedback" aria-live="polite"></div>
         <button type="submit" class="btn btn-solid" id="s-btn">Add to my schedule</button>
         <div class="msg" id="s-msg" role="status"></div>
       </form>
@@ -168,7 +180,10 @@
      of the site and Cal.com use. Before this, the slug was invented by
      slugifying the display name ("Get Certified" -> "get-certified"), which
      matched no class and would have broken the Cal.com sync for everyone. */
-  var CATALOG = (window.QUINTA_CLASSES || []).map(function (c) {
+  /* classes.js declares `const QUINTA_CLASSES`, and a top-level const does NOT
+     become a window property — so `window.QUINTA_CLASSES` is undefined even
+     though the global itself is there. Reach for the bare identifier. */
+  var CATALOG = (typeof QUINTA_CLASSES !== "undefined" ? QUINTA_CLASSES : []).map(function (c) {
     var mins = parseInt(String(c.format || "").replace(/[^0-9]/g, ""), 10);
     return { slug: c.slug, name: c.name, minutes: isNaN(mins) ? 90 : mins };
   });
@@ -482,6 +497,144 @@
     });
   });
 
+  /* ------------------------------------------------------------------
+     THE GUARDS
+
+     Every rule below exists because it already went wrong once:
+
+     · The database's duplicate check only catches identical start times, so a
+       5:30pm 60-minute class and a 6:00pm 90-minute class both saved happily
+       and overlapped by half an hour.
+     · Cal.com will not generate a slot for a 2-hour class that starts on the
+       half hour — it snaps those to the hour. The session saves, looks fine
+       here, and is simply never bookable. Tested: 17:30 produces nothing,
+       17:00 and 18:00 both work.
+     · Every class carries a 30-minute buffer either side, so two of your own
+       classes need a full hour between them or booking one hides the other.
+     ------------------------------------------------------------------ */
+  var MIN_GAP_MINUTES = 60;          // 30-min buffer before + 30 after
+  var HOUR_ALIGN_FROM = 120;         // classes this long must start on the hour
+
+  function toMin(hhmm) {
+    var p = String(hhmm).slice(0, 5).split(":");
+    return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+  }
+  function minToLabel(m) {
+    var h = Math.floor(m / 60), mm = m % 60;
+    var ampm = h < 12 ? "AM" : "PM", hh = h % 12 === 0 ? 12 : h % 12;
+    return hh + ":" + ("0" + mm).slice(-2) + " " + ampm;
+  }
+  function spanOf(s) {
+    var st = toMin(s.start_time);
+    return [st, st + minutesFor(s.class_name)];
+  }
+
+  function checkPlan(clsName, date, time, format) {
+    var out = { errors: [], warnings: [], startMin: null, endMin: null };
+    if (!clsName || !date || !time) return out;
+
+    var mins = minutesFor(clsName);
+    var start = toMin(time), end = start + mins;
+    out.startMin = start; out.endMin = end;
+
+    // 1) Cal.com's hour-alignment rule for long classes
+    if (mins >= HOUR_ALIGN_FROM && start % 60 !== 0) {
+      out.errors.push({
+        text: "A " + (mins / 60) + "-hour class has to start on the hour.",
+        why: "Cal.com only creates slots for long classes on the hour, so a " +
+             minToLabel(start) + " start would save here but never appear for students. " +
+             "Try " + minToLabel(start - (start % 60)) + " or " +
+             minToLabel(start - (start % 60) + 60) + "."
+      });
+    }
+
+    var sameDay = allSessions.filter(function (s) { return s.session_date === date; });
+
+    sameDay.forEach(function (s) {
+      var sp = spanOf(s), mine = String(s.instructor_email || "").toLowerCase() === userEmail;
+      var overlaps = start < sp[1] && sp[0] < end;
+      var who = mine ? "your" : firstNameOf(s) + "'s";
+
+      // 2) the room only holds one class at a time
+      if (overlaps && format === "in-person" && s.format === "in-person") {
+        out.errors.push({
+          text: "That overlaps " + who + " " + s.class_name + ".",
+          why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " is already in the room, and " +
+               "yours would run " + minToLabel(start) + "–" + minToLabel(end) + "."
+        });
+        return;
+      }
+      // 3) you can't teach two things at once, online or not
+      if (overlaps && mine) {
+        out.errors.push({
+          text: "You're already teaching " + s.class_name + " then.",
+          why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " overlaps " +
+               minToLabel(start) + "–" + minToLabel(end) + "."
+        });
+        return;
+      }
+      // 4) your own classes need an hour between them
+      if (mine && !overlaps) {
+        var gap = start >= sp[1] ? start - sp[1] : sp[0] - end;
+        if (gap < MIN_GAP_MINUTES) {
+          out.warnings.push({
+            text: "Only " + gap + " minutes between this and your " + s.class_name + ".",
+            why: "Classes carry a 30-minute buffer either side, so they need a full hour " +
+                 "between them — otherwise booking one can hide the other."
+          });
+        }
+      }
+    });
+
+    return out;
+  }
+
+  function renderPlanFeedback() {
+    var box = document.getElementById("plan-feedback");
+    if (!box) return;
+    var cls = document.getElementById("s-class").value;
+    var date = document.getElementById("s-date").value;
+    var time = document.getElementById("s-time").value;
+    var fmtEl = document.querySelector('input[name="s-format"]:checked');
+    var format = fmtEl ? fmtEl.value : "in-person";
+
+    var plan = checkPlan(cls, date, time, format);
+    var btn = document.getElementById("s-btn");
+    var html = "";
+
+    if (plan.startMin !== null) {
+      html += '<div class="plan-when">This class would run <b>' +
+        minToLabel(plan.startMin) + " – " + minToLabel(plan.endMin) + "</b> (" +
+        minutesFor(cls) + " minutes)</div>";
+    }
+    plan.errors.forEach(function (e) {
+      html += '<div class="plan-item stop"><strong>' + e.text +
+        '</strong><span class="plan-why">' + e.why + "</span></div>";
+    });
+    plan.warnings.forEach(function (w) {
+      html += '<div class="plan-item warn"><strong>' + w.text +
+        '</strong><span class="plan-why">' + w.why + "</span></div>";
+    });
+    if (plan.startMin !== null && !plan.errors.length && !plan.warnings.length) {
+      html += '<div class="plan-item ok">That slot is clear.</div>';
+    }
+
+    box.innerHTML = html;
+    if (btn) {
+      btn.disabled = plan.errors.length > 0;
+      btn.textContent = plan.errors.length ? "Fix the conflict above" : "Add to my schedule";
+    }
+    return plan;
+  }
+
+  ["s-class", "s-date", "s-time"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) { el.addEventListener("change", renderPlanFeedback); el.addEventListener("input", renderPlanFeedback); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="s-format"]'), function (r) {
+    r.addEventListener("change", renderPlanFeedback);
+  });
+
   document.getElementById("sform").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var cls = document.getElementById("s-class").value;
@@ -491,6 +644,14 @@
     if (!date) { show("err", "Pick a date first."); return; }
     if (date < document.getElementById("s-date").min) {
       show("err", "New classes need at least 15 days of lead time so we can fill the seats. For anything sooner, email hello@quintaand.co.");
+      return;
+    }
+    // Re-check at submit, not just as they type — the shared calendar may have
+    // changed under them while the form sat open.
+    var plan = checkPlan(cls, date, time, format);
+    if (plan.errors.length) {
+      renderPlanFeedback();
+      show("err", plan.errors[0].text + " " + plan.errors[0].why);
       return;
     }
     var btn = document.getElementById("s-btn");
