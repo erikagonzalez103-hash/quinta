@@ -233,6 +233,19 @@ export default {
     const given = request.headers.get("x-sync-secret") || url.searchParams.get("secret") || "";
     if (given !== env.WEBHOOK_SECRET) return json({ error: "unauthorized" }, 401);
 
+    /* A wrong SYNC_TOKEN makes schedule_sync_read return nothing for EVERY
+       class — which this Worker would read as "no dates, delete them all".
+       It would erase the whole calendar and report a clean run. So prove the
+       token works before we're in a position to do that. */
+    const tokenOk = await rpc(env, "schedule_sync_ping", {}).catch(() => false);
+    if (tokenOk !== true) {
+      return json({
+        error: "SYNC_TOKEN doesn't match the database. Refusing to sync — an " +
+               "unrecognised token looks exactly like every class having no dates, " +
+               "so running anyway would delete them all.",
+      }, 500);
+    }
+
     let slugs = [];
     if (url.searchParams.get("slug")) {
       slugs = [url.searchParams.get("slug")];            // manual: /?slug=insurance
