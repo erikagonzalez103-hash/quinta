@@ -127,6 +127,15 @@ function page(c) {
 <script type="application/ld+json" data-course-schema>${schema}</script>
 <script type="application/ld+json">${faqSchema}</script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-QM9XPPN7XC');
+</script>
 </head>
 <body data-page="class" data-class="${esc(c.slug)}" data-root="../">
 
