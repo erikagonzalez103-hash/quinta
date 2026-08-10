@@ -156,6 +156,7 @@
       vouch: "the broker who reads the fine print so you don't pay for it later", topic: "your coverage" }
   ];
 
+
   function featuredLinkedIn(me, day) {
     return "Well — it's official. This fall I'm joining the founding faculty of Quinta & Co. — practical business + AI classes for women founders, in Dallas and online. 🌱\n\n" +
       "I'm teaching " + day.featCls + " — one hour, ten seats, and every single thing I wish someone had told me before founders started learning it the expensive way.\n\n" +
@@ -183,16 +184,16 @@
     { date: "2026-08-10", first: "erika", name: "Erika González",
       igMine: "The one thing no one tells you 🌱 Sept 1 — @quintapractice",
       igNote: "Erika's one thing 🌱 Sept 1 — @quintapractice",
-      comment: "She's right — nobody tells you the filing is the easy part. Erika built the class for everything that comes after. So glad this room exists 🌱",
-      liFeat: "Every class at Quinta & Co. is built around one question: what's the one thing no one tells you? 🌱\n\nHere's mine. Setting up your business — the LLC, the filing, the paperwork — is the easy part. The thing no one tells you is everything that's supposed to happen next: the EIN, the bank account, the operating agreement, the systems that keep it all standing. That's exactly where most founders get quietly stuck — and exactly what my classes walk you through, in plain language, start to finish.\n\nAll week, our faculty are each sharing the one thing no one told them. Small rooms, ten seats, September 1. Save yours: {LINK}",
-      igFeat: "All week at @quintapractice 🌱 our faculty are answering one question: what's the one thing no one tells you? Mine: filing the LLC is the easy part — it's everything after that no one walks you through. That's the class I built. Plain language, ten seats, September 1. Waitlist link in my bio!",
+      comment: "She's right — nobody tells you about the $0-year filing until it costs you. This is exactly why Quinta exists 🌱",
+      liFeat: "$0. That's what I owed Texas the year I almost lost my LLC.\n\nNobody told me the franchise tax report is due every May — even in years when you owe nothing. I assumed \"no tax due\" meant \"nothing to file.\" It doesn't. Miss it and your LLC can lose its good standing with the state, right when you need it most.\n\nNow it takes me five minutes every May. I teach Entity Set-Up so you get it right the first time.\n\nAll week, our faculty are each sharing the one thing no one told them. What's the one thing no one told YOU? The comments are open. 🌱\n\nFirst semester opens September 1. Save your seat: {LINK}",
+      igFeat: "The one thing no one told me 🌱 I almost lost my LLC in a year I owed Texas $0 — nobody said the franchise tax report is due every May, even when nothing's owed. Now it takes me five minutes a year. My Entity Set-Up class starts exactly there. All week our faculty share theirs — ten seats, September 1, waitlist link in my bio!",
       reposts: [
         { label: "The brag",
-          text: "Can I brag on our founder for a second? Erika González says the one thing no one tells you is that filing the LLC is the easy part — it's everything after that trips founders up. So she built Quinta & Co. around exactly that: plain-language classes for women founders, ten seats at a time. September 1: {LINK}" },
+          text: "Can I brag on our founder for a second? Erika González almost lost her LLC in a year she owed Texas nothing — because nobody tells you the franchise tax report is due every May, even at $0. So she built Quinta & Co. around exactly that kind of thing: the one thing no one tells you, taught in plain language, ten seats at a time. September 1: {LINK}" },
         { label: "The team",
-          text: "All week at Quinta & Co. 🌱 our faculty are sharing the one thing no one tells you — and Erika went first: the paperwork is the easy part; it's everything after that nobody walks you through. That's the whole reason this school exists, and I get to teach in it. Ten seats, plain English, September 1: {LINK}" },
+          text: "All week at Quinta & Co. 🌱 our faculty are sharing the one thing no one tells you — and Erika went first: you can owe Texas $0 and still lose your LLC if you miss the May filing. That's the whole reason this school exists, and I get to teach in it. Ten seats, plain English, September 1: {LINK}" },
         { label: "The nudge",
-          text: "You know that “I'll deal with it later” pile — the EIN, the bank account, the operating agreement? That's the stuff nobody tells you about after you file. Erika González built classes that walk you through all of it in plain English. Ten seats. September 1. Start here: {LINK}" }
+          text: "Did you know you can owe Texas nothing and still lose your LLC? The franchise tax report is due every May — even in a $0 year — and nobody tells you until you've missed one. Erika González's Entity Set-Up class at Quinta & Co. covers all of it in plain English. Ten seats. September 1: {LINK}" }
       ] },
     { date: "2026-08-11", first: "joshlyn", name: "Joshlyn Ross",
       igMine: "My one thing 🌱 pay yourself first — Sept 1 @quintapractice",
@@ -277,6 +278,12 @@
       tbLabel.textContent = "Starting Monday, August 3";
       tbTitle.textContent = "Week 1 hasn't started yet";
       tbText.textContent = "When it does, this page will show you exactly what to post each day — already filled in with your name and your link. Use the preview below to see any day now.";
+      return;
+    }
+    if (dayIndex > 13) {
+      tbLabel.textContent = "Two weeks down";
+      tbTitle.textContent = "The one-thing series is complete 🌱";
+      tbText.textContent = "Next: dates go live and booking opens wide. This page will update with the new posts — keep your referral link in your bio.";
       return;
     }
     if (dayIndex > 6) {
