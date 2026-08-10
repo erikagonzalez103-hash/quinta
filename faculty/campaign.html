@@ -193,6 +193,20 @@
           text: "Week 2 at Quinta & Co. 🌱 All week our faculty are sharing the one thing no one tells you — and Erika went first: the paperwork is the easy part; it's everything after that nobody walks you through. That's the whole reason this school exists, and I get to teach in it. Ten seats, plain English, September 1: {LINK}" },
         { label: "The nudge",
           text: "You know that “I'll deal with it later” pile — the EIN, the bank account, the operating agreement? That's the stuff nobody tells you about after you file. Erika González built classes that walk you through all of it in plain English. Ten seats. September 1. Start here: {LINK}" }
+      ] },
+    { date: "2026-08-11", first: "joshlyn", name: "Joshlyn Ross",
+      igMine: "My one thing 🌱 pay yourself first — Sept 1 @quintapractice",
+      igNote: "Joshlyn's one thing 🌱 Sept 1 — @quintapractice",
+      comment: "So true — nobody tells you diversifying can be automatic. Joshlyn explains money the way a friend would, and her class proves it. So glad she's teaching this fall 🌱",
+      liFeat: "Week 2 at Quinta & Co. — all week our faculty are sharing the one thing no one tells you. 🌱\n\nHere's mine. No one told me I could invest in a whole basket of big companies at once instead of picking individual stocks one by one. I used to be afraid of losing money — then I learned how index funds and ETFs diversify a portfolio automatically, no expertise in each company required.\n\nThat's exactly the kind of plain-language money conversation we have in my class, Investing — How to Pay Yourself First. One hour, ten seats, and everything I wish someone had told me sooner.\n\nFirst semester opens September 1. Save your seat: {LINK}",
+      igFeat: "Week 2 🌱 The one thing no one told me: you don't have to pick stocks one by one. Index funds and ETFs let you own a piece of hundreds of companies at once — diversified automatically, no expert required. That's the conversation in my class Investing — How to Pay Yourself First at @quintapractice. Ten seats, plain language, September 1 — waitlist link in my bio!",
+      reposts: [
+        { label: "The brag",
+          text: "Can I brag on a colleague for a second? Joshlyn Ross just shared the one thing no one told her: you don't have to be a stock-picking expert — index funds and ETFs diversify for you, automatically. She's the planner who treats your business like the asset it is, and this fall she's teaching Investing — How to Pay Yourself First at Quinta & Co. Ten seats. September 1: {LINK}" },
+        { label: "The team",
+          text: "Week 2 at Quinta & Co. 🌱 Today's “one thing no one tells you” comes from Joshlyn Ross: you can own a piece of hundreds of companies at once — no expert stock-picking required. That's the kind of plain-English money talk her Investing class is made of, and I'm proud to teach beside her. Ten seats, September 1: {LINK}" },
+        { label: "The nudge",
+          text: "You know that quiet fear of losing money that keeps you from investing at all? Joshlyn Ross had it too — until she learned what no one tells you: index funds and ETFs diversify automatically. Her class, Investing — How to Pay Yourself First, makes it un-scary in one plain-English hour. September 1: {LINK}" }
       ] }
   ];
   var W2_DAYS = ["Mon Aug 10", "Tue Aug 11", "Wed Aug 12", "Thu Aug 13", "Fri Aug 14", "Sat Aug 15", "Sun Aug 16"];
@@ -313,7 +327,9 @@
 
     if (isMyDay) {
       tbLabel.textContent = "Week 2 · " + W2_DAYS[w2Index] + " · YOUR day";
-      tbTitle.textContent = "You open Week 2, " + day.name.split(" ")[0] + " 🌱";
+      tbTitle.textContent = w2Index === 0
+        ? "You open Week 2, " + day.name.split(" ")[0] + " 🌱"
+        : "It's your day, " + day.name.split(" ")[0] + " — you're the star 🌱";
       tbText.textContent = "At 9 AM Quinta posts your card. Accept the Instagram Collab invite, then the two posts below. At lunch, reply to every comment — one sentence each. Tonight, share the IG post to your Story with a Link sticker carrying your referral link.";
       taskCard(tasks, "Before 10 AM · LinkedIn", "Repost Quinta's post with these words",
         "Find Quinta's post via the faculty group text → tap Repost → “Repost with your thoughts” → paste → post.",
@@ -409,7 +425,7 @@
     var sel = document.getElementById("day-select");
     var labels = ["Mon Aug 3 — Erika", "Tue Aug 4 — Tara", "Wed Aug 5 — Joshlyn", "Thu Aug 6 — Stephanie",
                   "Fri Aug 7 — Nik", "Sat Aug 8 — Natalie", "Sun Aug 9 — Nery",
-                  "Wk 2 · Mon Aug 10 — Erika"];
+                  "Wk 2 · Mon Aug 10 — Erika", "Wk 2 · Tue Aug 11 — Joshlyn"];
     var opt0 = document.createElement("option");
     opt0.value = "today"; opt0.textContent = "Today";
     sel.appendChild(opt0);
