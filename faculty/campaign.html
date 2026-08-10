@@ -73,7 +73,7 @@
   </div>
 
   <section class="detail wrap camp-head" id="camp">
-    <p class="phase-label">August Campaign · Week 1 · Meet Your Faculty</p>
+    <p class="phase-label">August Campaign · Meet Your Faculty</p>
     <h1>Your posts for today</h1>
     <p class="camp-sub">Everything below is already filled in — your name, your link, today's featured teacher. Tap copy, paste, post. Ten minutes, tops.</p>
 
@@ -176,6 +176,29 @@
     ];
   }
 
+  // ---- Week 2: “the one thing no one tells you.” Days are added as their
+  // posts are written; a day without an entry shows a check-back note.
+  // {LINK} in any text becomes the signed-in teacher's own referral link. ----
+  var WEEK2 = [
+    { date: "2026-08-10", first: "erika", name: "Erika González",
+      igMine: "The one thing no one tells you 🌱 Sept 1 — @quintapractice",
+      igNote: "Erika's one thing 🌱 Sept 1 — @quintapractice",
+      comment: "She's right — nobody tells you the filing is the easy part. Erika built the class for everything that comes after. So glad this room exists 🌱",
+      liFeat: "Week 2 at Quinta & Co. starts today, and it's built around one question: what's the one thing no one tells you? 🌱\n\nHere's mine. Setting up your business — the LLC, the filing, the paperwork — is the easy part. The thing no one tells you is everything that's supposed to happen next: the EIN, the bank account, the operating agreement, the systems that keep it all standing. That's exactly where most founders get quietly stuck — and exactly what my classes walk you through, in plain language, start to finish.\n\nAll week, our faculty are each sharing the one thing no one told them. Small rooms, ten seats, September 1. Save yours: {LINK}",
+      igFeat: "Week 2 🌱 All week at @quintapractice, our faculty are answering one question: what's the one thing no one tells you? Mine: filing the LLC is the easy part — it's everything after that no one walks you through. That's the class I built. Plain language, ten seats, September 1. Waitlist link in my bio!",
+      reposts: [
+        { label: "The brag",
+          text: "Can I brag on our founder for a second? Erika González says the one thing no one tells you is that filing the LLC is the easy part — it's everything after that trips founders up. So she built Quinta & Co. around exactly that: plain-language classes for women founders, ten seats at a time. Week 2 starts today. September 1: {LINK}" },
+        { label: "The team",
+          text: "Week 2 at Quinta & Co. 🌱 All week our faculty are sharing the one thing no one tells you — and Erika went first: the paperwork is the easy part; it's everything after that nobody walks you through. That's the whole reason this school exists, and I get to teach in it. Ten seats, plain English, September 1: {LINK}" },
+        { label: "The nudge",
+          text: "You know that “I'll deal with it later” pile — the EIN, the bank account, the operating agreement? That's the stuff nobody tells you about after you file. Erika González built classes that walk you through all of it in plain English. Ten seats. September 1. Start here: {LINK}" }
+      ] }
+  ];
+  var W2_DAYS = ["Mon Aug 10", "Tue Aug 11", "Wed Aug 12", "Thu Aug 13", "Fri Aug 14", "Sat Aug 15", "Sun Aug 16"];
+
+  function w2fill(text, me) { return text.split("{LINK}").join(me.link); }
+
   function copyBtn(getText, btn) {
     btn.addEventListener("click", function () {
       function done() { var t = btn.textContent; btn.textContent = "Copied ✓"; setTimeout(function () { btn.textContent = t; }, 2000); }
@@ -229,9 +252,7 @@
       return;
     }
     if (dayIndex > 6) {
-      tbLabel.textContent = "Week 1 complete";
-      tbTitle.textContent = "You did it 🌱";
-      tbText.textContent = "Week 2 — “the one thing no one tells you” — starts Monday, August 10. This page will update with your Week 2 posts.";
+      renderWeek2Day(me, dayIndex - 7);
       return;
     }
 
@@ -261,6 +282,58 @@
       taskCard(tasks, "Anytime 11 AM – 8 PM · 3 minutes", "Your repost — pick the one that sounds like you",
         "Tweak freely — your voice beats our polish. Your link is already in the text. These three are for LinkedIn, where there's room to talk.",
         null, colleagueScripts(me, day));
+      taskCard(tasks, "Instagram repost note · 60-character limit", "For the IG repost — short on purpose",
+        "Instagram caps repost notes at 60 characters. Your referral link can't ride an IG repost — keep it in your bio, and use the link sticker on Stories.",
+        day.igNote);
+    }
+  }
+
+  function renderWeek2Day(me, w2Index) {
+    var tasks = document.getElementById("tasks");
+    var tbLabel = document.getElementById("tb-label");
+    var tbTitle = document.getElementById("tb-title");
+    var tbText = document.getElementById("tb-text");
+
+    if (w2Index > 6) {
+      tbLabel.textContent = "August campaign complete";
+      tbTitle.textContent = "That's a wrap 🌱";
+      tbText.textContent = "Both weeks are done. Your referral link above keeps working all the way to September 1 — every signup through it still credits you.";
+      return;
+    }
+
+    var day = WEEK2[w2Index];
+    if (!day) {
+      tbLabel.textContent = "Week 2 · " + W2_DAYS[w2Index] + " · the one thing no one tells you";
+      tbTitle.textContent = "This day's posts aren't up yet";
+      tbText.textContent = "Week 2 posts are being added day by day — check back in the morning. Your referral link above is live and counting all August.";
+      return;
+    }
+
+    var isMyDay = day.first === me.first;
+
+    if (isMyDay) {
+      tbLabel.textContent = "Week 2 · " + W2_DAYS[w2Index] + " · YOUR day";
+      tbTitle.textContent = "You open Week 2, " + day.name.split(" ")[0] + " 🌱";
+      tbText.textContent = "At 9 AM Quinta posts your card. Accept the Instagram Collab invite, then the two posts below. At lunch, reply to every comment — one sentence each. Tonight, share the IG post to your Story with a Link sticker carrying your referral link.";
+      taskCard(tasks, "Before 10 AM · LinkedIn", "Repost Quinta's post with these words",
+        "Find Quinta's post via the faculty group text → tap Repost → “Repost with your thoughts” → paste → post.",
+        w2fill(day.liFeat, me));
+      taskCard(tasks, "Anytime today · Instagram", "If you also post your own (beyond the Collab)",
+        "Optional but powerful — your own audience hears it in your own voice. Your referral link stays in your bio all August.",
+        day.igFeat);
+      taskCard(tasks, "Instagram repost note · 60-character limit", "If you repost the Quinta post on IG, this is the note",
+        "Instagram caps repost notes at 60 characters — this one fits. The longer script above is for a fresh post of your own.",
+        day.igMine);
+    } else {
+      tbLabel.textContent = "Week 2 · " + W2_DAYS[w2Index] + " · the one thing no one tells you";
+      tbTitle.textContent = "It's " + day.name.split(" ")[0] + "'s day — you're The Swarm";
+      tbText.textContent = "Two tasks, five minutes: (1) between 9 and 10 AM, like Quinta's post and leave one real comment — the box below is ready. (2) Anytime today, repost with one of the three scripts — your referral link is already inside, and a seat it fills pays YOU 35%.";
+      taskCard(tasks, "9–10 AM · both platforms · 2 minutes", "Your comment (the Swarm minimum)",
+        "One true sentence beats ten emojis. The first hour decides how far her card travels.",
+        day.comment);
+      taskCard(tasks, "Anytime 11 AM – 8 PM · 3 minutes", "Your repost — pick the one that sounds like you",
+        "Tweak freely — your voice beats our polish. Your link is already in the text. These three are for LinkedIn, where there's room to talk.",
+        null, day.reposts.map(function (v) { return { label: v.label, text: w2fill(v.text, me) }; }));
       taskCard(tasks, "Instagram repost note · 60-character limit", "For the IG repost — short on purpose",
         "Instagram caps repost notes at 60 characters. Your referral link can't ride an IG repost — keep it in your bio, and use the link sticker on Stories.",
         day.igNote);
@@ -335,7 +408,8 @@
 
     var sel = document.getElementById("day-select");
     var labels = ["Mon Aug 3 — Erika", "Tue Aug 4 — Tara", "Wed Aug 5 — Joshlyn", "Thu Aug 6 — Stephanie",
-                  "Fri Aug 7 — Nik", "Sat Aug 8 — Natalie", "Sun Aug 9 — Nery"];
+                  "Fri Aug 7 — Nik", "Sat Aug 8 — Natalie", "Sun Aug 9 — Nery",
+                  "Wk 2 · Mon Aug 10 — Erika"];
     var opt0 = document.createElement("option");
     opt0.value = "today"; opt0.textContent = "Today";
     sel.appendChild(opt0);
