@@ -21,7 +21,8 @@
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"What happens after I join the Quinta & Co. waitlist?","acceptedAnswer":{"@type":"Answer","text":"A short note confirming you're on the list, then one email the moment your class opens for enrollment — before it's announced anywhere else."}},
 {"@type":"Question","name":"Will the waitlist fill my inbox?","acceptedAnswer":{"@type":"Answer","text":"No. The waitlist isn't a newsletter — your email is used to tell you your class is open, and it's never shared or sold."}},
-{"@type":"Question","name":"Can I get on the list for more than one class?","acceptedAnswer":{"@type":"Answer","text":"Yes — pick 'All of it' to hear about everything, or submit the form once per class."}}
+{"@type":"Question","name":"Can I get on the list for more than one class?","acceptedAnswer":{"@type":"Answer","text":"Yes — pick 'All of it' to hear about everything, or submit the form once per class."}},
+{"@type":"Question","name":"What do Quinta & Co. classes cost?","acceptedAnswer":{"@type":"Answer","text":"Each class is $99–$299, priced per class — you pay only for the ones you take. There's no program fee and no package to buy, and every class runs twice a month."}}
 ]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,6 +49,13 @@
 .wl-success p{font-size:17.5px;line-height:1.6;color:var(--ink);margin-top:14px}
 .wl-success .sprout{width:30px;height:auto;color:var(--sage-deep);margin-bottom:14px}
 .hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+/* "How it works" strip — the three facts that remove the commitment question
+   before we ask for an email: à la carte, twice monthly, priced per class */
+.wl-how{margin-top:30px;border-top:1px solid var(--line)}
+.wl-how-item{display:flex;gap:16px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--line)}
+.wl-how-label{flex:none;width:160px;font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:600;color:var(--sage-deep)}
+.wl-how-item p{font-size:16px;line-height:1.55;color:var(--ink)}
+@media(max-width:600px){.wl-how-item{flex-direction:column;gap:4px}.wl-how-label{width:auto}}
 </style>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <!-- Google tag (gtag.js) -->
@@ -82,6 +90,21 @@
     <p class="label" style="margin-bottom:14px">First dibs</p>
     <h1>Join the waitlist.</h1>
     <p class="desc">Classes are small by design, and The Foundations opens this fall. Tell us what you want to learn and we'll email you the moment it opens — before anyone else hears about it.</p>
+
+    <div class="wl-how" aria-label="How classes work">
+      <div class="wl-how-item">
+        <span class="wl-how-label">&Agrave; la carte</span>
+        <p>Take one class or the whole path — every class stands alone. No program to join, nothing to drop out of.</p>
+      </div>
+      <div class="wl-how-item">
+        <span class="wl-how-label">On your schedule</span>
+        <p>Every class runs twice a month — catch the session that fits your calendar.</p>
+      </div>
+      <div class="wl-how-item">
+        <span class="wl-how-label">$99&ndash;$299 per class</span>
+        <p>Priced per class, and that's the whole price. No packages, no program fee, no upsell.</p>
+      </div>
+    </div>
 
     <form id="wlForm" novalidate>
       <div class="wl-field">
@@ -141,6 +164,13 @@
         <div class="faq-qa">
           <h3>Can I get on the list for more than one class?</h3>
           <p>Absolutely — pick "All of it" to hear about everything, or submit the form once per class you're excited about.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <span class="faq-num" aria-hidden="true">4</span>
+        <div class="faq-qa">
+          <h3>What do classes cost?</h3>
+          <p>Each class is $99&ndash;$299, priced per class — you pay only for the ones you take. There's no program fee and no package to buy, and every class runs twice a month so you can catch the session that fits.</p>
         </div>
       </div>
     </div>
