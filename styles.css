@@ -401,6 +401,28 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .hub-cta .btn{flex:none;margin-top:0;max-width:100%} /* cap so the long label wraps instead of poking past the card on phones */
 .hub-note{text-align:center;font-size:15px;line-height:1.6;color:var(--sage-deep);background:#EEF2EC;border-radius:10px;padding:12px 20px;margin:0 0 22px}
 .hub-note strong{color:var(--moss)}
+
+/* ---- rotating banner (Foundations · waitlist) --------------------------
+   The social carousel's argument at strip height. Every line is real text in
+   the DOM, one visible at a time — so search engines, AI answer engines and
+   screen readers get the whole case rather than one frame of it.
+   The rotating half carries the argument; the fixed line under it carries the
+   facts and the links, because a link that rotates away mid-reach is cruel. */
+.qbanner{background:#EEF2EC;border-radius:10px;padding:14px 20px;margin:0 0 22px;text-align:center}
+.qbanner-stage{list-style:none;margin:0;padding:0;position:relative;min-height:1.6em}
+.qbanner-stage li{position:absolute;left:0;right:0;top:0;margin:0;opacity:0;transition:opacity .35s ease;
+  font-size:15.5px;line-height:1.6;color:var(--moss);font-weight:500}
+.qbanner-stage li.is-on{opacity:1}
+.qbanner-fixed{margin:9px 0 0;font-size:14px;line-height:1.55;color:var(--sage-deep)}
+.qbanner-fixed strong{color:var(--moss)}
+/* two lines of room on narrow screens so the strip never jumps height mid-fade */
+@media(max-width:600px){ .qbanner-stage{min-height:3.2em} }
+/* No motion: stop cycling and just show the list. Content over choreography. */
+@media(prefers-reduced-motion:reduce){
+  .qbanner-stage{min-height:0}
+  .qbanner-stage li{position:static;opacity:1;transition:none}
+  .qbanner-stage li + li{margin-top:5px}
+}
 .hub-cta + .hub-cta{margin-top:14px}
 .hub-cta-teach{background:#F4F1EA}
 
