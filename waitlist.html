@@ -223,6 +223,24 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   var emailInput = document.getElementById("wlEmail");
   var select = document.getElementById("wlClass");
 
+  /* ------------------------------------------------------------------
+     FUNNEL TRACKING
+
+     GA4 reported 10 people on this page averaging 2 seconds each, and there
+     was no way to tell what that meant: never engaged? typed and gave up?
+     hit an error? left for the free Coffee offer instead? One number, five
+     explanations. These events separate them.
+
+     Deliberately wrapped so a blocked or absent gtag can never break the
+     form — an ad blocker must not cost a signup. Nothing here is personal:
+     no email, no name, only which class and where they came from.
+     ------------------------------------------------------------------ */
+  function track(name, props) {
+    try {
+      if (typeof gtag === "function") gtag("event", name, props || {});
+    } catch (e) { /* never let analytics break the form */ }
+  }
+
   function showError(msg) {
     errEl.textContent = msg;
     errEl.classList.add("show");
@@ -271,14 +289,50 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     } catch (e) { /* best-effort */ }
   }
 
+  /* Did they engage at all? Fires once, on the first touch of any field. This
+     is the line between "bounced without reading" and "started and gave up" —
+     two problems with completely different fixes. */
+  var startedForm = false;
+  ["wlName", "wlEmail", "wlClass"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("focus", function () {
+      if (startedForm) return;
+      startedForm = true;
+      track("waitlist_form_start", { src: source });
+    });
+  });
+
+  /* Nineteen options is a lot to scan on a phone. If people open this and then
+     stop, the choice itself is the obstacle. */
+  select.addEventListener("change", function () {
+    track("waitlist_class_selected", { class_slug: select.value || "all" });
+  });
+
+  /* The free Coffee offer is the most prominent thing above this form on a
+     phone. If it's quietly eating the page, it shows up here.
+
+     Delegated from the document on purpose: there are TWO Coffee links in the
+     header (app.js adds the mobile one), and app.js rebuilds the header after
+     load — so anything bound directly to the element ends up detached and
+     silently stops counting. */
+  document.addEventListener("click", function (ev) {
+    var el = ev.target;
+    if (!el || !el.closest) return;
+    if (!el.closest('a[href*="coffee.html"]')) return;
+    track("waitlist_exit_coffee", { started_form: startedForm ? "yes" : "no" });
+  }, true);
+
   // 2) Attach the submit handler BEFORE touching Supabase, so the form can never
   //    fall back to a silent native submit that loses what the visitor typed.
   var sb = null;
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     clearError();
+    track("waitlist_submit", { class_slug: select.value || "all", src: source });
 
     if (!sb) {
+      track("waitlist_error", { reason: "signup_service_unavailable" });
       showError("The signup service didn't load on this connection. Email hello@quintaand.co with the class you want and we'll add you by hand.");
       return;
     }
@@ -287,6 +341,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       emailInput.setAttribute("aria-invalid", "true");
       emailInput.setAttribute("aria-describedby", "wlError");
+      track("waitlist_error", { reason: "invalid_email" });
       showError("That email doesn't look quite right — mind double-checking it?");
       return;
     }
@@ -303,27 +358,43 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     };
 
     // Honeypot: bots fill the hidden field — pretend success, save nothing.
-    if (document.getElementById("wlCompany").value) { finish(); return; }
+    // Counted separately, so bot traffic never inflates the signup number.
+    if (document.getElementById("wlCompany").value) {
+      track("waitlist_bot_blocked", {});
+      finish();
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = "Adding you…";
 
+    function signed(already) {
+      track("waitlist_signup", {
+        class_slug: payload.class_slug || "all",
+        src: source,
+        referred: ref ? "yes" : "no",
+        already_on_list: already ? "yes" : "no"
+      });
+      finish();
+    }
+
     sb.from("waitlist").insert(payload).then(function (res) {
       if (res.error) throw res.error;
-      finish();
+      signed(false);
     }).catch(function (err) {
       // 23505 = already on the list for this class — that's a success in our book.
-      if (err && String(err.code) === "23505") { finish(); return; }
+      if (err && String(err.code) === "23505") { signed(true); return; }
       // If the ref column isn't in the database yet, never lose the signup —
       // save it without the referral credit rather than failing the visitor.
       if (payload.ref && err && /ref/.test(String(err.message || ""))) {
         var retry = Object.assign({}, payload); delete retry.ref;
         sb.from("waitlist").insert(retry).then(function (res2) {
           if (res2.error) throw res2.error;
-          finish();
+          signed(false);
         }).catch(function (err2) {
-          if (err2 && String(err2.code) === "23505") { finish(); return; }
+          if (err2 && String(err2.code) === "23505") { signed(true); return; }
           console.error(err2);
+          track("waitlist_error", { reason: "save_failed_after_ref_retry" });
           btn.disabled = false;
           btn.textContent = "Put me on the list";
           showError("Something hiccuped saving that. Please try again — or email hello@quintaand.co and we'll add you by hand.");
@@ -331,6 +402,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         return;
       }
       console.error(err);
+      track("waitlist_error", { reason: "save_failed" });
       btn.disabled = false;
       btn.textContent = "Put me on the list";
       showError("Something hiccuped saving that. Please try again — or email hello@quintaand.co and we'll add you by hand.");
