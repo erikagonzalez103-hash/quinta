@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the Waitlist — Quinta &amp; Co.</title>
+<!-- Erika says "the wishlist" out loud, so people type it. Rather than send
+     them to a 404 mid-campaign, send them where they meant to go.
+     noindex + canonical so search engines only ever count waitlist.html. -->
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://quintaand.co/waitlist.html">
+<meta http-equiv="refresh" content="0; url=waitlist.html">
+<script>
+  // Carry the query string across — waitlist links arrive with ?c=, ?src= and
+  // referral codes on them, and dropping those loses the credit.
+  (function () {
+    var q = window.location.search || "";
+    window.location.replace("waitlist.html" + q + (window.location.hash || ""));
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+<main>
+  <section class="wrap" style="padding:90px 20px;text-align:center;max-width:520px">
+    <h1 style="font-family:var(--display);font-weight:500;font-size:clamp(28px,5vw,40px);color:var(--moss);line-height:1.1">Taking you to the waitlist…</h1>
+    <p style="font-size:17.5px;line-height:1.6;margin-top:16px">If nothing happens, <a href="waitlist.html">open the waitlist here</a>.</p>
+  </section>
+</main>
+</body>
+</html>
