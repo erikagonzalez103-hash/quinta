@@ -260,6 +260,22 @@
   }
   function show(kind, text) { msg.className = "msg " + kind; msg.textContent = text; }
 
+  /* No classes assigned yet: hide the form rather than let someone schedule a
+     class that doesn't exist, and name who fixes it. The shared calendar below
+     stays visible — seeing the room is still useful. */
+  function showNoClasses() {
+    var form = document.getElementById("sform");
+    if (!form) return;
+    form.style.display = "none";
+    var note = document.createElement("div");
+    note.className = "msg err";
+    note.style.display = "block";
+    note.innerHTML = "Your classes haven't been assigned to your account yet, so there's " +
+      "nothing here to schedule. Email <a href=\"mailto:hello@quintaand.co\">hello@quintaand.co</a> " +
+      "and Erika will add them — it takes a minute, and you can set your dates straight after.";
+    form.parentNode.appendChild(note);
+  }
+
   // Build the start-time menu: 8:00 AM – 8:30 PM, half-hour steps
   (function () {
     var sel = document.getElementById("s-time");
@@ -506,10 +522,21 @@
 
       myName = row.display_name || row.full_name || "";
 
+      /* This used to fall back to a single option called "My class" when an
+         instructor had no classes assigned. It looked like a real choice, saved
+         without complaint, and produced the slug "my-class" — which matches
+         nothing in the catalogue and nothing in Cal.com. Three sessions were
+         booked that way before anyone noticed. An empty roster is a setup
+         problem; say so instead of inventing a class. */
       var sel = document.getElementById("s-class");
-      (row.classes && row.classes.length ? row.classes : ["My class"]).forEach(function (c) {
-        var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
-      });
+      var myClasses = (row.classes || []).filter(function (c) { return c && String(c).trim(); });
+      if (!myClasses.length) {
+        showNoClasses();
+      } else {
+        myClasses.forEach(function (c) {
+          var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
+        });
+      }
       var dateEl = document.getElementById("s-date");
       var min = new Date(); min.setDate(min.getDate() + 15);
       dateEl.min = min.toISOString().slice(0, 10);
