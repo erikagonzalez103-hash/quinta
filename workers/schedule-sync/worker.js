@@ -276,11 +276,14 @@ export default {
       const rows = await rpc(env, "schedule_sync_read", {});
       slugs = [...new Set(rows.map((r) => r.class_slug))];
     } else {
-      // Supabase webhook payload: record on insert/update, old_record on delete
+      /* Supabase webhook payload: record on insert/update, old_record on delete.
+         Sync BOTH when they differ. Moving a session from one class to another
+         used to sync only the new one, leaving the date bookable under the old
+         class too — Sept 9 showed up as both Brand 101 and Bookkeeping II, and
+         a student could have booked the wrong one. */
       const body = await request.json().catch(() => ({}));
-      const slug = body?.record?.class_slug || body?.old_record?.class_slug;
-      if (!slug) return json({ error: "no class_slug in payload" }, 400);
-      slugs = [slug];
+      slugs = [...new Set([body?.record?.class_slug, body?.old_record?.class_slug].filter(Boolean))];
+      if (!slugs.length) return json({ error: "no class_slug in payload" }, 400);
     }
 
     const username = await resolveUsername(env);
