@@ -407,16 +407,29 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
    the DOM, one visible at a time — so search engines, AI answer engines and
    screen readers get the whole case rather than one frame of it.
    The rotating half carries the argument; the fixed line under it carries the
-   facts and the links, because a link that rotates away mid-reach is cruel. */
-.qbanner{background:#EEF2EC;border-radius:10px;padding:14px 20px;margin:0 0 22px;text-align:center}
+   facts and the links, because a link that rotates away mid-reach is cruel.
+
+   Moss on cream, matching the paid-social carousel: someone who saw the ad
+   should recognise the page. The pale version measured 1.08:1 against the
+   page background — invisible as a block. This is 7.82:1. */
+.qbanner{background:var(--moss);color:var(--cream);border-radius:10px;padding:20px 24px;margin:0 0 22px;text-align:center}
+.qbanner-eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;font-weight:500;color:#DCC28E;margin:0 0 13px}
+/* 1.6em not 1.5 — at 19px/1.5 a single line renders 29px and would overflow
+   a 1.5em box by a hair, crowding the rule beneath it. */
 .qbanner-stage{list-style:none;margin:0;padding:0;position:relative;min-height:1.6em}
 .qbanner-stage li{position:absolute;left:0;right:0;top:0;margin:0;opacity:0;transition:opacity .35s ease;
-  font-size:15.5px;line-height:1.6;color:var(--moss);font-weight:500}
+  font-size:19px;line-height:1.5;color:var(--cream);font-weight:500}
 .qbanner-stage li.is-on{opacity:1}
-.qbanner-fixed{margin:9px 0 0;font-size:14px;line-height:1.55;color:var(--sage-deep)}
-.qbanner-fixed strong{color:var(--moss)}
-/* two lines of room on narrow screens so the strip never jumps height mid-fade */
-@media(max-width:600px){ .qbanner-stage{min-height:3.2em} }
+/* the carousel's gold hairline, holding the argument apart from the facts */
+.qbanner-rule{width:64px;height:1px;background:#DCC28E;opacity:.8;border:0;margin:16px auto 13px}
+.qbanner-fixed{margin:0;font-size:14px;line-height:1.55;color:#D8E0D6}
+.qbanner-fixed strong{color:var(--cream)}
+.qbanner-fixed a{color:var(--cream);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-color:rgba(250,250,246,.55)}
+.qbanner-fixed a:hover{text-decoration-color:var(--cream)}
+/* room for two lines on narrow screens so the strip never jumps mid-fade */
+@media(max-width:600px){ .qbanner{padding:18px 18px} .qbanner-stage{min-height:3.1em} .qbanner-stage li{font-size:17.5px} }
 /* No motion: stop cycling and just show the list. Content over choreography. */
 @media(prefers-reduced-motion:reduce){
   .qbanner-stage{min-height:0}
