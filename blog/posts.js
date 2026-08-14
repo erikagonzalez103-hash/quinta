@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "questions-new-founders-should-ask",
+    title: "Ladies, What Questions Should a New Founder Be Asking? The Ones You Don't Know Exist Yet",
+    date: "2026-08-11",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Search works beautifully once you know the name of the thing — but you can't look up a mistake you don't know exists. Why the knowledge that saves you travels through people, not search results.",
+    image: "blog-questions-you-dont-know.webp"
+  },
+  {
     slug: "why-women-dont-start-businesses",
     title: "Why Haven't More Women Started Businesses? It's Fear, Not the Idea — and the #1 Fear Might Surprise You.",
     date: "2026-07-26",
