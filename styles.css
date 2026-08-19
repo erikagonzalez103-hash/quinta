@@ -366,6 +366,8 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .acc-name{font-family:var(--display);font-weight:500;font-size:17px;color:var(--moss);line-height:1.2}
 .acc-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .acc-badges .stage-tag{margin-left:0}
+/* sits in the badge row, so it needs no left margin of its own */
+.acc-badges .acc-soon{margin-left:0}
 .acc-format{font-family:var(--label);text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:600;color:#5A5E55;background:#EEF2EC;border-radius:3px;padding:3px 8px}
 .acc-toggle{position:relative;width:18px;height:18px;flex:none}
 .acc-toggle::before,.acc-toggle::after{content:'';position:absolute;background:var(--sage-deep);transition:transform .2s}

@@ -109,6 +109,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
+    open: true,   // Tara set September dates - bookable
     name: "Bookkeeping II — Prep for your bookkeeper",
     desc: "Learn what a clean handoff looks like so your bookkeeper thanks you, instead of billing you to untangle a shoebox.",
     format: "90 minutes · live, small group",
@@ -213,6 +214,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    open: true,   // Joshlyn set September dates - bookable
     name: "Investing — How to pay yourself first",
     desc: "Your business is not your retirement plan. Learn how to build wealth outside the company — starting with your first $100 — and leave with a pay-yourself-first investing plan built on your own numbers.",
     format: "120 minutes · live, small group",
@@ -274,6 +276,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
+    open: true,   // Stephanie set September dates - bookable
     name: "Brand 101",
     desc: "Walk out with a one-page brand foundation — your promise, your voice, and a simple visual direction — so every future decision gets easier, no agency required.",
     format: "90 minutes · live, small group",

@@ -305,7 +305,10 @@
     return !!c.soon || (c.track === "foundations" && !foundationsOpen());
   }
   function soonLabel(c) {
-    return c.track === "foundations" ? "Coming this fall" : "Coming soon";
+    // Was "Coming this fall" for Foundations — wrong once part of the
+    // catalogue had real September dates and part didn't. "Coming soon" is
+    // true of any class without dates, whichever track it's on.
+    return "Coming soon";
   }
   // Pages in subfolders (the generated classes/ pages) set data-root="../" on <body>
   // so links we build here resolve correctly from anywhere.
@@ -314,9 +317,9 @@
   }
   function soonNoteHTML(c) {
     var coffee = '<a href="' + pageRoot() + 'coffee.html">Coffee with Quinta</a>';
-    return c.track === "foundations"
-      ? "The Foundations open this fall (2026). Be first to hear — and grab a free hour in the meantime — at " + coffee + "."
-      : "Not open just yet. Be first to hear at " + coffee + ".";
+    // Don't say "The Foundations open this fall" — several Foundations classes
+    // are already on the September calendar. Only THIS class is waiting.
+    return "Dates for this class aren't set yet. Be first to hear — and grab a free hour in the meantime — at " + coffee + ".";
   }
 
   // The stage filter bar (All + each stage that actually appears in this track).
@@ -373,6 +376,9 @@
         '<span class="acc-badges">' +
           (c.format ? '<span class="acc-format">' + escapeHtml(c.format) + "</span>" : "") +
           stageChip(c.stage) +
+          // The "coming soon" note used to live only inside the collapsed body,
+          // so scanning the list told you nothing about what you could book.
+          (isSoon(c) ? '<span class="tag-soon acc-soon">Coming soon</span>' : "") +
         "</span>" +
       "</span>" +
       '<span class="acc-toggle" aria-hidden="true"></span>';
@@ -463,7 +469,10 @@
 
     order.forEach(function (key) {
       var parts = key.split("|");
-      var groupSoon = groups[key].some(function (c) { return isSoon(c); });
+      // No phase-level badge any more. It marked a whole phase "Coming this
+      // fall" if ANY class in it lacked dates, which read as "none of this is
+      // available" even when several classes were open and bookable. The
+      // per-class "Coming soon" tag says the true thing.
       var group = document.createElement("section");
       group.className = "acc-group";
 
@@ -472,8 +481,7 @@
       head.innerHTML =
         '<span class="phase-plate">' + phaseGrowth(parts[0]) + "</span>" +
         '<span class="phase-head-text"><span class="phase-head-num">Phase ' + parts[0] + '</span>' +
-        '<span class="phase-head-name">' + escapeHtml(parts[1]) + "</span></span>" +
-        (groupSoon ? '<span class="tag-soon phase-tag">Coming this fall</span>' : "");
+        '<span class="phase-head-name">' + escapeHtml(parts[1]) + "</span></span>";
       group.appendChild(head);
 
       var accList = document.createElement("div");
