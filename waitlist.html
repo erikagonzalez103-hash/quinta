@@ -274,6 +274,19 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     document.getElementById("wlSuccessHeading").focus();
   }
 
+  /* Which classes have real dates?
+
+     Same rule app.js uses: a class marked `open` is bookable; otherwise it's
+     waiting if it's flagged `soon`, or it's a Foundations class and the
+     Foundations aren't open in general. Repeated here rather than imported
+     because app.js keeps it inside a closure — if that rule ever changes,
+     change it in both places. */
+  function classIsWaiting(c) {
+    if (c.open) return false;
+    var open = !!(window.QUINTA_CONFIG && window.QUINTA_CONFIG.FOUNDATIONS_OPEN);
+    return !!c.soon || (c.track === "foundations" && !open);
+  }
+
   // 1) Build the class dropdown from classes.js — no dependency on anything that can fail.
   function addGroup(label, track, skipSlugs) {
     var og = document.createElement("optgroup");
@@ -282,13 +295,19 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       .forEach(function (c) {
         var o = document.createElement("option");
         o.value = c.slug;
-        o.textContent = c.name;
+        /* Say so in the option itself. Someone joined the waitlist for two
+           classes on the same day — one already had September dates and one
+           didn't, and the list gave her no way to tell them apart. */
+        /* Parentheses, not a dash — several class names already contain an em
+           dash ("Bookkeeping I — Set up QuickBooks"), and a second one made
+           the suffix read as part of the title. */
+        o.textContent = c.name + (classIsWaiting(c) ? " (coming soon)" : "");
         og.appendChild(o);
       });
     select.appendChild(og);
   }
-  addGroup("The Foundations · opens this fall", "foundations", []);
-  addGroup("The Practice · open now", "practice", ["coffee"]); // Coffee is free & bookable — no waitlist needed
+  addGroup("The Foundations", "foundations", []);
+  addGroup("The Practice", "practice", ["coffee"]); // Coffee is free & bookable — no waitlist needed
 
   // ?c=<slug> preselects a class (used by the "Join the waitlist" buttons on class pages)
   var params = new URLSearchParams(window.location.search);
