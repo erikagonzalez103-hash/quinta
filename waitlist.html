@@ -411,6 +411,27 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         referred: ref ? "yes" : "no",
         already_on_list: already ? "yes" : "no"
       });
+
+      /* Tell Meta a real lead happened — but only here, after Supabase has
+         confirmed the row. Meta's Event Setup Tool would have fired this on
+         the button click instead, counting bad emails and failed saves as
+         conversions and teaching the ad algorithm to chase them.
+
+         Someone re-joining a list they're already on isn't a new lead, so
+         that case is skipped. Wrapped because a blocked fbq must never break
+         a signup, and no email or name is ever sent. */
+      if (!already) {
+        try {
+          if (typeof fbq === "function") {
+            fbq("track", "Lead", {
+              content_name: payload.class_name || "All classes",
+              content_category: payload.class_slug || "all",
+              source: source
+            });
+          }
+        } catch (e) { /* analytics must never cost us a signup */ }
+      }
+
       finish();
     }
 
