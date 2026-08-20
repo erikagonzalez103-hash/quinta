@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're booked | Quinta &amp; Co.</title>
+<!-- Conversion landing page. Not for search - people only arrive here from
+     Cal.com after booking, and an indexed copy would pollute the funnel. -->
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css?v=3">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-QM9XPPN7XC');
+</script>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1179541285251913');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
+<style>
+.bk{padding:70px 0 100px;max-width:620px;text-align:center}
+.bk .tick{width:58px;height:58px;margin:0 auto 26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;background:#fff}
+.bk .tick svg{width:26px;height:26px;color:var(--sage-deep)}
+.bk h1{font-family:var(--display);font-weight:500;font-size:clamp(34px,7vw,52px);line-height:1.05;letter-spacing:-.02em;color:var(--moss)}
+.bk .what{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:600;color:var(--sage-deep);margin-top:20px}
+.bk .desc{font-size:clamp(17px,2.2vw,19px);line-height:1.62;margin-top:18px;color:var(--ink)}
+.bk .next{background:#fff;border:1px solid var(--line);border-radius:3px;padding:24px 26px;margin-top:34px;text-align:left}
+.bk .next h2{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11.5px;font-weight:600;color:var(--sage-deep);margin-bottom:14px}
+.bk .next li{font-size:16.5px;line-height:1.6;color:var(--ink);margin-bottom:10px;list-style:none;padding-left:20px;position:relative}
+.bk .next li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--sage)}
+.bk .next li:last-child{margin-bottom:0}
+.bk .btn{margin-top:34px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a class="wordmark" href="/">Quinta &amp; Co.</a>
+  </div>
+</header>
+
+<main class="wrap bk">
+  <div class="tick" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  </div>
+
+  <h1>You're booked</h1>
+  <p class="what" id="what"></p>
+  <p class="desc">A confirmation is on its way to your inbox, with the link you'll use to join. Add it to your calendar now so it doesn't get lost.</p>
+
+  <div class="next">
+    <h2>Before we meet</h2>
+    <ul>
+      <li>Come with your own situation in mind — the class works best when it's about your actual business, not a hypothetical one.</li>
+      <li>Nothing to prepare and nothing to buy. Bring questions.</li>
+      <li>If something comes up, reschedule from the link in your confirmation email. No penalty, no awkwardness.</li>
+    </ul>
+  </div>
+
+  <a class="btn btn-solid" href="/foundations.html">See what else is coming up</a>
+</main>
+
+<script>
+/* ============================================================
+   The conversion signal.
+
+   Cal.com redirects here after a completed booking and can pass
+   details as query parameters. We use ONE of them - the event
+   title - to label the conversion, and deliberately ignore the
+   rest: Cal.com also forwards attendee name and email, and none
+   of that belongs in an analytics payload.
+
+   Fires Schedule, which is a Meta standard event. Standard beats
+   custom because it can be used as an optimisation goal and in
+   Advantage+ without extra setup.
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var params = new URLSearchParams(window.location.search);
+
+  // Cal.com's redirect params vary by version; check the usual names.
+  var raw = params.get("eventTypeTitle") || params.get("title") || params.get("eventType") || "";
+
+  // Trust nothing from a URL: strip anything that isn't plain text, and cap
+  // the length so a crafted link can't stuff the page or the pixel payload.
+  var className = raw.replace(/[^\w\s&'’\-—.]/g, "").trim().slice(0, 80);
+
+  if (className) {
+    document.getElementById("what").textContent = className;
+  }
+
+  try {
+    if (typeof fbq === "function") {
+      fbq("track", "Schedule", {
+        content_name: className || "Quinta class",
+        content_category: "class booking"
+      });
+    }
+  } catch (e) { /* a blocked pixel must never break the page */ }
+
+  try {
+    if (typeof gtag === "function") {
+      gtag("event", "booking_complete", { class_name: className || "unknown" });
+    }
+  } catch (e) { /* same */ }
+})();
+</script>
+</body>
+</html>
