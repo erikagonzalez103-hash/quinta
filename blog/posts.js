@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "women-helping-women",
+    title: "Are You a Woman-Owned Business? Here's Why Women Helping Women Is Your Fastest Path Forward",
+    date: "2026-08-23",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "39.2% of U.S. businesses are woman-owned — and they generate 6.2% of the revenue. A 2024 University of Chicago study found women mentored by women do measurably better. Plus the free Dallas programs worth your afternoon.",
+    image: "blog-women-helping-women.webp"
+  },
+  {
     slug: "questions-new-founders-should-ask",
     title: "Ladies, What Questions Should a New Founder Be Asking? The Ones You Don't Know Exist Yet",
     date: "2026-08-11",
