@@ -34,6 +34,34 @@
   .daypick select{margin-left:8px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff}
   .mylink{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   .mylink .lnk{font-weight:600;word-break:break-all}
+  /* ---- The Swarm board: who's posted today, and what the links have brought in ---- */
+  .swarm{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:26px}
+  .swarm[hidden]{display:none}
+  .swarm-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .swarm-head h2{font-size:1.05rem;margin:0}
+  .live-dot{font-family:var(--label);letter-spacing:.18em;text-transform:uppercase;font-size:10px;color:#4F6B5C;display:inline-flex;align-items:center;gap:6px}
+  .live-dot::before{content:"";width:7px;height:7px;border-radius:50%;background:#6E8F76;animation:swarmpulse 2s ease-in-out infinite}
+  .live-dot.stale::before{background:#C0BFB6;animation:none}
+  @keyframes swarmpulse{0%,100%{opacity:1}50%{opacity:.25}}
+  @media (prefers-reduced-motion:reduce){.live-dot::before{animation:none}}
+  .swarm-sub{color:#8A8E83;font-size:.88rem;margin:4px 0 14px;line-height:1.5}
+  .swarm-me{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .swarm-me-hint{display:block;color:#5A5E55;font-size:.85rem;margin-top:2px}
+  .btn-copy.on{background:#FFFFFF;color:var(--sage-deep)}
+  .swarm-table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .swarm-table th{font-family:var(--label);letter-spacing:.14em;text-transform:uppercase;font-size:10px;color:#8A8E83;text-align:left;font-weight:400;padding:0 8px 8px 0;border-bottom:1px solid var(--line)}
+  .swarm-table td{padding:10px 8px 10px 0;border-bottom:1px solid #EFEEE8;vertical-align:middle}
+  .swarm-table tr:last-child td{border-bottom:0}
+  .swarm-table .num{text-align:right;padding-right:0;font-variant-numeric:tabular-nums}
+  .swarm-table tr.is-me td{background:#F7F6F1}
+  .swarm-name{display:flex;align-items:center;gap:8px}
+  .swarm-check{color:#6E8F76;font-size:.95rem}
+  .swarm-yet{color:#C0BFB6;font-size:.95rem}
+  .swarm-you{font-family:var(--label);letter-spacing:.14em;text-transform:uppercase;font-size:9.5px;color:#A6791F}
+  .swarm-note{color:#8A8E83;font-size:.82rem;margin:12px 0 0;line-height:1.5}
+  .task .donerow{display:flex;align-items:center;gap:10px;margin-right:auto}
+  .task .btn-done{padding:8px 16px;border-radius:999px;font-size:.88rem;border:1px solid var(--line);background:#fff;color:#5A5E55;cursor:pointer;font-family:inherit}
+  .task .btn-done.on{border-color:var(--sage-deep);background:#EEF2EC;color:var(--sage-deep)}
   #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
   #camp{display:none}
   @media(max-width:600px){.today-banner{padding:16px 18px}.task{padding:16px 16px}}
@@ -90,6 +118,35 @@
     </div>
 
     <div id="tasks"></div>
+
+    <section class="swarm" id="swarm" hidden>
+      <div class="swarm-head">
+        <h2>The Swarm today</h2>
+        <span class="live-dot" id="swarm-live">Live</span>
+      </div>
+      <p class="swarm-sub" id="swarm-sub">This updates on its own as your colleagues post — no refresh, no group text.</p>
+
+      <div class="swarm-me">
+        <div>
+          <strong>Did you post today?</strong>
+          <span class="swarm-me-hint">Tap it and the whole faculty sees it. That's the point.</span>
+        </div>
+        <button class="btn-copy" id="swarm-me-btn" type="button">I posted today 🌱</button>
+      </div>
+
+      <table class="swarm-table">
+        <thead>
+          <tr>
+            <th scope="col">Teacher</th>
+            <th scope="col" class="num">Posted today</th>
+            <th scope="col" class="num">Signups from her link</th>
+          </tr>
+        </thead>
+        <tbody id="swarm-rows"></tbody>
+      </table>
+
+      <p class="swarm-note">Signups counts every woman who joined the waitlist through that teacher's referral link, all August. Names and numbers only — nobody here can see who signed up.</p>
+    </section>
 
     <p class="daypick">Planning ahead? Preview another day:
       <select id="day-select"></select>
@@ -255,6 +312,10 @@
   function taskCard(container, when, title, why, text, extraVariants) {
     var card = document.createElement("div");
     card.className = "task";
+    // Position in today's list IS the key. It only has to be stable within one
+    // day, and the day is stored alongside it — so "task:1" on Monday and
+    // "task:1" on Tuesday are different rows, which is what we want.
+    var taskKey = "task:" + container.children.length;
     var current = { text: text };
     var html = '<span class="when">' + when + '</span><h3>' + title + '</h3><p class="why">' + why + '</p>';
     if (extraVariants) {
@@ -262,7 +323,7 @@
         return '<button type="button" class="vtab' + (i === 0 ? ' on' : '') + '" data-i="' + i + '">' + v.label + '</button>';
       }).join("") + '</div>';
     }
-    html += '<div class="copybox"></div><div class="copyrow"><button class="btn-copy" type="button">Copy this</button></div>';
+    html += '<div class="copybox"></div><div class="copyrow"><span class="donerow"></span><button class="btn-copy" type="button">Copy this</button></div>';
     card.innerHTML = html;
     var box = card.querySelector(".copybox");
     box.textContent = extraVariants ? extraVariants[0].text : text;
@@ -278,12 +339,16 @@
       });
     }
     copyBtn(function () { return current.text; }, card.querySelector(".btn-copy"));
+    // Only today's card can be checked off. Previewing Thursday shouldn't let
+    // you mark Thursday's work done on Monday.
+    if (VIEW_IS_TODAY) SWARM.attachToggle(card.querySelector(".donerow"), taskKey);
     container.appendChild(card);
   }
 
   function renderDay(me, dayIndex) {
     var tasks = document.getElementById("tasks");
     tasks.innerHTML = "";
+    VIEW_IS_TODAY = (dayIndex === dayIndexFor(new Date()));
     var tbLabel = document.getElementById("tb-label");
     var tbTitle = document.getElementById("tb-title");
     var tbText = document.getElementById("tb-text");
@@ -391,6 +456,235 @@
     }
   }
 
+  // ---- The Swarm board -------------------------------------------------
+  //
+  // WHAT IT IS
+  // A live list of the faculty: who has posted today, and how many waitlist
+  // signups each teacher's referral link has brought in. It updates itself
+  // through Supabase Realtime — when Nery taps "I posted", every other
+  // teacher's open page moves within a second, with no refresh.
+  //
+  // WHY IT EXISTS
+  // The Swarm only works if the first hour is crowded, and until now nobody
+  // could see whether anyone else had shown up. A group text is a poor
+  // substitute for a room you can look at.
+  //
+  // WHAT IT NEVER SHOWS
+  // Names and counts. Not one signup's email, and not who signed up. The
+  // whole board comes from the campaign_board view, which is built exactly
+  // that narrowly (see supabase/sql/2026-08-24-campaign-swarm-board.sql).
+  //
+  // IF THE SQL HASN'T BEEN RUN YET the queries fail, the section stays
+  // hidden, and the rest of the page carries on as it always did. The daily
+  // posts are the thing that matters; the board is not allowed to break them.
+
+  var VIEW_IS_TODAY = false;
+
+  var SWARM = {
+    sb: null,
+    me: null,
+    day: "",
+    mine: {},          // task_key -> true, for today only
+    toggles: {},       // task_key -> the button element showing its state
+    rows: [],
+    timer: null,
+
+    /* Today in Dallas, as YYYY-MM-DD. The SQL side computes the same day the
+       same way (America/Chicago), so a teacher posting at 11pm Central and
+       the board agree on which day it was. */
+    todayKey: function () {
+      try {
+        return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
+      } catch (e) {
+        var d = new Date();
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      }
+    },
+
+    start: function (sb, me) {
+      if (!sb || !me || !me.email) return;
+      this.sb = sb;
+      this.me = me;
+      this.day = this.todayKey();
+
+      var self = this;
+      document.getElementById("swarm-me-btn").addEventListener("click", function () {
+        self.toggle("day", !self.mine["day"]);
+      });
+
+      this.refresh(function (ok) {
+        if (!ok) return;                       // table missing — stay hidden
+        document.getElementById("swarm").hidden = false;
+        self.subscribe();
+        // Realtime is the fast path, not the only path. If the socket is
+        // blocked on someone's café wifi the board still catches up.
+        setInterval(function () { self.refresh(); }, 60000);
+      });
+    },
+
+    /* One round-trip for the board, one for my own checkmarks. */
+    refresh: function (done) {
+      var self = this;
+      var board = this.sb.from("campaign_board").select("name,email,ref_code,signups,posted_today");
+      var mine = this.sb.from("campaign_activity").select("task_key")
+        .eq("faculty_email", this.me.email).eq("day_key", this.day);
+
+      Promise.all([board, mine]).then(function (res) {
+        if (res[0].error) { console.warn("Swarm board unavailable:", res[0].error.message); if (done) done(false); return; }
+        self.rows = res[0].data || [];
+        self.mine = {};
+        if (!res[1].error) (res[1].data || []).forEach(function (r) { self.mine[r.task_key] = true; });
+        self.render();
+        if (done) done(true);
+      }).catch(function (err) {
+        console.warn("Swarm board unavailable:", err && err.message);
+        if (done) done(false);
+      });
+    },
+
+    subscribe: function () {
+      var self = this;
+      var live = document.getElementById("swarm-live");
+      var bump = function () {
+        clearTimeout(self.timer);
+        self.timer = setTimeout(function () { self.refresh(); }, 400);
+      };
+      try {
+        this.sb.channel("swarm-board")
+          .on("postgres_changes", { event: "*", schema: "public", table: "campaign_activity" }, bump)
+          .on("postgres_changes", { event: "*", schema: "public", table: "referral_counts" }, bump)
+          .subscribe(function (status) {
+            // A dead socket shouldn't claim to be live — the dot goes grey and
+            // the 60-second poll quietly takes over.
+            live.classList.toggle("stale", status !== "SUBSCRIBED");
+            live.textContent = status === "SUBSCRIBED" ? "Live" : "Reconnecting";
+          });
+      } catch (e) {
+        live.classList.add("stale");
+        live.textContent = "Updating every minute";
+      }
+    },
+
+    /* Optimistic: the button flips immediately, then the write happens. If the
+       write fails it flips back and says so, rather than lying. */
+    toggle: function (key, wantOn) {
+      var self = this;
+      var was = !!this.mine[key];
+      this.mine[key] = wantOn;
+      this.render();
+
+      var q = wantOn
+        ? this.sb.from("campaign_activity").insert({
+            faculty_email: this.me.email, day_key: this.day, task_key: key
+          })
+        : this.sb.from("campaign_activity").delete()
+            .eq("faculty_email", this.me.email).eq("day_key", this.day).eq("task_key", key);
+
+      q.then(function (res) {
+        // 23505 = already marked. Tapping twice is not an error.
+        if (res.error && String(res.error.code) !== "23505") throw res.error;
+        self.refresh();
+      }).catch(function (err) {
+        console.error(err);
+        self.mine[key] = was;
+        self.render();
+        var sub = document.getElementById("swarm-sub");
+        sub.textContent = "That didn't save — check your signal and tap again. (" +
+          ((err && err.message) || "unknown") + ")";
+      });
+    },
+
+    /* Called by taskCard for each of today's cards. */
+    attachToggle: function (slot, key) {
+      if (!slot || !this.sb) return;
+      var self = this;
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-done";
+      btn.addEventListener("click", function () { self.toggle(key, !self.mine[key]); });
+      slot.appendChild(btn);
+      this.toggles[key] = btn;
+      this.paintToggle(key);
+    },
+
+    paintToggle: function (key) {
+      var btn = this.toggles[key];
+      if (!btn) return;
+      var on = !!this.mine[key];
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? "Posted ✓" : "Mark posted";
+    },
+
+    render: function () {
+      var self = this;
+
+      var meBtn = document.getElementById("swarm-me-btn");
+      var meOn = !!this.mine["day"];
+      meBtn.classList.toggle("on", meOn);
+      meBtn.textContent = meOn ? "Posted today ✓" : "I posted today 🌱";
+      Object.keys(this.toggles).forEach(function (k) { self.paintToggle(k); });
+
+      // Most signups first — that's the number the campaign is actually for.
+      // Ties break on today's effort, then alphabetically so the order is
+      // stable and nobody is permanently last by accident.
+      var rows = this.rows.slice().sort(function (a, b) {
+        return (b.signups - a.signups) ||
+               (b.posted_today - a.posted_today) ||
+               String(a.name).localeCompare(String(b.name));
+      });
+
+      var body = document.getElementById("swarm-rows");
+      body.innerHTML = "";
+      var postedCount = 0;
+
+      rows.forEach(function (r) {
+        var isMe = String(r.email).toLowerCase() === self.me.email;
+        if (r.posted_today > 0) postedCount++;
+        var tr = document.createElement("tr");
+        if (isMe) tr.className = "is-me";
+
+        var td1 = document.createElement("td");
+        var wrap = document.createElement("span");
+        wrap.className = "swarm-name";
+        var mark = document.createElement("span");
+        mark.className = r.posted_today > 0 ? "swarm-check" : "swarm-yet";
+        mark.textContent = r.posted_today > 0 ? "✓" : "○";
+        mark.setAttribute("aria-label", r.posted_today > 0 ? "has posted today" : "hasn't posted yet");
+        wrap.appendChild(mark);
+        var nm = document.createElement("span");
+        nm.textContent = r.name || r.ref_code;
+        wrap.appendChild(nm);
+        if (isMe) {
+          var you = document.createElement("span");
+          you.className = "swarm-you";
+          you.textContent = "you";
+          wrap.appendChild(you);
+        }
+        td1.appendChild(wrap);
+
+        var td2 = document.createElement("td");
+        td2.className = "num";
+        td2.textContent = r.posted_today > 0 ? String(r.posted_today) : "—";
+
+        var td3 = document.createElement("td");
+        td3.className = "num";
+        td3.textContent = String(r.signups);
+
+        tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+        body.appendChild(tr);
+      });
+
+      var sub = document.getElementById("swarm-sub");
+      if (!rows.length) {
+        sub.textContent = "This updates on its own as your colleagues post — no refresh, no group text.";
+      } else if (postedCount === 0) {
+        sub.textContent = "Nobody's posted yet today — whoever goes first sets the pace.";
+      } else {
+        sub.textContent = postedCount + " of " + rows.length + " have posted today. Updates on its own — no refresh.";
+      }
+    }
+  };
+
   // ---- auth boilerplate (same as portal) ----
   var sb = null;
   try {
@@ -435,9 +729,22 @@
 
     var name = (row && (row.display_name || row.full_name)) || "";
     var first = name ? name.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
-    var me = { first: first, link: "https://quintaand.co/?ref=" + first + REF_YEAR };
+    var me = {
+      first: first,
+      name: name,
+      email: session.user.email.toLowerCase(),
+      link: "https://quintaand.co/?ref=" + first + REF_YEAR
+    };
     document.getElementById("my-link").textContent = me.link;
     copyBtn(function () { return me.link; }, document.getElementById("copy-link"));
+
+    // Realtime carries its own copy of the token. Without this the socket
+    // connects as anon, RLS returns nothing, and the board looks empty for
+    // reasons no one would ever guess.
+    try { if (sb.realtime && sb.realtime.setAuth) sb.realtime.setAuth(session.access_token); } catch (e) { /* older client — polling still works */ }
+
+    // Started before the day renders, so today's cards find it ready.
+    SWARM.start(sb, me);
 
     var todayIdx = dayIndexFor(new Date());
 
