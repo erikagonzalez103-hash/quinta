@@ -72,6 +72,19 @@
   .sess-row.flash{animation:flashRow 1.8s ease-out}
   @keyframes flashRow{0%,35%{background:#F3D9D1}100%{background:#FBEEEC}}
   .sess-what{font-weight:500}
+  /* Whether a saved date is actually bookable. Three states, because the
+     honest answer is often "we're still finding out". */
+  .sess-sync{font-size:.84rem;margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .sess-sync.checking{color:#A6791F}
+  .sess-sync.ok{color:#4F6B5C}
+  .sess-sync.bad{color:#B4503C}
+  .sess-sync .spin{width:9px;height:9px;border-radius:50%;background:#C9A868;animation:syncpulse 1.4s ease-in-out infinite;flex:none}
+  @keyframes syncpulse{0%,100%{opacity:1}50%{opacity:.2}}
+  @media (prefers-reduced-motion:reduce){.sess-sync .spin{animation:none}}
+  .sess-row.bad{background:#FBEEEC;box-shadow:inset 0 0 0 1px #E4B7AE;border-radius:8px;padding-left:11px;padding-right:11px}
+  .sync-live{font-family:var(--label);letter-spacing:.18em;text-transform:uppercase;font-size:10px;color:#4F6B5C;display:inline-flex;align-items:center;gap:6px;margin-left:10px;vertical-align:middle}
+  .sync-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#6E8F76;animation:syncpulse 2s ease-in-out infinite}
+  .sync-live.stale::before{background:#C0BFB6;animation:none}
   .sess-meta{color:#8A8E83;font-size:.88rem}
   .tag{font-size:.78rem;font-family:var(--label);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;border:1px solid var(--line)}
   .tag.day{color:#A6791F} .tag.evening{color:var(--sage-deep)}
@@ -167,7 +180,7 @@
     </div>
 
     <div class="scard">
-      <h2>My upcoming classes</h2>
+      <h2>My upcoming classes<span class="sync-live" id="sync-live" hidden>Live</span></h2>
       <p class="hint">Need to cancel? You can remove anything more than 14 days out — closer than that, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> so we can reschedule students.</p>
       <div id="sess-list"><p class="sess-meta">Loading…</p></div>
     </div>
@@ -366,6 +379,111 @@
     document.getElementById("month-chips").innerHTML = chips.join("");
   }
 
+  /* ---- "Did that date actually become bookable?" ------------------------
+   *
+   * The Worker already answers this. It rebuilds the class in Cal.com, asks
+   * Cal.com for real available slots, and writes a verdict back against each
+   * session — which until now landed in the database and nowhere a human
+   * would look. Twice in one evening a date looked saved and was never
+   * bookable: once a personal calendar blocked it, once Cal.com refused a
+   * 2-hour class starting on the half hour. Both were invisible from here.
+   *
+   * So: the verdict is shown on the row, and Realtime delivers it the moment
+   * the Worker writes it — no refresh, which matters because the answer
+   * arrives seconds AFTER the save, long after anyone would think to reload.
+   *
+   * COLUMN NAMES: schedule_sync_mark(target_id, ok, note) writes these, and
+   * it lives in Supabase rather than this repo, so the exact names aren't
+   * knowable from here. We look for the first candidate that exists on the
+   * row. If none does, the badge simply never renders and the page behaves
+   * as it did before — it is not allowed to break scheduling over a label.
+   * To pin it: run the query at the bottom of
+   * supabase/sql/2026-08-24-schedule-sync-live.sql and put the real names
+   * first in each list below.
+   */
+  /* The note is written by the Worker, not a person — but it lands in
+     innerHTML, so it gets escaped like anything else would. */
+  function esc(t) {
+    return String(t == null ? "" : t)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  var SYNC_COLUMNS = {
+    ok:   ["sync_ok", "bookable", "is_bookable", "verified_bookable", "cal_ok"],
+    note: ["sync_note", "bookable_note", "sync_message", "cal_note"],
+    at:   ["sync_checked_at", "synced_at", "sync_at", "checked_at", "last_synced_at"]
+  };
+  var syncCols = null;           // resolved once from the first row we see
+  var PENDING = {};              // session id -> when we saved it
+  var pendingTicker = null;
+
+  function resolveSyncColumns(row) {
+    if (syncCols || !row) return syncCols;
+    var found = {};
+    Object.keys(SYNC_COLUMNS).forEach(function (k) {
+      for (var i = 0; i < SYNC_COLUMNS[k].length; i++) {
+        if (Object.prototype.hasOwnProperty.call(row, SYNC_COLUMNS[k][i])) { found[k] = SYNC_COLUMNS[k][i]; break; }
+      }
+    });
+    if (!found.ok) {
+      console.info("Schedule sync: no verdict column on class_sessions. Looked for " +
+        SYNC_COLUMNS.ok.join(", ") + ". Columns present: " + Object.keys(row).join(", "));
+      syncCols = { missing: true };
+    } else {
+      syncCols = found;
+    }
+    return syncCols;
+  }
+
+  /* One of: null (say nothing), or {state, text}. */
+  function syncStatusOf(s) {
+    var c = resolveSyncColumns(s);
+    var waiting = PENDING[s.id];
+    if (!c || c.missing) {
+      /* No verdict column, so no answer is ever coming. Say "checking" for the
+         window in which it would have arrived, then stop — claiming to still
+         be checking something we cannot observe would be a lie with a
+         spinner on it. */
+      if (!waiting) return null;
+      if (Date.now() - waiting > 120000) {
+        delete PENDING[s.id];
+        setTimeout(watchPending, 0);
+        return null;
+      }
+      return { state: "checking", text: "Saved. Checking whether students can book it…" };
+    }
+    var ok = s[c.ok];
+    if (ok === true) {
+      return { state: "ok", text: "Bookable — students can book this now." };
+    }
+    if (ok === false) {
+      var why = (c.note && s[c.note]) ? String(s[c.note]) : "Cal.com shows no slot for this one.";
+      return { state: "bad", text: why };
+    }
+    // ok is null: either the Worker hasn't answered yet, or it never will.
+    if (!waiting) return null;
+    var secs = Math.round((Date.now() - waiting) / 1000);
+    if (secs > 120) {
+      return { state: "bad", text: "Saved, but we still can't confirm it's bookable. Email hello@quintaand.co and we'll check by hand." };
+    }
+    return { state: "checking", text: "Saved. Checking whether students can book it…" };
+  }
+
+  /* Rows in the pending window need re-rendering on a clock, not only on an
+     event — that's how "still checking" turns into "we gave up waiting". */
+  function watchPending() {
+    /* Only rows still inside the window need the clock. Past it the message
+       has settled on its final wording, so the ticker has nothing left to do
+       and shouldn't outlive the page's usefulness. */
+    var any = Object.keys(PENDING).some(function (id) { return Date.now() - PENDING[id] < 125000; });
+    if (any && !pendingTicker) {
+      pendingTicker = setInterval(function () { renderSessions(); }, 5000);
+    } else if (!any && pendingTicker) {
+      clearInterval(pendingTicker); pendingTicker = null;
+    }
+  }
+
   function renderSessions() {
     var box = document.getElementById("sess-list");
     var future = mySessions.filter(function (s) { return s.session_date >= new Date().toISOString().slice(0, 10); });
@@ -374,9 +492,16 @@
     var cutoffStr = cutoff.toISOString().slice(0, 10);
     box.innerHTML = future.map(function (s) {
       var canCancel = s.session_date > cutoffStr;
-      return '<div class="sess-row" data-sid="' + s.id + '"><div>' +
+      var st = syncStatusOf(s);
+      var stHtml = st
+        ? '<div class="sess-sync ' + st.state + '">' +
+            (st.state === "checking" ? '<span class="spin"></span>' : '<span aria-hidden="true">' + (st.state === "ok" ? "✓" : "⚠") + '</span>') +
+            '<span>' + esc(st.text) + '</span></div>'
+        : "";
+      return '<div class="sess-row' + (st && st.state === "bad" ? " bad" : "") + '" data-sid="' + s.id + '"><div>' +
         '<div class="sess-what">' + s.class_name + '</div>' +
-        '<div class="sess-meta">' + fmtDate(s.session_date) + " · " + fmtTime(s.start_time.slice(0, 5)) + " · " + s.format + "</div></div>" +
+        '<div class="sess-meta">' + fmtDate(s.session_date) + " · " + fmtTime(s.start_time.slice(0, 5)) + " · " + s.format + "</div>" +
+        stHtml + "</div>" +
         '<span class="tag ' + s.daypart + '">' + s.daypart + "</span>" +
         '<button class="btn-sm" data-cal="' + s.id + '" type="button">Add to calendar</button>' +
         '<a class="btn-sm" data-gcal="' + s.id + '" href="' + gcalUrl(s) + '" target="_blank" rel="noopener">Google Cal</a>' +
@@ -410,11 +535,59 @@
         mySessions = allSessions.filter(function (s) {
           return String(s.instructor_email || "").toLowerCase() === userEmail;
         });
+
+        // A session we were waiting on has its answer — stop waiting on it.
+        var c = resolveSyncColumns(allSessions[0]);
+        if (c && !c.missing) {
+          allSessions.forEach(function (s) {
+            if (PENDING[s.id] && s[c.ok] !== null && s[c.ok] !== undefined) delete PENDING[s.id];
+          });
+        }
+        // And a row that vanished (cancelled by someone) can't be pending either.
+        Object.keys(PENDING).forEach(function (id) {
+          if (!allSessions.some(function (s) { return String(s.id) === String(id); })) delete PENDING[id];
+        });
+        watchPending();
+
         renderMonths();
         renderSessions();
         renderSharedCalendar();
         renderPlanFeedback();   // re-running the list wipes the tint; put it back
       });
+  }
+
+  /* Realtime. Two things arrive this way and neither used to:
+       1. the Worker's verdict, seconds after a save
+       2. another teacher taking an in-person slot while this page sits open —
+          which matters, because the conflict warnings on this page are only
+          as good as how fresh the shared calendar is.
+     A blocked socket is survivable: the dot goes grey and a slower poll keeps
+     the page roughly current. */
+  var liveWired = false;
+  function goLive(session) {
+    if (liveWired) return;
+    liveWired = true;
+    var dot = document.getElementById("sync-live");
+    dot.hidden = false;
+    var t = null;
+    var bump = function () {
+      clearTimeout(t);
+      t = setTimeout(loadSessions, 350);
+    };
+    try {
+      if (sb.realtime && sb.realtime.setAuth) sb.realtime.setAuth(session.access_token);
+      sb.channel("class-sessions-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "class_sessions" }, bump)
+        .subscribe(function (status) {
+          var live = status === "SUBSCRIBED";
+          dot.classList.toggle("stale", !live);
+          dot.textContent = live ? "Live" : "Reconnecting";
+        });
+    } catch (e) {
+      dot.classList.add("stale");
+      dot.textContent = "Updating every minute";
+    }
+    setInterval(loadSessions, 60000);
   }
 
   function firstNameOf(s) {
@@ -542,6 +715,7 @@
       dateEl.min = min.toISOString().slice(0, 10);
 
       loadSessions();
+      goLive(session);
     });
   });
 
@@ -756,7 +930,7 @@
       start_time: time,
       daypart: daypartOf(time),
       format: format
-    }).then(function (r) {
+    }).select().then(function (r) {
       btn.disabled = false; btn.textContent = "Add to my schedule";
       if (r.error) {
         console.error(r.error);
@@ -776,7 +950,12 @@
       document.getElementById("s-date").value = "";
       renderPlanFeedback();
       show("ok", "Scheduled! " + cls + " — " + fmtDate(date) + " at " + fmtTime(time) +
-        ". Grab the calendar invite from your list below so it's on your calendar too.");
+        ". We're checking that students can actually book it — watch the row below.");
+      /* Start the clock on the verdict. The Worker answers in seconds, but
+         "saved" and "bookable" are not the same claim and this page used to
+         make only the first one. */
+      var saved = (r.data || [])[0];
+      if (saved && saved.id) { PENDING[saved.id] = Date.now(); watchPending(); }
       loadSessions();
     });
   });
