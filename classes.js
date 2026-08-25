@@ -232,6 +232,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "legacy-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    open: true,   // Nik set October-December dates - bookable
     name: "Legacy planning",
     desc: "What happens to your business if something happens to you? Make the plan — wills, beneficiaries, and who could step in — so the answer is never \"nobody knows.\"",
     format: "90 minutes · live, small group",
@@ -248,6 +249,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
+    open: true,   // Nik set a September date - bookable
     name: "Trademarks",
     desc: "Learn what a trademark actually protects, search properly before you fall in love with a name, and leave knowing whether filing is worth it for you.",
     format: "90 minutes · live, small group",
