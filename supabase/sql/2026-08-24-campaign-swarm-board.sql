@@ -108,6 +108,14 @@ as $$
 declare
   code text;
 begin
+  /* A leaderboard must never be able to cost us a signup.
+     This is an AFTER INSERT trigger on waitlist, which means that if it
+     raises, Postgres rolls back the insert with it — a woman filling in the
+     waitlist form at 11pm would get an error, and the referral count is not
+     worth one of those. Every failure in here is swallowed on purpose: a
+     count that drifts is a nuisance, a lost signup is not recoverable.
+     (It also covers the case where waitlist has no `ref` column at all —
+     waitlist.html still carries a fallback for that, so it may not.) */
   if tg_op = 'INSERT' then
     code := lower(nullif(btrim(coalesce(new.ref, '')), ''));
     if code is not null then
@@ -125,6 +133,8 @@ begin
     end if;
   end if;
   return null;
+exception when others then
+  return null;
 end;
 $$;
 
@@ -134,13 +144,28 @@ create trigger waitlist_referral_count
   for each row execute function public.sync_referral_count();
 
 -- Everyone who signed up before this file ran still counts.
-insert into public.referral_counts (ref, signups, updated_at)
-select lower(btrim(ref)), count(*), now()
-  from public.waitlist
- where nullif(btrim(coalesce(ref, '')), '') is not null
- group by lower(btrim(ref))
-on conflict (ref) do update
-  set signups = excluded.signups, updated_at = now();
+--
+-- Guarded on the column existing. Unlike the trigger body, this is plain SQL,
+-- so a missing `ref` column would fail when the statement is planned and take
+-- the whole script down with it — leaving the tables half-built on a
+-- production database, which is the one outcome worth engineering around.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'waitlist' and column_name = 'ref'
+  ) then
+    insert into public.referral_counts (ref, signups, updated_at)
+    select lower(btrim(ref)), count(*), now()
+      from public.waitlist
+     where nullif(btrim(coalesce(ref, '')), '') is not null
+     group by lower(btrim(ref))
+    on conflict (ref) do update
+      set signups = excluded.signups, updated_at = now();
+  else
+    raise notice 'waitlist has no ref column yet — skipping backfill. The board will show zeros until referrals are recorded.';
+  end if;
+end $$;
 
 -- ------------------------------------------------------------------- board --
 
