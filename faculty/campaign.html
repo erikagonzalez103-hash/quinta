@@ -435,7 +435,7 @@
 
     var name = (row && (row.display_name || row.full_name)) || "";
     var first = name ? name.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
-    var me = { first: first, link: "https://quintaand.co/?ref=" + first + REF_YEAR };
+    var me = { first: first, link: "https://quintaand.co/foundations.html?ref=" + first + REF_YEAR };
     document.getElementById("my-link").textContent = me.link;
     copyBtn(function () { return me.link; }, document.getElementById("copy-link"));
 
