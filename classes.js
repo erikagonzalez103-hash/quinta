@@ -26,6 +26,12 @@
      covers     - array of "what we'll cover" bullets
      walkout    - the tangible thing you leave with
      prereq     - optional "good to know" / prerequisite line
+     price      - what one seat costs, in whole US dollars. 0 for a free
+                  class; null means the price hasn't been decided yet.
+                  This is the number Cal.com is supposed to charge: if the
+                  Stripe price on the Cal.com event doesn't match the number
+                  here, one of the two is wrong — and it's usually Cal.com,
+                  because that's where a test price gets left behind.
      booking    - the Cal.com link for this class (null = not bookable yet)
      disclaimer - optional educational disclaimer (regulated topics)
      free       - true for free classes
@@ -59,6 +65,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A licensing checklist built for your exact business, and a clear next step on your entity.",
     prereq: "Nothing — a great first step.",
+    price: 175,
     booking: "https://cal.com/quintaandco/entity-setup",
     disclaimer: "Educational only — not legal or tax advice. Confirm your structure with an attorney or CPA."
   },
@@ -74,6 +81,7 @@ const QUINTA_CLASSES = [
       "Simple habits that keep your books clean from day one"
     ],
     walkout: "A plan for your accounts and first steps toward business credit.",
+    price: 99,
     booking: "https://cal.com/quintaandco/banking"
   },
   {
@@ -87,6 +95,7 @@ const QUINTA_CLASSES = [
       "Questions to ask a broker so you don't overpay"
     ],
     walkout: "A risk worksheet ready to hand a broker.",
+    price: 175,
     booking: "https://cal.com/quintaandco/insurance",
     disclaimer: "Educational only — not insurance or legal advice. Confirm coverage with a licensed broker."
   },
@@ -104,6 +113,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A working, categorized QuickBooks file.",
     prereq: "Helpful to have your business bank account open first (see Banking).",
+    price: 99,
     booking: "https://cal.com/quintaandco/bookkeeping-1",
     disclaimer: "Educational only — not accounting or tax advice."
   },
@@ -120,6 +130,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A handoff checklist your bookkeeper will love.",
     prereq: "Bookkeeping I, or an existing bookkeeping setup.",
+    price: 99,
     booking: "https://cal.com/quintaandco/bookkeeping-2",
     disclaimer: "Educational only — not accounting or tax advice."
   },
@@ -135,6 +146,7 @@ const QUINTA_CLASSES = [
       "What your CPA actually needs from you"
     ],
     walkout: "A calendar of every tax deadline for your business.",
+    price: 250,
     booking: "https://cal.com/quintaandco/taxes",
     disclaimer: "Educational only — not tax advice. Confirm with a CPA or tax professional."
   },
@@ -151,6 +163,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A real offer, priced on your own numbers.",
     prereq: "Comes alive once your books and numbers are roughly in order.",
+    price: 250,
     booking: "https://cal.com/quintaandco/pricing"
   },
 
@@ -166,6 +179,7 @@ const QUINTA_CLASSES = [
       "A reusable agreement you can adapt per client"
     ],
     walkout: "A reusable client-agreement template.",
+    price: 175,
     booking: "https://cal.com/quintaandco/contracts",
     disclaimer: "Educational only — not legal advice. Have an attorney review your contracts."
   },
@@ -181,6 +195,7 @@ const QUINTA_CLASSES = [
       "A simple decision worksheet for your situation"
     ],
     walkout: "A hire-type decision worksheet and a starter job description.",
+    price: 175,
     booking: "https://cal.com/quintaandco/first-hire",
     disclaimer: "Educational only — not legal or HR/employment advice. Confirm with an employment attorney or HR pro."
   },
@@ -210,6 +225,7 @@ const QUINTA_CLASSES = [
       { label: "WBENC (national)", url: "https://www.wbenc.org" },
       { label: "Women’s Business Council – Southwest", url: "https://wbcsouthwest.org" }
     ],
+    price: 299,
     booking: "https://cal.com/quintaandco/certification"
   },
   {
@@ -226,6 +242,7 @@ const QUINTA_CLASSES = [
       "Taking a real first step, starting with $100"
     ],
     walkout: "A pay-yourself-first investing plan built on your own numbers — your first account chosen or opened, and a monthly amount to start with.",
+    price: 250,
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
   
@@ -244,6 +261,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
     prereq: "Nothing — pairs well with Investing — How to pay yourself first.",
+    price: 299,
     booking: "https://cal.com/quintaandco/legacy-planning",
     disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
   },
@@ -260,6 +278,7 @@ const QUINTA_CLASSES = [
       "Keeping your mark alive once you have it"
     ],
     walkout: "A search-and-file roadmap for your business name.",
+    price: 299,
     booking: "https://cal.com/quintaandco/trademarks",
     disclaimer: "Educational only — not legal advice. Confirm your filing with a trademark attorney."
   },
@@ -274,6 +293,7 @@ const QUINTA_CLASSES = [
       "What lenders and grantors actually look for"
     ],
     walkout: "A map of funding options that fit your stage.",
+    price: 175,
     booking: "https://cal.com/quintaandco/funding"
   },
   {
@@ -289,6 +309,7 @@ const QUINTA_CLASSES = [
       "Using your brand to make future decisions easier"
     ],
     walkout: "A one-page brand foundation.",
+    price: 175,
     booking: "https://cal.com/quintaandco/brand-101"
   },
 
@@ -307,6 +328,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "One small, working tool, built start to finish.",
     prereq: "Nothing. Just bring coffee.",
+    price: 0,
     booking: "https://cal.com/quintaandco/coffee",
     free: true
   },
@@ -322,6 +344,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A workflow you'll actually keep using.",
     prereq: "Nothing — start here.",
+    price: 150,
     booking: "https://cal.com/quintaandco/module-1"
   },
   {
@@ -336,6 +359,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "An AI assistant that handles a real task in your business.",
     prereq: "Comfortable with the Module 1 basics. A Claude Pro subscription is recommended.",
+    price: 200,
     booking: "https://cal.com/quintaandco/module-2"
   },
   {
@@ -352,6 +376,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A connected tool that keeps track of your work and runs quietly in the background.",
     prereq: "Built an assistant in Module 2 (or equivalent). A Claude Pro subscription is recommended.",
+    price: 299,
     booking: "https://cal.com/quintaandco/module-3"
   }
 
@@ -371,6 +396,8 @@ const QUINTA_CLASSES = [
                  phases: "Start right"/"01", "Keep the books"/"02",
                  "Build to last"/"03". (For Practice, set both to null.)
      - covers/walkout/prereq: the syllabus (see classes above).
+     - price:    whole US dollars, no quotes and no "$" (149, not "$149").
+                 Set the SAME number on the Cal.com event's Stripe price.
      - free/soon: delete these lines unless the class is free or
                  still in development.
 
@@ -381,6 +408,7 @@ const QUINTA_CLASSES = [
   //   format: "90 minutes · live, small group",
   //   covers: ["First thing we cover", "Second thing", "Third thing"],
   //   walkout: "The tangible thing they leave with.",
+  //   price: 149,
   //   booking: "https://cal.com/quintaandco/trademark",
   //   disclaimer: "Educational only — not legal advice. Confirm with an attorney."
   // }
