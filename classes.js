@@ -25,6 +25,10 @@
      format     - length + setting, e.g. "90 minutes · live, small group"
      covers     - array of "what we'll cover" bullets
      walkout    - the tangible thing you leave with
+     venue      - where the class actually happens. "Zoom" or the Dallas room.
+                  Nik, Tara and Joshlyn teach on Zoom unless noted otherwise;
+                  everyone else is at Kiln. If that ever changes for a single
+                  session, the session overrides this, not the other way round.
      price      - dollars, as a number, no symbol (e.g. 150). Omitted or null
                   means "no price set yet" and the page says nothing rather
                   than guessing — never invent one, an invented price is a
@@ -53,6 +57,7 @@ const QUINTA_CLASSES = [
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     open: true,   // real September dates are set - bookable
     name: "Entity setup",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Pick the right entity, get your EIN, and leave with a licensing checklist built for your exact business — plain English, no scare tactics.",
     format: "90 minutes · live, small group",
     covers: [
@@ -69,6 +74,7 @@ const QUINTA_CLASSES = [
   {
     slug: "banking", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     name: "Banking",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Open the right accounts, keep business and personal money truly separate, and start building business credit before you ever need it.",
     format: "90 minutes · live, small group",
     covers: [
@@ -83,6 +89,7 @@ const QUINTA_CLASSES = [
   {
     slug: "insurance", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     name: "Insurance",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Sort out the coverage you actually need — liability, workers' comp, health — and leave with a risk worksheet ready to hand a broker.",
     format: "90 minutes · live, small group",
     covers: [
@@ -99,6 +106,7 @@ const QUINTA_CLASSES = [
   {
     slug: "bookkeeping-1", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Bookkeeping I — Set up QuickBooks",
+    venue: "Zoom",
     desc: "Decide whether you even need QuickBooks, then set it up right — bank connected, accounts organized — and walk out with a working, categorized file.",
     format: "90 minutes · live, small group",
     covers: [
@@ -115,6 +123,7 @@ const QUINTA_CLASSES = [
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     open: true,   // Tara set September dates - bookable
     name: "Bookkeeping II — Prep for your bookkeeper",
+    venue: "Zoom",
     desc: "Learn what a clean handoff looks like so your bookkeeper thanks you, instead of billing you to untangle a shoebox.",
     format: "90 minutes · live, small group",
     covers: [
@@ -130,6 +139,7 @@ const QUINTA_CLASSES = [
   {
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Taxes",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Register for the right things from the start and leave with a calendar of every deadline that keeps your business legal.",
     format: "90 minutes · live, small group",
     covers: [
@@ -145,6 +155,7 @@ const QUINTA_CLASSES = [
   {
     slug: "pricing", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     name: "Pricing",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "The step up from the basics: price your work to be both fair and sustainable — values and math together — and walk out with a real offer built on your own numbers.",
     format: "90 minutes · live, small group (the step-up class — expect to work)",
     covers: [
@@ -162,6 +173,7 @@ const QUINTA_CLASSES = [
   {
     slug: "contracts", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     name: "Contracts",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Build a client agreement that protects you — scope, deposits, payment terms — and leave with a reusable template for your business.",
     format: "90 minutes · live, small group",
     covers: [
@@ -176,6 +188,7 @@ const QUINTA_CLASSES = [
   {
     slug: "first-hire", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Your first hire",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Know whether your next hire is a 1099 or a W-2, and what each one really requires, with a decision worksheet and a starter job description.",
     format: "90 minutes · live, small group",
     covers: [
@@ -192,6 +205,7 @@ const QUINTA_CLASSES = [
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: true,   // real September dates are set - bookable
     name: "Get certified — WBE / MBE / DBE",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Learn what certification unlocks and exactly how to get it, taught by someone who's been through it, and leave with your roadmap.",
     format: "120 minutes · live, small group",
     covers: [
@@ -220,6 +234,7 @@ const QUINTA_CLASSES = [
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: true,   // Joshlyn set September dates - bookable
     name: "Investing — How to pay yourself first",
+    venue: "Zoom",
     desc: "Your business is not your retirement plan. Learn how to build wealth outside the company — starting with your first $100 — and leave with a pay-yourself-first investing plan built on your own numbers.",
     format: "120 minutes · live, small group",
     covers: [
@@ -237,6 +252,7 @@ const QUINTA_CLASSES = [
   {
     slug: "legacy-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Legacy planning",
+    venue: "Zoom",
     desc: "What happens to your business if something happens to you? Make the plan — wills, beneficiaries, and who could step in — so the answer is never \"nobody knows.\"",
     format: "90 minutes · live, small group",
     covers: [
@@ -253,6 +269,7 @@ const QUINTA_CLASSES = [
   {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     name: "Trademarks",
+    venue: "Zoom",
     desc: "Learn what a trademark actually protects, search properly before you fall in love with a name, and leave knowing whether filing is worth it for you.",
     format: "90 minutes · live, small group",
     covers: [
@@ -268,6 +285,7 @@ const QUINTA_CLASSES = [
   {
     slug: "funding", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     name: "Funding",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Map the funding that's realistic for your stage — and tell the real grants from the scams.",
     format: "90 minutes · live, small group",
     covers: [
@@ -282,6 +300,7 @@ const QUINTA_CLASSES = [
     slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     open: true,   // Stephanie set September dates - bookable
     name: "Brand 101",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Walk out with a one-page brand foundation — your promise, your voice, and a simple visual direction — so every future decision gets easier, no agency required.",
     format: "90 minutes · live, small group",
     covers: [
@@ -300,6 +319,7 @@ const QUINTA_CLASSES = [
     slug: "coffee", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     url: "coffee.html",   // Coffee has its own page (not class.html?c=coffee)
     name: "Coffee with Quinta",
+    venue: "Kiln, Preston Hollow (Dallas)",
     desc: "A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.",
     format: "60 minutes · free · live, small group · monthly",
     covers: [
@@ -315,6 +335,7 @@ const QUINTA_CLASSES = [
   {
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     name: "Module 1 — Claude for beginners",
+    venue: "Kiln, Preston Hollow (Dallas)",
     price: 150,   // from llms.txt — confirm before launch
     desc: "Your first real session: what Claude is, how to talk to it, and how to put it to work for your business that same day.",
     format: "60 minutes · live, small group",
@@ -330,6 +351,7 @@ const QUINTA_CLASSES = [
   {
     slug: "module-2", track: "practice", phase: null, phaseNum: null, stage: "Up and running",
     name: "Module 2 — Build your AI assistant",
+    venue: "Kiln, Preston Hollow (Dallas)",
     price: 200,   // from llms.txt — confirm before launch
     desc: "Go from chatting with Claude to building an assistant that handles a real, repeatable task in your business.",
     format: "90 minutes · live, small group",
@@ -346,6 +368,7 @@ const QUINTA_CLASSES = [
     slug: "module-3", track: "practice", phase: null, phaseNum: null, stage: "Established",
     soon: true,   // no dates set yet - waitlist until Module 3 is scheduled
     name: "Module 3 — Real databases & automation",
+    venue: "Kiln, Preston Hollow (Dallas)",
     price: 250,   // from llms.txt — confirm before launch
     desc: "Add a real database and a little automation so your tools start running quietly in the background — keeping track of things and handling the busywork without needing you.",
     format: "120 minutes · live, small group",

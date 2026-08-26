@@ -90,6 +90,10 @@
     var money = priceLabel(c);
     if (money) bits.push(money);
     if (c.format) bits.push(String(c.format).split("·")[0].trim());
+    /* Where it happens is one of the four things she needs before she'll
+       book, and until now the site answered it nowhere at all — a woman
+       could pay and still not know whether to drive to Dallas. */
+    if (c.venue) bits.push(c.venue);
     bits.push("opens Cal.com to pick your date");
     return bits.join(" · ");
   }
@@ -895,6 +899,13 @@
        class. Fired here rather than on page load so it only counts a page
        that actually rendered a class — a broken slug shouldn't look like
        interest in something that never appeared. */
+    if (c.venue) {
+      var vn = document.createElement("p");
+      vn.className = "venue-line";
+      vn.innerHTML = '<span class="venue-label">Where</span>' + escapeHtml(c.venue);
+      detail.appendChild(vn);
+    }
+
     qtrack("view_item", { currency: "USD", items: [ga4Item(c)] });
     qtrack("class_viewed", { class_slug: c.slug, class_name: c.name,
                              bookable: isSoon(c) ? "no" : "yes",

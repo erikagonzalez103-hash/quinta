@@ -559,3 +559,5 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .stage-chip.chip-open.is-active .chip-dot{background:var(--cream)}
 /* A class with no dates yet reads quieter than one you can buy. */
 .acc.is-soon .acc-head{opacity:.82}
+.venue-line{font-size:.92rem;color:#5A5E55;margin:2px 0 0}
+.venue-label{font-family:var(--label);letter-spacing:.16em;text-transform:uppercase;font-size:10px;color:#8A8E83;margin-right:8px}

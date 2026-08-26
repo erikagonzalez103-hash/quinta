@@ -85,7 +85,7 @@ function page(c) {
       : [{ q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." }]),
     ...(c.walkout ? [{ q: "What will I walk out with?", a: `${c.walkout} Every Quinta & Co. class ends with something real you keep.` }] : []),
     soon
-      ? { q: "When can I take this class?", a: "Enrollment opens Fall 2026. Join the waitlist at quintaand.co/waitlist to hear first — and the free monthly Coffee with Quinta is open in the meantime." }
+      ? { q: "When can I take this class?", a: "Enrollment opens Fall 2026. Join the waitlist at quintaand.co/waitlist.html to hear first — and the free monthly Coffee with Quinta is open in the meantime." }
       : { q: "When can I take this class?", a: `It's open now — ${c.format || "live, small group"}. Dates and booking are right on this page.` },
   ];
   const faqHtml = faqs.map((f, i) => `      <div class="faq-item">

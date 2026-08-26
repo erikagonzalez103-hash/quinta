@@ -529,7 +529,13 @@
      table on purpose (see docs/faculty-scheduler-setup.md); a shared room can
      only be shared if you can see who's already in it. */
   function loadSessions() {
-    sb.from("class_sessions").select("*").neq("status", "canceled")
+    /* NOT .neq("status","canceled"). Nothing in this codebase ever WRITES
+       status — the insert omits it and Cancel deletes the row outright — so
+       if that column has no default, every saved session is NULL there. In
+       SQL, NULL <> 'canceled' is not true, so a plain neq() would hide every
+       class an instructor ever scheduled and show her "Nothing scheduled
+       yet". This asks the question the way it was meant: not cancelled. */
+    sb.from("class_sessions").select("*").or("status.is.null,status.neq.canceled")
       .order("session_date").then(function (r) {
         allSessions = r.data || [];
         mySessions = allSessions.filter(function (s) {
