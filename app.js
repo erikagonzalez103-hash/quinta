@@ -489,7 +489,12 @@
   // One expandable class row (Foundations accordion).
   function accRow(c) {
     var row = document.createElement("div");
-    row.className = "acc" + (isSoon(c) ? " is-soon" : " is-open");
+    /* NOT "is-open" for the bookable ones, however tempting the name looks.
+       is-open is the accordion's own state class (see wireAccordion), and the
+       body renders hidden — so pre-setting it meant the first tap REMOVED it,
+       the toggle reported "closed", and nothing opened. Every class you could
+       actually buy needed two taps; the coming-soon ones worked fine. */
+    row.className = "acc" + (isSoon(c) ? " is-soon" : "");
     row.setAttribute("data-stage", c.stage || "");
     row.setAttribute("data-open", isSoon(c) ? "no" : "yes");
 
@@ -642,6 +647,10 @@
     a.className = "pcard";
     a.href = c.url || "classes/" + encodeURIComponent(c.slug) + ".html";
     a.setAttribute("data-stage", c.stage || "");
+    /* The "Open now" chip filters on this. Without it every Practice card —
+       including the free Coffee — was hidden by the one control that promises
+       to show what you can book today. */
+    a.setAttribute("data-open", isSoon(c) ? "no" : "yes");
     var html = '<span class="pcard-badges">';
     if (c.free) html += '<span class="pcard-free">Free</span>';
     html += stageChip(c.stage);
