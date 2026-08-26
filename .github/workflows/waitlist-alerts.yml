@@ -1,0 +1,49 @@
+# Tell Erika when someone joins the waitlist.
+#
+# WHY THIS EXISTS RATHER THAN THE SUPABASE WEBHOOK
+# The edge function is fine code that never ran. Robin Frazier signed up twice
+# on 19 August — twelve days after it shipped — and no email went out either
+# time; the only reason anyone knew was that Robin mentioned it. Whatever was
+# missing lived in the Supabase dashboard, where nothing is visible from the
+# repo and nothing says a word when it stops working.
+#
+# This runs from the repo instead. Its history is on the Actions tab, it can be
+# run by hand, and when it fails GitHub emails about the failed run — so even a
+# broken notifier notifies.
+#
+# SECRETS NEEDED (Settings → Secrets and variables → Actions → New secret)
+#   SUPABASE_SERVICE_ROLE_KEY   Supabase → Settings → API → service_role key.
+#                               This one is NOT the publishable key and must
+#                               never be committed or pasted into a page.
+#   RESEND_API_KEY              the same key the edge function uses.
+name: Waitlist alerts
+
+on:
+  schedule:
+    # Every 15 minutes. GitHub runs scheduled jobs on a best-effort basis and
+    # can be several minutes late under load, so treat this as "within the
+    # hour", not "on the quarter hour".
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}       # the "Run workflow" button, for testing
+
+# Two runs at once would email twice for the same signup — the second reads
+# the row before the first has stamped it.
+concurrency:
+  group: waitlist-alerts
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check the logic still holds
+        run: node tools/waitlist-alerts.test.mjs
+      - name: Email about anything new
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node tools/waitlist-alerts.mjs
