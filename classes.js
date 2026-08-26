@@ -357,7 +357,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "An AI assistant that handles a real task in your business.",
     prereq: "Comfortable with the Module 1 basics. A Claude Pro subscription is recommended.",
-    price: null,   // TODO — not set yet
+    price: 200,
     booking: "https://cal.com/quintaandco/module-2"
   },
   {
@@ -374,7 +374,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A connected tool that keeps track of your work and runs quietly in the background.",
     prereq: "Built an assistant in Module 2 (or equivalent). A Claude Pro subscription is recommended.",
-    price: null,   // TODO — not set yet
+    price: 299,
     booking: "https://cal.com/quintaandco/module-3"
   }
 
