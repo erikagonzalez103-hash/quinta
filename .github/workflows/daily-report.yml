@@ -1,0 +1,54 @@
+# The end-of-day report to erika@quintaand.co.
+#
+# Answers in one email what otherwise takes four dashboards and a SQL editor:
+# who posted today, who signed up, who it's credited to, and whether anything
+# on the schedule synced but is NOT actually bookable.
+#
+# It sends every day, including empty ones. "No signups today" is the sentence
+# that tells you the campaign isn't landing; a report that only shows up on
+# good days teaches you nothing.
+#
+# SECRETS (the same two the waitlist alerts use):
+#   SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY
+name: Daily report
+
+on:
+  schedule:
+    # 8pm Dallas. Cron here is UTC and has no idea about daylight saving, so
+    # both are listed and the job itself decides which one is really 8pm
+    # locally — otherwise it silently drifts to 7pm every November.
+    - cron: "0 1 * * *"    # 8pm CDT (Mar-Nov)
+    - cron: "0 2 * * *"    # 8pm CST (Nov-Mar)
+  workflow_dispatch: {}
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Is it actually 8pm in Dallas?
+        id: hour
+        run: |
+          HOUR=$(TZ=America/Chicago date +%H)
+          echo "dallas_hour=$HOUR" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "20" ]; then
+            echo "send=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "send=no" >> "$GITHUB_OUTPUT"
+            echo "It is ${HOUR}:00 in Dallas — the other cron line covers tonight. Skipping."
+          fi
+
+      - name: Check the logic still holds
+        if: steps.hour.outputs.send == 'yes'
+        run: node tools/daily-report.test.mjs
+
+      - name: Send it
+        if: steps.hour.outputs.send == 'yes'
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node tools/daily-report.mjs
