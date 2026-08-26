@@ -65,7 +65,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A licensing checklist built for your exact business, and a clear next step on your entity.",
     prereq: "Nothing — a great first step.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/entity-setup",
     disclaimer: "Educational only — not legal or tax advice. Confirm your structure with an attorney or CPA."
   },
@@ -81,7 +81,7 @@ const QUINTA_CLASSES = [
       "Simple habits that keep your books clean from day one"
     ],
     walkout: "A plan for your accounts and first steps toward business credit.",
-    price: null,   // TODO — not set yet
+    price: 99,
     booking: "https://cal.com/quintaandco/banking"
   },
   {
@@ -95,7 +95,7 @@ const QUINTA_CLASSES = [
       "Questions to ask a broker so you don't overpay"
     ],
     walkout: "A risk worksheet ready to hand a broker.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/insurance",
     disclaimer: "Educational only — not insurance or legal advice. Confirm coverage with a licensed broker."
   },
@@ -113,7 +113,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A working, categorized QuickBooks file.",
     prereq: "Helpful to have your business bank account open first (see Banking).",
-    price: null,   // TODO — not set yet
+    price: 99,
     booking: "https://cal.com/quintaandco/bookkeeping-1",
     disclaimer: "Educational only — not accounting or tax advice."
   },
@@ -130,7 +130,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A handoff checklist your bookkeeper will love.",
     prereq: "Bookkeeping I, or an existing bookkeeping setup.",
-    price: null,   // TODO — not set yet
+    price: 99,
     booking: "https://cal.com/quintaandco/bookkeeping-2",
     disclaimer: "Educational only — not accounting or tax advice."
   },
@@ -146,7 +146,7 @@ const QUINTA_CLASSES = [
       "What your CPA actually needs from you"
     ],
     walkout: "A calendar of every tax deadline for your business.",
-    price: null,   // TODO — not set yet
+    price: 250,
     booking: "https://cal.com/quintaandco/taxes",
     disclaimer: "Educational only — not tax advice. Confirm with a CPA or tax professional."
   },
@@ -163,7 +163,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A real offer, priced on your own numbers.",
     prereq: "Comes alive once your books and numbers are roughly in order.",
-    price: null,   // TODO — not set yet
+    price: 250,
     booking: "https://cal.com/quintaandco/pricing"
   },
 
@@ -179,7 +179,7 @@ const QUINTA_CLASSES = [
       "A reusable agreement you can adapt per client"
     ],
     walkout: "A reusable client-agreement template.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/contracts",
     disclaimer: "Educational only — not legal advice. Have an attorney review your contracts."
   },
@@ -195,7 +195,7 @@ const QUINTA_CLASSES = [
       "A simple decision worksheet for your situation"
     ],
     walkout: "A hire-type decision worksheet and a starter job description.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/first-hire",
     disclaimer: "Educational only — not legal or HR/employment advice. Confirm with an employment attorney or HR pro."
   },
@@ -225,7 +225,7 @@ const QUINTA_CLASSES = [
       { label: "WBENC (national)", url: "https://www.wbenc.org" },
       { label: "Women’s Business Council – Southwest", url: "https://wbcsouthwest.org" }
     ],
-    price: 299,
+    price: 250,
     booking: "https://cal.com/quintaandco/certification"
   },
   {
@@ -242,7 +242,7 @@ const QUINTA_CLASSES = [
       "Taking a real first step, starting with $100"
     ],
     walkout: "A pay-yourself-first investing plan built on your own numbers — your first account chosen or opened, and a monthly amount to start with.",
-    price: null,   // TODO — not set yet
+    price: 250,
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
   
@@ -260,7 +260,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
     prereq: "Nothing — pairs well with Investing — How to pay yourself first.",
-    price: null,   // TODO — not set yet
+    price: 299,
     booking: "https://cal.com/quintaandco/legacy-planning",
     disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
   },
@@ -276,7 +276,7 @@ const QUINTA_CLASSES = [
       "Keeping your mark alive once you have it"
     ],
     walkout: "A search-and-file roadmap for your business name.",
-    price: null,   // TODO — not set yet
+    price: 299,
     booking: "https://cal.com/quintaandco/trademarks",
     disclaimer: "Educational only — not legal advice. Confirm your filing with a trademark attorney."
   },
@@ -291,7 +291,7 @@ const QUINTA_CLASSES = [
       "What lenders and grantors actually look for"
     ],
     walkout: "A map of funding options that fit your stage.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/funding"
   },
   {
@@ -307,7 +307,7 @@ const QUINTA_CLASSES = [
       "Using your brand to make future decisions easier"
     ],
     walkout: "A one-page brand foundation.",
-    price: null,   // TODO — not set yet
+    price: 175,
     booking: "https://cal.com/quintaandco/brand-101"
   },
 
