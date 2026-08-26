@@ -541,3 +541,21 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .holding h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,6vw,48px);line-height:1.06;color:var(--moss);max-width:16ch}
 .holding p{margin-top:18px;color:var(--ink);max-width:34ch;font-size:18px}
 .holding .when{font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--sage-deep);margin-top:26px}
+
+/* ---- Price and the Cal.com hand-off -------------------------------------
+   The Book button used to send her to another company's checkout with no
+   warning and no price. These two say what's about to happen, before it
+   happens. */
+.price-note{font-family:var(--label);letter-spacing:.14em;font-size:.82rem;color:var(--sage-deep);align-self:center}
+.book-note{font-size:.86rem;color:#8A8E83;margin:8px 0 0;line-height:1.5}
+
+/* ---- "Open now" filter chip ---------------------------------------------
+   Distinguished from the stage chips by a live dot rather than an icon: it
+   answers a different question ("what can I book today?") and shouldn't look
+   like a fourth stage. */
+.stage-chip.chip-open{border-color:var(--sage-deep);color:var(--sage-deep);font-weight:500}
+.stage-chip.chip-open.is-active{background:var(--sage-deep);color:var(--cream)}
+.chip-dot{width:7px;height:7px;border-radius:50%;background:#6E8F76;display:inline-block;margin-right:7px;vertical-align:middle}
+.stage-chip.chip-open.is-active .chip-dot{background:var(--cream)}
+/* A class with no dates yet reads quieter than one you can buy. */
+.acc.is-soon .acc-head{opacity:.82}

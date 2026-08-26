@@ -73,12 +73,33 @@
      is chosen and booked in one move on Cal.com. That step of the Purchase
      journey report will always read zero — not a fault, just a report built
      for shops. The real funnel is view_item -> begin_checkout -> purchase. */
+  /* "$150", "Free", or nothing at all. A class with no price set says
+     nothing rather than guessing — an invented price is a promise. */
+  function priceLabel(c) {
+    if (c.free) return "Free";
+    return (typeof c.price === "number" && c.price > 0) ? "$" + c.price : null;
+  }
+
+  /* The line under a Book button. It exists because the button used to hand
+     her to a different company's checkout with no warning and no price — she
+     met the number for the first time on cal.com, mid-decision, on a domain
+     that isn't ours. Saying it in advance costs nothing; a surprise costs the
+     booking. */
+  function bookNoteText(c) {
+    var bits = [];
+    var money = priceLabel(c);
+    if (money) bits.push(money);
+    if (c.format) bits.push(String(c.format).split("·")[0].trim());
+    bits.push("opens Cal.com to pick your date");
+    return bits.join(" · ");
+  }
+
   function ga4Item(c) {
     return {
       item_id: c.slug,
       item_name: c.name,
       item_category: c.track === "practice" ? "The Practice" : "The Foundations",
-      item_variant: c.free ? "free" : "paid",
+      item_variant: c.free ? "free" : (priceLabel(c) || "price not set"),
       quantity: 1
     };
   }
@@ -401,24 +422,49 @@
       return b;
     }
     nav.appendChild(chip("All", "", true));
+
+    /* "Open now" sits first among the real choices because it answers the
+       question people actually arrive with. Only shown when some classes are
+       open and some aren't — when everything is bookable it would be noise,
+       and when nothing is it would be a cruel joke. */
+    var openCount = classes.filter(function (c) { return !isSoon(c); }).length;
+    if (openCount > 0 && openCount < classes.length) {
+      var ob = document.createElement("button");
+      ob.type = "button";
+      ob.className = "stage-chip chip-open";
+      ob.setAttribute("data-stage", "");
+      ob.setAttribute("data-open", "yes");
+      ob.innerHTML = '<span class="chip-dot" aria-hidden="true"></span>Open now · ' + openCount;
+      nav.appendChild(ob);
+    }
+
     present.forEach(function (s) { nav.appendChild(chip(s, s, false)); });
     return nav;
   }
 
-  // Wire the filter: clicking a chip shows only matching items and hides empty phase groups.
+  /* Wire the filter. Chips now come in two kinds — a stage ("Just starting")
+     and openness ("Open now") — because the most common question isn't which
+     stage a class suits, it's "what can I actually book today?". Fifteen of
+     the nineteen classes have no dates yet, and mixed into one list they made
+     the four that DO look like part of a catalogue nobody can buy. */
   function wireStageFilter(container) {
     var chips = container.querySelectorAll(".stage-chip");
     var items = container.querySelectorAll(".acc, .pcard");
     Array.prototype.forEach.call(chips, function (chip) {
       chip.addEventListener("click", function () {
-        var val = chip.getAttribute("data-stage");
+        var stage = chip.getAttribute("data-stage");
+        var openOnly = chip.getAttribute("data-open") === "yes";
         Array.prototype.forEach.call(chips, function (c) { c.classList.toggle("is-active", c === chip); });
         Array.prototype.forEach.call(items, function (it) {
-          it.hidden = !!val && it.getAttribute("data-stage") !== val;
+          var hide = false;
+          if (openOnly) hide = it.getAttribute("data-open") !== "yes";
+          else if (stage) hide = it.getAttribute("data-stage") !== stage;
+          it.hidden = hide;
         });
         Array.prototype.forEach.call(container.querySelectorAll(".acc-group"), function (g) {
-          g.hidden = !g.querySelector(".acc:not([hidden])");
+          g.hidden = !g.querySelector(".acc:not([hidden]), .pcard:not([hidden])");
         });
+        qtrack("catalogue_filtered", { filter: openOnly ? "open-now" : (stage || "all") });
       });
     });
   }
@@ -426,8 +472,9 @@
   // One expandable class row (Foundations accordion).
   function accRow(c) {
     var row = document.createElement("div");
-    row.className = "acc";
+    row.className = "acc" + (isSoon(c) ? " is-soon" : " is-open");
     row.setAttribute("data-stage", c.stage || "");
+    row.setAttribute("data-open", isSoon(c) ? "no" : "yes");
 
     var head = document.createElement("button");
     head.type = "button";
@@ -475,7 +522,13 @@
       b.textContent = c.free ? "Save your seat" : "See dates & book";
       wireBookClick(b, c, "card");
       bk.appendChild(b);
-      if (c.free) { var fn = document.createElement("span"); fn.className = "free-note"; fn.textContent = "Free"; bk.appendChild(fn); }
+      var cardMoney = priceLabel(c);
+      if (cardMoney) {
+        var fn = document.createElement("span");
+        fn.className = c.free ? "free-note" : "price-note";
+        fn.textContent = cardMoney;
+        bk.appendChild(fn);
+      }
       foot.appendChild(bk);
     }
     var more = document.createElement("a");
@@ -550,7 +603,13 @@
 
       var accList = document.createElement("div");
       accList.className = "acc-list";
-      groups[key].forEach(function (c) { accList.appendChild(accRow(c)); });
+      /* Bookable first inside each phase. The curriculum order still reads
+         correctly, but the classes she can actually buy are the ones her eye
+         lands on rather than the ones she has to hunt for. */
+      groups[key]
+        .slice()
+        .sort(function (a, b) { return (isSoon(a) ? 1 : 0) - (isSoon(b) ? 1 : 0); })
+        .forEach(function (c) { accList.appendChild(accRow(c)); });
       group.appendChild(accList);
       list.appendChild(group);
     });
@@ -955,8 +1014,21 @@
         freeNote.className = "free-note";
         freeNote.textContent = "Free";
         book.appendChild(freeNote);
+      } else {
+        var money = priceLabel(c);
+        if (money) {
+          var pn = document.createElement("span");
+          pn.className = "price-note";
+          pn.textContent = money;
+          book.appendChild(pn);
+        }
       }
       detail.appendChild(book);
+
+      var bn = document.createElement("p");
+      bn.className = "book-note";
+      bn.textContent = bookNoteText(c);
+      detail.appendChild(bn);
     }
 
     if (c.disclaimer) {

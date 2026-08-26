@@ -34,6 +34,14 @@
   .daypick select{margin-left:8px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff}
   .mylink{background:#EEF2EC;border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   .mylink .lnk{font-weight:600;word-break:break-all}
+  .linkwhere{background:#F7F6F1;border:1px solid var(--line);border-left:3px solid #C9A868;border-radius:12px;padding:18px 22px;margin-top:18px}
+  .lw-title{font-family:var(--label);letter-spacing:.18em;text-transform:uppercase;font-size:11px;color:#A6791F;margin:0 0 6px}
+  .lw-sub{color:#5A5E55;font-size:.9rem;margin:0 0 12px;line-height:1.55}
+  .lw-list{margin:0;padding-left:18px;font-size:.92rem;line-height:1.6;color:#5A5E55}
+  .lw-list li{margin-bottom:6px}
+  .lw-list b{color:#2F332E}
+  .lw-foot{margin:12px 0 0;font-size:.86rem;color:#8A8E83;line-height:1.5;font-style:italic}
+
   /* ---- The Swarm board: who's posted today, and what the links have brought in ---- */
   .swarm{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:26px}
   .swarm[hidden]{display:none}
@@ -109,6 +117,19 @@
       <div><span style="font-family:var(--label);letter-spacing:.16em;text-transform:uppercase;font-size:10.5px;color:#4F6B5C;display:block">Your referral link — 85% your class, 35% a colleague's</span>
       <span class="lnk" id="my-link"></span></div>
       <button class="btn-copy" id="copy-link" type="button">Copy link</button>
+    </div>
+
+    <div class="linkwhere">
+      <p class="lw-title">Where your link actually works</p>
+      <p class="lw-sub">Not every platform lets a link travel. This is the difference between a share that pays you and one that doesn't.</p>
+      <ul class="lw-list">
+        <li><b>Instagram bio</b> — tappable. Put your referral link here for the whole campaign and leave it there. This is the one that matters most.</li>
+        <li><b>Instagram Story</b> — tappable, via the Link sticker. Use it every time you share a post to your Story.</li>
+        <li><b>Instagram first comment</b> — <i>not</i> tappable; Instagram never makes comment links clickable. Still worth posting as your first comment so people can see the address and know it's in your bio — just don't expect taps from it.</li>
+        <li><b>Instagram repost note</b> — can't hold a link at all. That's why those scripts are 60 characters and point at your bio.</li>
+        <li><b>LinkedIn</b> — tappable in the post itself and in the first comment. Your link is already inside every LinkedIn script below.</li>
+      </ul>
+      <p class="lw-foot">Every waitlist signup so far has arrived with no referral code attached. If your link isn't in your bio right now, that's the likeliest reason.</p>
     </div>
 
     <div class="today-banner">

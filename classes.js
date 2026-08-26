@@ -25,6 +25,10 @@
      format     - length + setting, e.g. "90 minutes · live, small group"
      covers     - array of "what we'll cover" bullets
      walkout    - the tangible thing you leave with
+     price      - dollars, as a number, no symbol (e.g. 150). Omitted or null
+                  means "no price set yet" and the page says nothing rather
+                  than guessing — never invent one, an invented price is a
+                  promise. `free: true` wins over any price.
      prereq     - optional "good to know" / prerequisite line
      booking    - the Cal.com link for this class (null = not bookable yet)
      disclaimer - optional educational disclaimer (regulated topics)
@@ -311,6 +315,7 @@ const QUINTA_CLASSES = [
   {
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     name: "Module 1 — Claude for beginners",
+    price: 150,   // from llms.txt — confirm before launch
     desc: "Your first real session: what Claude is, how to talk to it, and how to put it to work for your business that same day.",
     format: "60 minutes · live, small group",
     covers: [
@@ -325,6 +330,7 @@ const QUINTA_CLASSES = [
   {
     slug: "module-2", track: "practice", phase: null, phaseNum: null, stage: "Up and running",
     name: "Module 2 — Build your AI assistant",
+    price: 200,   // from llms.txt — confirm before launch
     desc: "Go from chatting with Claude to building an assistant that handles a real, repeatable task in your business.",
     format: "90 minutes · live, small group",
     covers: [
@@ -340,6 +346,7 @@ const QUINTA_CLASSES = [
     slug: "module-3", track: "practice", phase: null, phaseNum: null, stage: "Established",
     soon: true,   // no dates set yet - waitlist until Module 3 is scheduled
     name: "Module 3 — Real databases & automation",
+    price: 250,   // from llms.txt — confirm before launch
     desc: "Add a real database and a little automation so your tools start running quietly in the background — keeping track of things and handling the busywork without needing you.",
     format: "120 minutes · live, small group",
     covers: [
