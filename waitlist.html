@@ -137,10 +137,20 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         </select>
       </div>
 
-      <!-- honeypot: humans never see this; bots fill it and get quietly ignored -->
+      <!-- Bot trap. Humans never see it; bots fill every field they find.
+           NOT named "company" any more, and here's why: it was, and Google
+           Analytics recorded exactly one trip in seven weeks — a real person,
+           whose password manager autofilled her company name into a field she
+           couldn't see. Password managers override autocomplete="off" on
+           purpose, and this field is positioned off-screen rather than
+           removed, so it is still very much fillable.
+           The name below matches nothing in any autofill vocabulary, and the
+           data-* attributes are the ones 1Password and LastPass actually
+           respect. -->
       <div class="hp" aria-hidden="true">
-        <label for="wlCompany">Company</label>
-        <input type="text" id="wlCompany" name="company" tabindex="-1" autocomplete="off">
+        <label for="wlNoteExtra">Leave this field empty</label>
+        <input type="text" id="wlNoteExtra" name="quinta_note_extra" tabindex="-1"
+               autocomplete="off" data-lpignore="true" data-1p-ignore data-form-type="other">
       </div>
 
       <button type="submit" class="btn btn-solid" id="wlSubmit">Put me on the list</button>
@@ -393,12 +403,19 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       ref: ref || null
     };
 
-    // Honeypot: bots fill the hidden field — pretend success, save nothing.
-    // Counted separately, so bot traffic never inflates the signup number.
-    if (document.getElementById("wlCompany").value) {
+    /* A tripped trap no longer throws the signup away.
+       It used to show the green "You're on the list" and save nothing, which
+       is the worst of both worlds: a real person believes she succeeded and
+       is gone forever, and we never find out. It happened once, to Erika, and
+       the only reason anyone noticed was that she went looking in the
+       database.
+       Now the row is saved and flagged instead. Bot spam in the table is a
+       nuisance you can filter; a woman who thinks she signed up and didn't is
+       not recoverable. Three signups in seven weeks — spam is not the risk
+       here. The event still fires, so the trap stays measurable. */
+    if (document.getElementById("wlNoteExtra").value) {
       track("waitlist_bot_blocked", {});
-      finish();
-      return;
+      payload.source = (payload.source || "site") + "+hp";
     }
 
     btn.disabled = true;
