@@ -69,10 +69,22 @@
      light up the reports Erika already opens, the custom ones carry detail
      those reports can't hold (which teacher's code, which page it came from).
 
-     NOTE ON add_to_cart: it is never sent, because there is no cart. A seat
-     is chosen and booked in one move on Cal.com. That step of the Purchase
-     journey report will always read zero — not a fault, just a report built
-     for shops. The real funnel is view_item -> begin_checkout -> purchase. */
+     ON add_to_cart: there is no cart — a seat is chosen and booked in one
+     move — so it fires at the same instant as begin_checkout, on the Book
+     click. That is a compromise, and worth understanding before reading the
+     report: the Add to cart -> Begin checkout step will always show 100%,
+     because they are the same action.
+
+     The alternative was leaving it out, which is more literally true and
+     much more misleading: GA's Purchase journey is a CLOSED funnel by
+     default, so a step nobody reaches zeroes every step after it. The report
+     would show a wall of 0% and read as "the funnel is broken" — exactly the
+     false alarm that sent us looking in the first place.
+
+     The three moments we can genuinely observe are: she looked at a class,
+     she left for Cal.com, she came back booked. Those are view_item,
+     begin_checkout and purchase. The gap between the last two is the
+     Cal.com drop-off, and it is the number that actually matters. */
   /* "$150", "Free", or nothing at all. A class with no price set says
      nothing rather than guessing — an invented price is a promise. */
   function priceLabel(c) {
@@ -120,6 +132,7 @@
         referred: storedRef() ? "yes" : "no",
         clicked_from: where          // "card" or "class_page"
       });
+      qtrack("add_to_cart", { currency: "USD", items: [ga4Item(c)] });
       qtrack("begin_checkout", { currency: "USD", items: [ga4Item(c)] });
     });
   }
