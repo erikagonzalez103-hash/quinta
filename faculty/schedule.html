@@ -516,11 +516,32 @@
     });
     Array.prototype.forEach.call(box.querySelectorAll("button[data-id]"), function (b) {
       b.addEventListener("click", function () {
-        if (!window.confirm("Remove this class from the schedule?")) return;
-        sb.from("class_sessions").delete().eq("id", b.getAttribute("data-id")).then(function (r) {
-          if (r.error) { console.error(r.error); show("err", "Couldn't cancel that one — email hello@quintaand.co."); return; }
-          loadSessions();
-        });
+        /* Cancelling used to DELETE the row. If a student had already paid for
+           that session, she kept her seat and her Cal.com reminders and would
+           have turned up to a class the instructor believed was cancelled —
+           and with the row destroyed there was no record anywhere that the two
+           disagreed. The Worker knows this is dangerous and writes "Needs a
+           human" into an HTTP response nobody reads.
+
+           So it's a soft cancel now: the row stays, marked. It disappears from
+           the schedule and frees the room exactly as before, but it can be
+           recovered, and a paid seat leaves a trace to reconcile against. */
+        if (!window.confirm("Cancel this class?\n\nIt comes off the schedule and off the public booking page. If anyone has already booked a seat, email hello@quintaand.co as well — her booking is held in Cal.com and has to be cancelled there too.")) return;
+        sb.from("class_sessions")
+          .update({ status: "canceled" })
+          .eq("id", b.getAttribute("data-id"))
+          .then(function (r) {
+            if (r.error) {
+              console.error(r.error);
+              /* Deliberately does NOT fall back to deleting. Losing a
+                 cancellation is recoverable; destroying a session somebody
+                 paid for is not. */
+              show("err", "Couldn't cancel that one — it's still on the schedule. Email hello@quintaand.co and we'll take it down by hand. (" + (r.error.message || r.error.code || "unknown") + ")");
+              return;
+            }
+            show("ok", "Cancelled. It'll come off the public booking page within a minute or two — watch the row below.");
+            loadSessions();
+          });
       });
     });
   }

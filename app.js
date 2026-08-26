@@ -1004,6 +1004,16 @@
       wbtn.textContent = "Join the waitlist";
       wireAltClick(wbtn, c, "waitlist_from_class", "class_page");
       cbook.appendChild(wbtn);
+      /* A class with no dates yet still has a price, and she still wants to
+         know it — deciding whether to wait for something is easier when you
+         know what it costs. */
+      var soonMoney = priceLabel(c);
+      if (soonMoney) {
+        var sp = document.createElement("span");
+        sp.className = c.free ? "free-note" : "price-note";
+        sp.textContent = soonMoney;
+        cbook.appendChild(sp);
+      }
       var cbtn = document.createElement("a");
       cbtn.className = "btn btn-ghost";
       cbtn.href = pageRoot() + "coffee.html";
