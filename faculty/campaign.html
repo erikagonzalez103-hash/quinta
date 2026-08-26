@@ -410,22 +410,21 @@
           text: "Know someone who keeps saying she's “not technical”? Send her this. Coffee with Quinta is free, 60 minutes, small group, and she'll walk out having built one small working AI tool start to finish on her own phone. Nothing to lose but the hour: {LINK}" }
       ] },
 
-    { date: "2026-08-30", first: null, firsts: ["nery", "natalie", "nik"],
-      name: "Nery, Natalie & Nik", short: "Nery, Natalie & Nik", cls: "the classes opening next",
-      igMine: "My class opens next 🌱 waitlist link in my bio",
-      igNote: "Insurance, First Hire, Trademarks — opening next 🌱",
-      comment: "These three are worth waiting for — and the waitlist is one email, the moment the class opens. Nothing else 🌱",
-      liFeat: "September's classes aren't the whole faculty — three more are coming, and mine is one of them.\n\nHere's what you'll walk out of each of them holding:\n\n· Insurance, with Nery Ceron Charles — a risk worksheet ready to hand a broker\n· Your First Hire, with Natalie Verhalen — a hire-type decision worksheet and a starter job description\n· Trademarks, with Nik Sallie — a search-and-file roadmap for your business name\n\nNone of these are bookable yet, and I'd rather say that plainly than pretend otherwise. The waitlist is one email, the moment the class opens — not a newsletter, not a funnel.\n\nPut your name down here: {LINK}",
-      igFeat: "Coming next 🌱 Three more classes join the September ones: Insurance with Nery (walk out with a risk worksheet ready for a broker), Your First Hire with Natalie (a decision worksheet + starter job description), Trademarks with Nik (a search-and-file roadmap for your name). Not bookable yet — the waitlist is one email the moment it opens. Link in my bio!",
+    { date: "2026-08-30", first: null, firsts: ["nik", "nery", "natalie"],
+      name: "Nik, Nery & Natalie", short: "Nik, Nery & Natalie", cls: "the last three",
+      igMine: "My classes 🌱 book Nik's now, waitlist for the rest",
+      igNote: "Trademarks + Legacy are open. Two more coming 🌱",
+      comment: "Nik's two are bookable today — and Insurance and Your First Hire are worth the wait. The waitlist is one email, the moment they open 🌱",
+      liFeat: "Three of us close out the week, and we're in two different places 🌱\n\nBookable right now, September seats open:\n· Trademarks, with Nik Sallie — you walk out with a search-and-file roadmap for your business name. $299.\n· Legacy Planning, with Nik Sallie — a one-page business continuity file, and a checklist ready to bring an estate attorney. $299.\n\nStill to come, waitlist open:\n· Insurance, with Nery Ceron Charles — a risk worksheet ready to hand a broker.\n· Your First Hire, with Natalie Verhalen — a hire-type decision worksheet and a starter job description.\n\nI'd rather say plainly which is which than let anyone find out at a checkout. The waitlist is one email on the day it opens — not a newsletter, not a funnel.\n\nBoth doors are here: {LINK}",
+      igFeat: "The last three of us 🌱 Nik's Trademarks and Legacy Planning are BOOKABLE now — you leave with a roadmap for protecting your name, or a one-page continuity file. $299 each, ten seats. Insurance with Nery and Your First Hire with Natalie are still to come — waitlist is one email the day they open. Link in my bio!",
       reposts: [
         { label: "The brag",
-          text: "Three classes I can't wait for at Quinta & Co. 🌱 Insurance with Nery Ceron Charles — you leave with a risk worksheet ready to hand a broker. Your First Hire with Natalie Verhalen — a decision worksheet and a starter job description. Trademarks with Nik Sallie — a search-and-file roadmap for your business name. Not open yet; the waitlist is one email the moment they are: {LINK}" },
+          text: "Two classes I'd send anyone to, open today: Nik Sallie teaches Trademarks (walk out with a search-and-file roadmap for your business name) and Legacy Planning (a one-page continuity file, and a checklist ready for an estate attorney). $299 each, ten seats. Insurance with Nery Ceron Charles and Your First Hire with Natalie Verhalen are next, and the waitlist is one email the day they open: {LINK}" },
         { label: "The team",
-          text: "The September classes aren't the whole faculty 🌱 Nery, Natalie and Nik are teaching Insurance, Your First Hire and Trademarks, and every one of them ends with something you carry out of the room — a broker-ready risk worksheet, a starter job description, a roadmap for protecting your name. Not bookable yet. One email when they are: {LINK}" },
+          text: "Closing out the week at Quinta & Co. 🌱 Nik's Trademarks and Legacy Planning are bookable right now — she's the attorney who protects your name and what you're building. Nery's Insurance and Natalie's Your First Hire are still to come. Every one of them ends with the actual document in your hands, not notes: {LINK}" },
         { label: "The nudge",
-          text: "If insurance, your first hire, or trademarking your name is the thing you keep putting off — those three classes are coming to Quinta & Co., and each ends with the actual document, not notes. They're not open yet, and the waitlist is exactly one email on the day they are: {LINK}" }
+          text: "Protecting your business name, or working out what happens to your business if you can't run it — both of those are Nik Sallie's classes, and both are bookable today. $299, ten seats, one plain-English hour each. And if insurance or your first hire is the thing you keep putting off, those two are next — the waitlist is one email: {LINK}" }
       ] },
-
     { date: "2026-08-31", first: "erika", name: "Erika González", cls: "Get Certified — WBE / MBE / DBE",
       igMine: "What you walk out with 🌱 your certification roadmap",
       igNote: "Erika's certification class ends with your roadmap 🌱",
@@ -982,11 +981,14 @@
 
     var name = (row && (row.display_name || row.full_name)) || "";
     var first = name ? name.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+    /* Both halves of a merge kept on purpose: the link points at The
+       Foundations rather than the home page (one less click, from main), and
+       name/email are the fields the Swarm board and the shared-day copy need. */
     var me = {
       first: first,
       name: name,
       email: session.user.email.toLowerCase(),
-      link: "https://quintaand.co/?ref=" + first + REF_YEAR
+      link: "https://quintaand.co/foundations.html?ref=" + first + REF_YEAR
     };
     document.getElementById("my-link").textContent = me.link;
     copyBtn(function () { return me.link; }, document.getElementById("copy-link"));
@@ -1033,7 +1035,7 @@
       [24, "Final · Thu Aug 27 — Joshlyn · Investing"],
       [25, "Final · Fri Aug 28 — Stephanie · Brand 101"],
       [26, "Final · Sat Aug 29 — Erika · Coffee (free)"],
-      [27, "Final · Sun Aug 30 — Nery, Natalie & Nik"],
+      [27, "Final · Sun Aug 30 — Nik (open) + Nery & Natalie"],
       [28, "Final · Mon Aug 31 — Erika · Get Certified"],
       [29, "Final · Tue Sep 1 — everyone · opening day"]
     ];
