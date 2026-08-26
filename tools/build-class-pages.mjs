@@ -123,7 +123,7 @@ function page(c) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=3">
+<link rel="stylesheet" href="../styles.css?v=4">
 <script type="application/ld+json" data-course-schema>${schema}</script>
 <script type="application/ld+json">${faqSchema}</script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
@@ -136,6 +136,48 @@ function page(c) {
 
   gtag('config', 'G-QM9XPPN7XC');
 </script>
+
+<!-- Meta Pixel and LinkedIn Insight were added to every page by hand after this
+     generator was written, and never folded back in — so regenerating used to
+     silently strip them from all 19 class pages, the highest-intent pages on
+     the site. They live here now. If either ID changes, change it HERE as well
+     as in the static pages. -->
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1179541285251913');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
+<!-- LinkedIn Insight Tag -->
+<script type="text/javascript">
+_linkedin_partner_id = "9479266";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script><script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=9479266&fmt=gif" />
+</noscript>
+<!-- End LinkedIn Insight Tag -->
 </head>
 <body data-page="class" data-class="${esc(c.slug)}" data-root="../">
 
@@ -208,9 +250,9 @@ ${faqHtml}
 </footer>
 
 <script src="../config.js?v=6"></script>
-<script src="../classes.js?v=6"></script>
+<script src="../classes.js?v=7"></script>
 <script src="../icons.js?v=3"></script>
-<script src="../app.js?v=6" defer></script>
+<script src="../app.js?v=7" defer></script>
 </body>
 </html>
 `;
