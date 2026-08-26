@@ -122,9 +122,36 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     }
   } catch (e) { /* a blocked pixel must never break the page */ }
 
+  /* Cal.com identifies the booking in the redirect; the name varies by
+     version, so try each. It matters for more than tidiness: GA4 uses
+     transaction_id to discard duplicates, and without one a refresh of this
+     page counts as a second sale. */
+  var bookingId = params.get("uid") || params.get("bookingUid") || params.get("bookingId") || "";
+  bookingId = String(bookingId).replace(/[^\w-]/g, "").slice(0, 64);
+
   try {
     if (typeof gtag === "function") {
       gtag("event", "booking_complete", { class_name: className || "unknown" });
+
+      /* The standard GA4 event, so the Purchase journey and Ecommerce
+         reports have a final step to show. Its first four steps were all
+         reading 0% not because people abandoned but because none of these
+         events existed.
+
+         No `value` is sent: class prices don't live in classes.js, so any
+         figure here would be invented, and an invented revenue number is
+         worse than none. Add a price field per class and this can carry it. */
+      var already = false;
+      try { already = bookingId && sessionStorage.getItem("qc_booked_" + bookingId) === "1"; } catch (e) { /* private mode */ }
+
+      if (!already) {
+        gtag("event", "purchase", {
+          transaction_id: bookingId || ("booking-" + Date.now()),
+          currency: "USD",
+          items: [{ item_id: className || "unknown", item_name: className || "Quinta class", quantity: 1 }]
+        });
+        try { if (bookingId) sessionStorage.setItem("qc_booked_" + bookingId, "1"); } catch (e) { /* fine */ }
+      }
     }
   } catch (e) { /* same */ }
 })();

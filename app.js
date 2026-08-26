@@ -44,6 +44,69 @@
     return url + (url.indexOf("?") === -1 ? "?" : "&") + "ref=" + encodeURIComponent(code);
   }
 
+  /* ------------------------------------------------------------------
+     BOOKING FUNNEL TRACKING
+
+     Until now GA could see a class page view and, at the far end, a
+     booking_complete on booked.html — and nothing whatsoever in between.
+     That gap is exactly where a booking is won or lost, so "why isn't
+     anyone booking?" had no answer in the data. It does now.
+
+     Deliberately wrapped so a blocked or absent gtag can never break a
+     Book button. An ad blocker must not cost a booking — the same rule
+     waitlist.html follows. Nothing here is personal: which class, which
+     page, whether a referral code was carried. No name, no email.
+     ------------------------------------------------------------------ */
+  function qtrack(name, props) {
+    try {
+      if (typeof gtag === "function") gtag("event", name, props || {});
+    } catch (e) { /* never let analytics break a link */ }
+  }
+
+  /* GA4's built-in reports — Purchase journey, Ecommerce purchases — only
+     understand their own vocabulary: view_item, begin_checkout, purchase.
+     Firing our names alongside theirs makes both work: the standard events
+     light up the reports Erika already opens, the custom ones carry detail
+     those reports can't hold (which teacher's code, which page it came from).
+
+     NOTE ON add_to_cart: it is never sent, because there is no cart. A seat
+     is chosen and booked in one move on Cal.com. That step of the Purchase
+     journey report will always read zero — not a fault, just a report built
+     for shops. The real funnel is view_item -> begin_checkout -> purchase. */
+  function ga4Item(c) {
+    return {
+      item_id: c.slug,
+      item_name: c.name,
+      item_category: c.track === "practice" ? "The Practice" : "The Foundations",
+      item_variant: c.free ? "free" : "paid",
+      quantity: 1
+    };
+  }
+
+  /* Fires as she leaves for Cal.com. Paired with the purchase event on
+     booked.html, the gap between the two IS the drop-off on Cal.com — the
+     number nobody could see before. */
+  function wireBookClick(el, c, where) {
+    el.addEventListener("click", function () {
+      qtrack("booking_start", {
+        class_slug: c.slug,
+        class_name: c.name,
+        price: c.free ? "free" : "paid",
+        referred: storedRef() ? "yes" : "no",
+        clicked_from: where          // "card" or "class_page"
+      });
+      qtrack("begin_checkout", { currency: "USD", items: [ga4Item(c)] });
+    });
+  }
+
+  /* The other two exits from a class page, so a "coming soon" class is
+     measured rather than looking like an abandonment. */
+  function wireAltClick(el, c, name, where) {
+    el.addEventListener("click", function () {
+      qtrack(name, { class_slug: c.slug, class_name: c.name, clicked_from: where });
+    });
+  }
+
   /* The brand sprout — drawn once here so every wordmark (header, footer,
      holding screen, any future page) carries it. Brand recognition first. */
   var SPROUT_SVG = '<svg class="sprout" viewBox="0 0 18 13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" aria-hidden="true"><path d="M9 8.5 V 13.5"/><path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/><path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/><circle cx="9" cy="3.5" r="0.8" fill="currentColor" stroke="none"/></svg>';
@@ -410,6 +473,7 @@
       b.className = "btn btn-solid";
       b.href = bookingUrl(c.booking);
       b.textContent = c.free ? "Save your seat" : "See dates & book";
+      wireBookClick(b, c, "card");
       bk.appendChild(b);
       if (c.free) { var fn = document.createElement("span"); fn.className = "free-note"; fn.textContent = "Free"; bk.appendChild(fn); }
       foot.appendChild(bk);
@@ -768,6 +832,15 @@
     h1.innerHTML = escapeHtml(c.name).replace(/ ([^ ]+)$/, " $1");
     detail.appendChild(h1);
 
+    /* The first measurable step of the funnel: she is looking at one specific
+       class. Fired here rather than on page load so it only counts a page
+       that actually rendered a class — a broken slug shouldn't look like
+       interest in something that never appeared. */
+    qtrack("view_item", { currency: "USD", items: [ga4Item(c)] });
+    qtrack("class_viewed", { class_slug: c.slug, class_name: c.name,
+                             bookable: isSoon(c) ? "no" : "yes",
+                             referred: storedRef() ? "yes" : "no" });
+
     var desc = document.createElement("p");
     desc.className = "desc";
     desc.textContent = c.desc;
@@ -859,11 +932,13 @@
       wbtn.className = "btn btn-solid";
       wbtn.href = pageRoot() + "waitlist.html?c=" + encodeURIComponent(c.slug);
       wbtn.textContent = "Join the waitlist";
+      wireAltClick(wbtn, c, "waitlist_from_class", "class_page");
       cbook.appendChild(wbtn);
       var cbtn = document.createElement("a");
       cbtn.className = "btn btn-ghost";
       cbtn.href = pageRoot() + "coffee.html";
       cbtn.textContent = "Start free: Coffee with Quinta";
+      wireAltClick(cbtn, c, "coffee_from_class", "class_page");
       cbook.appendChild(cbtn);
       detail.appendChild(cbook);
     } else if (c.booking) {
@@ -873,6 +948,7 @@
       btn.className = "btn btn-solid";
       btn.href = bookingUrl(c.booking);
       btn.textContent = c.free ? "Save your seat" : "See dates & book";
+      wireBookClick(btn, c, "class_page");
       book.appendChild(btn);
       if (c.free) {
         var freeNote = document.createElement("span");
