@@ -225,7 +225,7 @@ const QUINTA_CLASSES = [
       { label: "WBENC (national)", url: "https://www.wbenc.org" },
       { label: "Women’s Business Council – Southwest", url: "https://wbcsouthwest.org" }
     ],
-    price: 250,
+    price: 299,
     booking: "https://cal.com/quintaandco/certification"
   },
   {
