@@ -177,6 +177,22 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
     get("class_sessions?select=*&status=neq.canceled"),
   ]);
 
+  /* Every table failing is not "a quiet day", it is a broken key — and a
+     report that cheerfully says "No signups today" when the database was
+     never reachable is worse than no report at all. A partial failure still
+     degrades to a missing section; a total one says so.
+     Found the hard way: the first live run returned 403 on all five tables
+     and would have sent a blank report as though nothing had happened. */
+  const reads = [faculty, activity, signups, referrals, sessions];
+  if (reads.every((r) => r.length === 0)) {
+    throw new Error(
+      "Every database read came back empty or refused — almost certainly a bad " +
+      "SUPABASE_SERVICE_ROLE_KEY (a publishable key hits row-level security and " +
+      "returns 403; a secret key bypasses it). Refusing to send a report that " +
+      "would read as a quiet day."
+    );
+  }
+
   const posts = {};
   for (const a of activity) {
     const e = String(a.faculty_email || "").toLowerCase();

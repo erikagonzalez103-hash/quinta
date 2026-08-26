@@ -83,5 +83,28 @@ console.log('\n5. Unbookable detection adapts to the column name');
   check('ignores dates already past', !r.html.includes('Z —'));
 }
 
+console.log('\n6. A dead key must not look like a quiet day');
+{
+  // Every table 403s — what the first live run actually did.
+  const fetchStub = async () => ({ ok: false, status: 403, text: async () => 'permission denied' });
+  let threw = null;
+  try { await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW }); } catch (e) { threw = e; }
+  check('refuses to send', !!threw);
+  check('names the likely cause', /SUPABASE_SERVICE_ROLE_KEY/.test(threw?.message || ''), threw?.message);
+  check('says why it matters', /quiet day/.test(threw?.message || ''));
+}
+
+console.log('\n7. One dead table is still just a missing section');
+{
+  const fetchStub = async (url) => {
+    if (url.includes('campaign_activity')) return { ok: false, status: 404, text: async () => 'gone' };
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    return { ok: true, json: async () => [] };
+  };
+  const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
+  check('still sends', !!r.html);
+  check('faculty still listed', r.html.includes('A B'));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
