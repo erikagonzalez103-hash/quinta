@@ -54,6 +54,15 @@
     display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
   .linkbox code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;color:var(--moss);word-break:break-all}
 
+  /* Picker instead of a long stack. Eight cards in a row meant whoever sat at
+     the top got shared and whoever sat at the bottom didn't — position, not
+     merit. Choosing from a list puts every class on equal footing. */
+  .picker{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .picker select{flex:1 1 320px;padding:13px 15px;border:1px solid var(--line);border-radius:8px;
+    font-family:inherit;font-size:1rem;background:var(--cream);color:var(--ink)}
+  .picker-empty{margin-top:18px;padding:26px 22px;text-align:center;background:var(--cream);
+    border:1px dashed var(--line);border-radius:10px;color:#8A8E83;font-size:.95rem}
+
   #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
   #fp{display:none}
   @media(max-width:640px){ .asset{width:calc(50% - 8px)} }
@@ -276,18 +285,62 @@
       mineBox.appendChild(none);
     }
 
+    /* Pick a colleague's class rather than scrolling past eight of them. */
     var othersBox = document.getElementById("others");
     var h2 = document.createElement("h2");
     h2.className = "phase-label";
     h2.style.marginTop = "42px";
-    h2.textContent = "The rest of the faculty";
+    h2.textContent = "Share a colleague's class";
     othersBox.appendChild(h2);
+
     var p = document.createElement("p");
     p.className = "hint";
     p.style.margin = "6px 0 0";
-    p.textContent = "Week 1 worked because everyone shared everyone. Each caption below already ends with your link.";
+    p.textContent = "August worked because everyone shared everyone. Pick whichever you like — the caption comes back with your link already on it, so the signup still counts for you.";
     othersBox.appendChild(p);
-    rest.forEach(function (c) { othersBox.appendChild(classCard(c, false, link)); });
+
+    var picker = document.createElement("div");
+    picker.className = "picker";
+    var sel = document.createElement("select");
+    sel.setAttribute("aria-label", "Choose a colleague's class");
+    sel.innerHTML = '<option value="">Choose a class…</option>';
+
+    /* Grouped by instructor, so it reads as people rather than a flat list —
+       and so someone teaching two classes appears once, with both under her. */
+    var byTeacher = {};
+    rest.forEach(function (c) { (byTeacher[c.teacher] = byTeacher[c.teacher] || []).push(c); });
+    Object.keys(byTeacher).sort().forEach(function (teacher) {
+      var og = document.createElement("optgroup");
+      og.label = teacher;
+      byTeacher[teacher].forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.slug;
+        o.textContent = c.name + (c.status === "waitlist" ? " (waitlist)" : "");
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    });
+    picker.appendChild(sel);
+    othersBox.appendChild(picker);
+
+    var chosen = document.createElement("div");
+    othersBox.appendChild(chosen);
+
+    var empty = document.createElement("p");
+    empty.className = "picker-empty";
+    empty.textContent = "Pick a class above and everything for it appears here — artwork, captions, hashtags.";
+    chosen.appendChild(empty);
+
+    sel.addEventListener("change", function () {
+      chosen.innerHTML = "";
+      if (!sel.value) { chosen.appendChild(empty); return; }
+      var c = rest.filter(function (x) { return x.slug === sel.value; })[0];
+      if (!c) { chosen.appendChild(empty); return; }
+      chosen.appendChild(classCard(c, false, link));
+      /* Their artwork is what they came for; put it in view without yanking
+         the page around. */
+      chosen.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
