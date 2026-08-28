@@ -24,7 +24,17 @@ on:
     # can be several minutes late under load, so treat this as "within the
     # hour", not "on the quarter hour".
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}       # the "Run workflow" button, for testing
+  workflow_dispatch:
+    # The "Run workflow" button. Tick dry_run to see what a run WOULD send
+    # without sending it — the only safe way to look at a backlog before it
+    # goes out to real people. A dry run reads the waitlist and prints every
+    # recipient and subject, but sends nothing and stamps nothing, so the
+    # rows stay queued for the real run.
+    inputs:
+      dry_run:
+        description: "Preview only: list what would be sent, send nothing, stamp nothing"
+        type: boolean
+        default: false
 
 # Two runs at once would email twice for the same signup — the second reads
 # the row before the first has stamped it.
@@ -46,4 +56,15 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: node tools/waitlist-alerts.mjs
+        # Only ever dry-runs when a human ticked the box on the Run workflow
+        # form. The event_name test is belt and braces: a scheduled run that
+        # silently dry-ran would send nothing and still go green, which is the
+        # one failure this whole workflow exists to prevent, so it is worth
+        # making that impossible rather than merely unlikely.
+        #
+        # inputs.dry_run, NOT github.event.inputs.dry_run — the latter is the
+        # STRING "false" when the box is left unticked, and a non-empty string
+        # is truthy in a GitHub expression, so it would dry-run every manual
+        # run. The script needs the flag and not just DRY_RUN in the env,
+        # because its CLI overwrites that variable from argv.
+        run: node tools/waitlist-alerts.mjs ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}

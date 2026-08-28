@@ -1,12 +1,26 @@
 # The end-of-day report to erika@quintaand.co.
 #
 # Answers in one email what otherwise takes four dashboards and a SQL editor:
-# who posted today, who signed up, who it's credited to, and whether anything
-# on the schedule synced but is NOT actually bookable.
+# who posted, who signed up, who it's credited to, and whether anything on the
+# schedule synced but is NOT actually bookable.
 #
 # It sends every day, including empty ones. "No signups today" is the sentence
 # that tells you the campaign isn't landing; a report that only shows up on
 # good days teaches you nothing.
+#
+# WHY THIS NO LONGER TRIES TO SEND AT 8PM
+# It used to run on two crons and ask "is it 8pm in Dallas?", so the send time
+# would hold across the November DST change. But GitHub delivers scheduled
+# runs on a best-effort basis, and on this repo that has meant 9 to 11 hours
+# late — the 01:00 UTC cron landing around noon. The check saw 05, 07, 07 and
+# 08 on four consecutive days, skipped the send every time, and the job still
+# reported success. Four days of green ticks and no report: the one failure a
+# daily report cannot be allowed to have, and invisible from the Actions tab.
+#
+# So it no longer cares what time it is. It reports the Dallas day that has
+# just ended, which is the same complete day whether this fires at 02:00 in
+# Dallas or at noon, and one cron is therefore enough. Only a delay past the
+# NEXT Dallas midnight could move it — about 22 hours, twice the worst seen.
 #
 # SECRETS (the same two the waitlist alerts use):
 #   SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY
@@ -14,12 +28,17 @@ name: Daily report
 
 on:
   schedule:
-    # 8pm Dallas. Cron here is UTC and has no idea about daylight saving, so
-    # both are listed and the job itself decides which one is really 8pm
-    # locally — otherwise it silently drifts to 7pm every November.
-    - cron: "0 1 * * *"    # 8pm CDT (Mar-Nov)
-    - cron: "0 2 * * *"    # 8pm CST (Nov-Mar)
-  workflow_dispatch: {}
+    # 07:00 UTC — 02:00 in Dallas on CDT, 01:00 on CST. Both sit safely past
+    # midnight, so the day being reported is unambiguous either side of the
+    # November change, with most of a day of slack before any delay could
+    # carry the run into the next Dallas date.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: "Dallas date to report on, YYYY-MM-DD. Blank = the day that just ended."
+        type: string
+        default: ""
 
 jobs:
   report:
@@ -30,25 +49,15 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Is it actually 8pm in Dallas?
-        id: hour
-        run: |
-          HOUR=$(TZ=America/Chicago date +%H)
-          echo "dallas_hour=$HOUR" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "20" ]; then
-            echo "send=yes" >> "$GITHUB_OUTPUT"
-          else
-            echo "send=no" >> "$GITHUB_OUTPUT"
-            echo "It is ${HOUR}:00 in Dallas — the other cron line covers tonight. Skipping."
-          fi
-
       - name: Check the logic still holds
-        if: steps.hour.outputs.send == 'yes'
         run: node tools/daily-report.test.mjs
 
       - name: Send it
-        if: steps.hour.outputs.send == 'yes'
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Free text off the dispatch form, so it is handed over as an
+          # environment variable rather than interpolated into the command
+          # line, and the script refuses anything that isn't a date.
+          REPORT_DATE: ${{ inputs.report_date }}
         run: node tools/daily-report.mjs

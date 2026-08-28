@@ -1,4 +1,4 @@
-import { run, startOfDallasDay, dallasDay, buildReport } from './daily-report.mjs';
+import { run, startOfDallasDay, startOfDallasDate, shiftDallasDate, dallasDay, buildReport } from './daily-report.mjs';
 
 let pass = 0, fail = 0;
 const check = (n, c, d = '') => { if (c) { pass++; console.log(`  ✓ ${n}`); } else { fail++; console.log(`  ✗ ${n} ${d}`); } };
@@ -104,6 +104,81 @@ console.log('\n7. One dead table is still just a missing section');
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
   check('still sends', !!r.html);
   check('faculty still listed', r.html.includes('A B'));
+}
+
+
+/* The report used to ask "is it 8pm in Dallas?" and skip the send if not.
+   GitHub delivered the 01:00 UTC cron 9-11 hours late four days running, the
+   answer was never 20, and four green runs sent nothing. These cover the
+   replacement: the report names a Dallas day, not a moment. */
+console.log('\n8. A late run reports the same day as a punctual one');
+{
+  const urls = [];
+  const stub = async (url) => {
+    urls.push(url);
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'tara@quintaand.co', display_name: 'Tara Johnson' }] };
+    return { ok: true, json: async () => [] };
+  };
+  const at = (iso) => run({ fetch: stub, env: { DRY_RUN: '1' }, log: () => {}, now: new Date(iso) });
+
+  // The 07:00 UTC cron on time: 02:00 in Dallas on the 28th.
+  const punctual = await at('2026-08-28T07:00:00Z');
+  // The same fire delivered 11h late — the worst delay actually observed.
+  const late = await at('2026-08-28T18:00:00Z');
+  // And 21h late, near the edge of what this scheme can absorb.
+  const verylate = await at('2026-08-29T04:00:00Z');
+
+  check('punctual run reports the day that just ended', /August 27/.test(punctual.subject), punctual.subject);
+  check('11h late reports the same day', late.subject === punctual.subject, late.subject);
+  check('21h late still reports the same day', verylate.subject === punctual.subject, verylate.subject);
+}
+
+console.log('\n9. The reported day is bounded at both ends');
+{
+  const urls = [];
+  const stub = async (url) => {
+    urls.push(url);
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.c', display_name: 'A' }] };
+    if (url.includes('class_sessions')) return { ok: true, json: async () => [
+      { class_name: 'Made that day', session_date: '2026-09-30', start_time: '18:00:00', status: 'scheduled', created_at: '2026-08-27T15:00:00Z' },
+      { class_name: 'Made the day after', session_date: '2026-09-30', start_time: '18:00:00', status: 'scheduled', created_at: '2026-08-28T15:00:00Z' },
+    ] };
+    return { ok: true, json: async () => [] };
+  };
+  const r = await run({ fetch: stub, env: { DRY_RUN: '1' }, log: () => {}, now: new Date('2026-08-28T18:00:00Z') });
+
+  const waitlist = urls.find((u) => u.includes('waitlist'));
+  check('waitlist read has a lower bound', waitlist.includes('created_at=gte.2026-08-27T05:00:00.000Z'), waitlist);
+  check('waitlist read has an upper bound', waitlist.includes('created_at=lt.2026-08-28T05:00:00.000Z'), waitlist);
+  check('the Swarm day key is the reported day', urls.some((u) => u.includes('day_key=eq.2026-08-27')), urls.join(' '));
+  check('counts a class added on the reported day', r.html.includes('Made that day'));
+  check('excludes one added the day after', !r.html.includes('Made the day after'));
+}
+
+console.log('\n10. REPORT_DATE names a specific day');
+{
+  const stub = async (url) => {
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.c', display_name: 'A' }] };
+    return { ok: true, json: async () => [] };
+  };
+  const r = await run({ fetch: stub, env: { DRY_RUN: '1', REPORT_DATE: '2026-07-04' }, log: () => {}, now: new Date('2026-08-28T18:00:00Z') });
+  check('overrides the default day', /July 4/.test(r.subject), r.subject);
+
+  let threw = null;
+  try {
+    await run({ fetch: stub, env: { DRY_RUN: '1', REPORT_DATE: 'yesterday' }, log: () => {}, now: new Date('2026-08-28T18:00:00Z') });
+  } catch (e) { threw = e; }
+  check('rejects a date it cannot parse', /YYYY-MM-DD/.test(threw?.message || ''), threw?.message);
+}
+
+console.log('\n11. Date arithmetic survives the DST changes');
+{
+  check('steps back over the spring forward', shiftDallasDate('2026-03-09', -1) === '2026-03-08', shiftDallasDate('2026-03-09', -1));
+  check('steps back over the fall back', shiftDallasDate('2026-11-02', -1) === '2026-11-01', shiftDallasDate('2026-11-02', -1));
+  check('steps back over a month end', shiftDallasDate('2026-03-01', -1) === '2026-02-28', shiftDallasDate('2026-03-01', -1));
+  check('steps back over new year', shiftDallasDate('2026-01-01', -1) === '2025-12-31', shiftDallasDate('2026-01-01', -1));
+  check('a CST day is 6 hours behind UTC', startOfDallasDate('2026-12-15').toISOString() === '2026-12-15T06:00:00.000Z', startOfDallasDate('2026-12-15').toISOString());
+  check('a CDT day is 5 hours behind UTC', startOfDallasDate('2026-08-27').toISOString() === '2026-08-27T05:00:00.000Z', startOfDallasDate('2026-08-27').toISOString());
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

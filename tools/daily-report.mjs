@@ -40,15 +40,29 @@ export function esc(s) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-/* Midnight Dallas today, as an instant. Built from the date parts rather than
-   a fixed offset so it stays correct across the DST change in November. */
-export function startOfDallasDay(now) {
-  const day = dallasDay(now);                       // YYYY-MM-DD
+/* Midnight Dallas at the start of a given YYYY-MM-DD, as an instant. Built
+   from the date parts rather than a fixed offset so it stays correct across
+   the DST change in November. */
+export function startOfDallasDate(day) {
   for (const offset of ["-05:00", "-06:00"]) {      // CDT then CST
     const t = new Date(`${day}T00:00:00${offset}`);
     if (dallasDay(t) === day) return t;
   }
   return new Date(`${day}T00:00:00-06:00`);
+}
+
+/* Midnight Dallas on the day `now` falls in. */
+export function startOfDallasDay(now) {
+  return startOfDallasDate(dallasDay(now));
+}
+
+/* Calendar arithmetic on a Dallas date, done on the date string so it never
+   picks up an offset. Midday UTC is far from either midnight, so adding or
+   subtracting whole days can't slip into a neighbouring date. */
+export function shiftDallasDate(day, delta) {
+  const t = new Date(`${day}T12:00:00Z`);
+  t.setUTCDate(t.getUTCDate() + delta);
+  return t.toISOString().slice(0, 10);
 }
 
 const card = (title, inner) => `
@@ -155,8 +169,29 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const missing = ["SUPABASE_SERVICE_ROLE_KEY", "RESEND_API_KEY"].filter((k) => !env[k]);
   if (missing.length && !dryRun) throw new Error(`Missing secret(s): ${missing.join(", ")}`);
 
-  const since = startOfDallasDay(now).toISOString();
-  const today = dallasDay(now);
+  /* WHICH DAY THIS REPORT IS ABOUT — and why it is not "now".
+     GitHub delivers scheduled runs on a best-effort basis, and on this repo
+     that has meant 9 to 11 hours late: a 01:00 UTC cron landing at noon. The
+     old gate asked "is it 8pm in Dallas?", the answer was 05, 07, 07, 08 on
+     four consecutive runs, and the send step was skipped every time while the
+     job still reported success. Four days of green ticks, no report sent, and
+     nothing anywhere saying so.
+     So the report no longer asks what time it is. It reports the Dallas day
+     that has just ended, bounded at both ends, which is the same complete day
+     whether the run fires on time or half a day late. Only a delay past the
+     NEXT Dallas midnight could shift it, which is twice the worst seen.
+     REPORT_DATE names a specific day instead, for a backfill or a re-send. */
+  const requested = String(env.REPORT_DATE || "").trim();
+  if (requested && !/^\d{4}-\d{2}-\d{2}$/.test(requested)) {
+    throw new Error(`REPORT_DATE must look like YYYY-MM-DD, got "${requested}".`);
+  }
+  const today = requested || shiftDallasDate(dallasDay(now), -1);
+  const since = startOfDallasDate(today).toISOString();
+  const until = startOfDallasDate(shiftDallasDate(today, 1)).toISOString();
+  /* Midday on the reported day, so the headline and subject name that day
+     rather than whenever the runner happened to pick the job up. */
+  const asOf = new Date(startOfDallasDate(today).getTime() + 12 * 3600 * 1000);
+  log(`Reporting on ${today} (Dallas).`);
 
   const get = async (path) => {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -172,7 +207,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const [faculty, activity, signups, referrals, sessions] = await Promise.all([
     get("faculty?select=email,display_name,full_name"),
     get(`campaign_activity?select=faculty_email&day_key=eq.${today}`),
-    get(`waitlist?select=name,email,class_name,ref,created_at&created_at=gte.${since}&order=created_at.asc`),
+    get(`waitlist?select=name,email,class_name,ref,created_at&created_at=gte.${since}&created_at=lt.${until}&order=created_at.asc`),
     get("referral_counts?select=ref,signups&order=signups.desc"),
     get("class_sessions?select=*&status=neq.canceled"),
   ]);
@@ -204,7 +239,10 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
     name: f.display_name || f.full_name || f.email,
   }));
 
-  const sessionsToday = sessions.filter((s) => String(s.created_at || "") >= since);
+  const sessionsToday = sessions.filter((s) => {
+    const c = String(s.created_at || "");
+    return c >= since && c < until;
+  });
 
   /* Whichever column the Worker writes its verdict into — it lives in the
      database, not this repo, so try the names it might use and settle for
@@ -222,7 +260,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   if (!okCol && sessions.length) log("  (no verdict column on class_sessions — skipping the unbookable check)");
 
   const { html, subject } = buildReport({
-    now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
+    now: asOf, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }
