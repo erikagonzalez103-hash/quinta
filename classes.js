@@ -76,6 +76,7 @@ const QUINTA_CLASSES = [
     walkout: "A licensing checklist built for your exact business, and a clear next step on your entity.",
     prereq: "Nothing — a great first step.",
     price: 175,
+    salePrice: 131,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/entity-setup",
     disclaimer: "Educational only — not legal or tax advice. Confirm your structure with an attorney or CPA."
   },
@@ -149,6 +150,7 @@ const QUINTA_CLASSES = [
     walkout: "A handoff checklist your bookkeeper will love.",
     prereq: "Bookkeeping I, or an existing bookkeeping setup.",
     price: 99,
+    salePrice: 74,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/bookkeeping-2",
     disclaimer: "Educational only — not accounting or tax advice."
   },
@@ -254,6 +256,7 @@ const QUINTA_CLASSES = [
       { label: "Women’s Business Council – Southwest", url: "https://wbcsouthwest.org" }
     ],
     price: 299,
+    salePrice: 224,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/certification"
   },
   {
@@ -273,6 +276,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A pay-yourself-first investing plan built on your own numbers — your first account chosen or opened, and a monthly amount to start with.",
     price: 250,
+    salePrice: 187,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
   
@@ -294,6 +298,7 @@ const QUINTA_CLASSES = [
     walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
     prereq: "Nothing — pairs well with Investing — How to pay yourself first.",
     price: 299,
+    salePrice: 224,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/legacy-planning",
     disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
   },
@@ -313,6 +318,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A search-and-file roadmap for your business name.",
     price: 299,
+    salePrice: 224,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/trademarks",
     disclaimer: "Educational only — not legal advice. Confirm your filing with a trademark attorney."
   },
@@ -348,6 +354,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A one-page brand foundation.",
     price: 175,
+    salePrice: 131,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/brand-101"
   },
 
@@ -386,6 +393,7 @@ const QUINTA_CLASSES = [
     walkout: "A workflow you'll actually keep using.",
     prereq: "Nothing — start here.",
     price: 150,
+    salePrice: 112,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/module-1"
   },
   {
@@ -403,6 +411,7 @@ const QUINTA_CLASSES = [
     walkout: "An AI assistant that handles a real task in your business.",
     prereq: "Comfortable with the Module 1 basics. A Claude Pro subscription is recommended.",
     price: 200,
+    salePrice: 150,   // Fall flash sale — DELETE this line to end the sale
     booking: "https://cal.com/quintaandco/module-2"
   },
   {

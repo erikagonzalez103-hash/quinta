@@ -85,11 +85,34 @@
      she left for Cal.com, she came back booked. Those are view_item,
      begin_checkout and purchase. The gap between the last two is the
      Cal.com drop-off, and it is the number that actually matters. */
+  /* A class is on sale when classes.js gives it a salePrice that is a real
+     number and genuinely lower than its list price. Deleting the salePrice
+     line ends the sale for that class everywhere on the site at once — the
+     list price is never overwritten, so there is nothing to remember and
+     restore. Cal.com has no promo-code field, so the discount also has to be
+     set on the Cal.com event itself; FALL25-SALE.md holds that checklist. */
+  function saleOn(c) {
+    return typeof c.salePrice === "number" && c.salePrice > 0 &&
+           typeof c.price === "number" && c.salePrice < c.price;
+  }
+
   /* "$150", "Free", or nothing at all. A class with no price set says
-     nothing rather than guessing — an invented price is a promise. */
+     nothing rather than guessing — an invented price is a promise. While a
+     sale is on, this is the number she will actually be charged. */
   function priceLabel(c) {
     if (c.free) return "Free";
+    if (saleOn(c)) return "$" + c.salePrice;
     return (typeof c.price === "number" && c.price > 0) ? "$" + c.price : null;
+  }
+
+  /* What the price line shows. Same as priceLabel, except a sale also says
+     what the class normally costs — "$131 · was $175". A discount she can't
+     see the size of isn't a discount, it's just a price. Kept separate from
+     priceLabel so the GA4 item_variant stays a single clean number. */
+  function priceNote(c) {
+    var money = priceLabel(c);
+    if (!money || !saleOn(c)) return money;
+    return money + " · was $" + c.price;
   }
 
   /* The line under a Book button. It exists because the button used to hand
@@ -99,7 +122,7 @@
      booking. */
   function bookNoteText(c) {
     var bits = [];
-    var money = priceLabel(c);
+    var money = priceNote(c);
     if (money) bits.push(money);
     if (c.format) bits.push(String(c.format).split("·")[0].trim());
     /* Where it happens is one of the four things she needs before she'll
@@ -544,7 +567,7 @@
       b.textContent = c.free ? "Save your seat" : "See dates & book";
       wireBookClick(b, c, "card");
       bk.appendChild(b);
-      var cardMoney = priceLabel(c);
+      var cardMoney = priceNote(c);
       if (cardMoney) {
         var fn = document.createElement("span");
         fn.className = c.free ? "free-note" : "price-note";
@@ -1029,7 +1052,7 @@
       /* A class with no dates yet still has a price, and she still wants to
          know it — deciding whether to wait for something is easier when you
          know what it costs. */
-      var soonMoney = priceLabel(c);
+      var soonMoney = priceNote(c);
       if (soonMoney) {
         var sp = document.createElement("span");
         sp.className = c.free ? "free-note" : "price-note";
@@ -1058,7 +1081,7 @@
         freeNote.textContent = "Free";
         book.appendChild(freeNote);
       } else {
-        var money = priceLabel(c);
+        var money = priceNote(c);
         if (money) {
           var pn = document.createElement("span");
           pn.className = "price-note";
