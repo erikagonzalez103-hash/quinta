@@ -67,6 +67,26 @@ window.QUINTA_CONFIG = {
   SALE: {
     PERCENT_OFF: 25,
 
+    /* Last day of the sale, Dallas time — midnight at the END of this date.
+       September is CDT (UTC-5), so this is 2026-10-01T00:00:00-05:00.
+       /fall25/ empties itself once it passes, so a forgotten sale stops
+       advertising on its own.
+
+       BUT THE PAGE EXPIRING IS NOT THE SALE ENDING. The twin events in
+       Cal.com stay bookable to anyone holding a direct link until you hide
+       them there. The page is the shop window; Cal.com is the till. */
+    ENDS: "2026-09-30",
+
+    /* WHAT THE CODE IS GOOD FOR — shown on /fall25/ and echoed in terms.html.
+       ENDS is the last day to BOOK; this is which class dates are eligible.
+       They are different promises and both have to be true.
+
+       ⚠ THIS LINE DOES NOT ENFORCE ITSELF. What actually stops someone
+       booking an October class at the sale price is the twin event's
+       availability in Cal.com. Cap each twin's dates at 30 September or the
+       page makes a promise the checkout will not keep. */
+    ELIGIBLE: "September 2026 class dates only",
+
     /* Faculty who have a /go/<name>fall25/ short link built, so the portal
        can hand them something to paste. A name added here WITHOUT creating
        the matching go/<name>fall25/ folder gives that teacher a dead link —

@@ -1,5 +1,34 @@
 # Fall flash sale — 25% off, for code holders only
 
+## The two dates, and which one actually enforces itself
+
+| | What it means | What enforces it |
+|---|---|---|
+| **Ends Wed 30 September** | Last day to book at the sale price | `SALE.ENDS` in `config.js`. `/fall25/` empties itself after it — so a forgotten sale stops advertising on its own |
+| **September class dates only** | Which sessions the price is good for | **Nothing automatic. Cap each twin's availability at 30 September in Cal.com.** |
+
+The second row is the one to worry about. `SALE.ELIGIBLE` puts the sentence on
+the page and `terms.html` repeats it, but a sentence is a promise, not a gate.
+If a twin still offers an October date, someone will book October at $224 and
+they will be right to expect it honoured.
+
+**So: in Cal.com, limit every `-fall25` twin to September dates.**
+
+Two consequences worth expecting:
+
+- As September drains, twins run out of dates. A class with no September dates
+  left is a dead end on the sale page — take it out of `SALE.CLASSES` rather
+  than leaving it listed.
+- The last week converts poorly by design: booking closes 30 September and the
+  class must also happen in September. That is the offer working as intended,
+  not a fault, but do not expect the final days to sell.
+
+Ending the sale is still two moves, and the page expiring is only the first:
+`/fall25/` goes quiet on its own after 30 September, but **the twin links stay
+bookable to anyone holding one until you hide them in Cal.com.**
+
+---
+
 ## How it works
 
 **Your real classes never change price.** Someone who finds Certification on

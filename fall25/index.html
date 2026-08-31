@@ -130,6 +130,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         <h2 class="hub-cta-title" id="saleCode">FALL25</h2>
         <p class="hub-cta-text">Worth <strong>25% off any class below</strong> — a price you won't find anywhere else on the site. There's nothing to type: your code is already applied, and it follows you to checkout. Questions? <a href="mailto:hello@quintaand.co?subject=Fall%20flash%20sale">Email us</a> and a real person answers.</p>
         <p class="sale-code-applied" id="saleCredit" hidden></p>
+        <p class="sale-code-applied" id="saleEnds" hidden></p>
       </div>
       <a href="#classes" class="btn btn-solid">See what's on sale &rarr;</a>
     </div>
@@ -220,11 +221,31 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   var PCT = CFG ? Number(CFG.PERCENT_OFF) : 0;
   var TWINS = (CFG && CFG.CLASSES) || {};
 
+  /* The sale runs to the END of ENDS, Dallas time. Written as a fixed offset
+     rather than the visitor's clock: someone in London must not see the sale
+     close six hours early, and someone in Hawaii must not still be offered it
+     the next morning. September is CDT, so -05:00.
+
+     When it passes the page empties itself — a sale nobody remembered to end
+     stops advertising on its own. That is NOT the same as the sale being
+     over: the twin events in Cal.com stay bookable to anyone holding a direct
+     link until they are hidden there. */
+  var ENDED = false, ENDS_TEXT = "";
+  if (CFG && CFG.ENDS) {
+    var endsAt = new Date(CFG.ENDS + "T23:59:59-05:00");
+    if (!isNaN(endsAt.getTime())) {
+      ENDED = Date.now() > endsAt.getTime();
+      ENDS_TEXT = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago", weekday: "long", month: "long", day: "numeric"
+      }).format(endsAt);
+    }
+  }
+
   function salePriceOf(c) {
     if (!CFG || !(PCT > 0 && PCT < 100)) return null;
     if (!c || c.free || !c.booking || c.soon) return null;
     if (typeof c.price !== "number" || c.price <= 0) return null;
-    if (!TWINS[c.slug]) return null;
+    if (ENDED || !TWINS[c.slug]) return null;
     var p = Math.floor(c.price * (100 - PCT) / 100);
     return (p > 0 && p < c.price) ? p : null;
   }
@@ -243,8 +264,20 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   var sale = all.filter(function (c) { return salePriceOf(c) !== null && twinUrl(c); });
 
   if (!sale.length) {
-    document.getElementById("saleEmpty").hidden = false;
+    var empty = document.getElementById("saleEmpty");
+    if (ENDED && ENDS_TEXT) {
+      empty.innerHTML = "This sale closed on " + ENDS_TEXT +
+        " \u2014 but every class is still here. <a href=\"../foundations.html\">Browse The Foundations</a> or <a href=\"../practice.html\">The Practice</a>.";
+    }
+    empty.hidden = false;
     return;
+  }
+
+  if (ENDS_TEXT) {
+    var ends = document.getElementById("saleEnds");
+    ends.textContent = "Ends " + ENDS_TEXT +
+      (CFG.ELIGIBLE ? " \u00b7 " + CFG.ELIGIBLE : "");
+    ends.hidden = false;
   }
 
   sale.forEach(function (c) {
