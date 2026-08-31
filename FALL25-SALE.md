@@ -1,5 +1,34 @@
 # Fall flash sale — 25% off, for code holders only
 
+## The two dates, and which one actually enforces itself
+
+| | What it means | What enforces it |
+|---|---|---|
+| **Ends Wed 30 September** | Last day to book at the sale price | `SALE.ENDS` in `config.js`. `/fall25/` empties itself after it — so a forgotten sale stops advertising on its own |
+| **September class dates only** | Which sessions the price is good for | **Nothing automatic. Cap each twin's availability at 30 September in Cal.com.** |
+
+The second row is the one to worry about. `SALE.ELIGIBLE` puts the sentence on
+the page and `terms.html` repeats it, but a sentence is a promise, not a gate.
+If a twin still offers an October date, someone will book October at $224 and
+they will be right to expect it honoured.
+
+**So: in Cal.com, limit every `-fall25` twin to September dates.**
+
+Two consequences worth expecting:
+
+- As September drains, twins run out of dates. A class with no September dates
+  left is a dead end on the sale page — take it out of `SALE.CLASSES` rather
+  than leaving it listed.
+- The last week converts poorly by design: booking closes 30 September and the
+  class must also happen in September. That is the offer working as intended,
+  not a fault, but do not expect the final days to sell.
+
+Ending the sale is still two moves, and the page expiring is only the first:
+`/fall25/` goes quiet on its own after 30 September, but **the twin links stay
+bookable to anyone holding one until you hide them in Cal.com.**
+
+---
+
 ## How it works
 
 **Your real classes never change price.** Someone who finds Certification on
@@ -131,6 +160,67 @@ redirects to `/fall25/?ref=<firstname>26` — the ref codes the faculty
 leaderboard already counts. The board joins on `firstname || '26'`
 (`supabase/sql/2026-08-24-campaign-swarm-board.sql`), so a booking tagged
 `erikafall25` would be credited to nobody.
+
+---
+
+## Posting somewhere that isn't yours — a neutral link
+
+For a partner community (HER Texas House's app, a co-working Slack, someone
+else's newsletter), using a teacher's code is unfair in both directions: she
+gets credit for people she didn't bring, and — worse — the click **overwrites**
+whatever teacher's link that woman followed last week, taking away a booking
+someone had earned.
+
+So there is a link that credits nobody:
+
+```
+quintaand.co/go/hertexas25   →   /fall25/?src=hertexas
+```
+
+**`?src=` is a source, not a ref.** It is never stored, never sent to Cal.com,
+and can never overwrite whose link brought her. It exists so the traffic shows
+up separately in analytics — GA records the query string, so no extra tracking
+code was needed.
+
+What each visitor gets:
+
+| Who arrives | Credited to | Sees |
+|---|---|---|
+| Clicked Tara's link last week, now clicks this | **still Tara** | HER TEXAS 25 |
+| Never been to the site before | **nobody** | HER TEXAS 25 |
+
+That first row is the point, and it only works because `/fall25/` falls back to
+the ref app.js stored on an earlier visit. Reading the URL alone — which is
+what it did originally — is how you quietly take a booking away from the person
+who earned it.
+
+**To add another partner:** pick a source word, add it to `CODE_BY_SRC` in
+`fall25/index.html` so the page shows the right code name, and copy a
+`go/<name>/` folder pointing at `/fall25/?src=<word>`. Never add a source word
+to `SALE.CODES` — that list is faculty who get a portal card, and a place is
+not a person.
+
+### Reusing it for the next sale
+
+**HER TEXAS 25 is meant to outlive this sale.** The short link is the durable
+thing — it is what gets posted in their app and what people save — so to point
+it at October's sale, change the redirect target in `go/hertexas25/index.html`
+and nothing else. The link people kept goes on working.
+
+The name carries no season for that reason: "25" is the discount, not the
+month.
+
+### ⚠ HERHOUSE already means something else
+
+`/herhouse/` promises HER House founders **25% off Module 1 through December**,
+and `module-1-herhouse` charges $112.50 for it. The fall sale gives them Module
+1 at $112 — a difference of fifty cents — plus three more classes, but it
+closes on 30 September.
+
+So the two offers overlap for that community and neither is strictly better.
+The code is deliberately named **HER TEXAS 25**, not HERHOUSE, to keep them
+apart. It is worth saying in the post that their HERHOUSE tag still works for
+Module 1 after this sale ends.
 
 ---
 
