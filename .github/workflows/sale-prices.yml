@@ -62,12 +62,35 @@ jobs:
       - name: Set the prices
         env:
           CAL_API_KEY: ${{ secrets.CAL_API_KEY }}
+          MODE: ${{ inputs.mode }}
+          APPLY: ${{ inputs.apply }}
         run: |
           if [ -z "$CAL_API_KEY" ]; then
             echo "CAL_API_KEY is not set as a repository secret."
             echo "Settings → Secrets and variables → Actions → New repository secret."
             exit 1
           fi
-          node tools/set-sale-prices.mjs \
-            --${{ inputs.mode }} \
-            ${{ inputs.apply && '--apply' || '' }}
+
+          case "$MODE" in
+            sale|list) ;;
+            *) echo "Unexpected mode: '$MODE'. Nothing was changed."; exit 1 ;;
+          esac
+
+          # ONLY the exact string "true" applies.
+          #
+          # This was written as ${{ inputs.apply && '--apply' || '' }}, which is
+          # wrong in a way that costs money. A GitHub expression treats ANY
+          # non-empty string as true — including the string "false" — so on a
+          # dispatch path where the input arrives as a string rather than a
+          # real boolean, an UNTICKED box would still have applied live price
+          # changes. Comparing the string here cannot make that mistake, and
+          # anything unexpected falls through to a dry run rather than a write.
+          ARGS="--$MODE"
+          if [ "$APPLY" = "true" ]; then
+            ARGS="$ARGS --apply"
+            echo "Applying — this will change what Cal.com charges."
+          else
+            echo "Dry run: nothing will be written. Tick 'apply' to make it real."
+          fi
+
+          node tools/set-sale-prices.mjs $ARGS
