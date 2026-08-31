@@ -27,45 +27,50 @@ window.QUINTA_CONFIG = {
 
   /* ---------- THE FALL FLASH SALE ----------
 
-     ONE LIST. A class in it is on sale; a class not in it is at full price.
-     Nothing else to edit — the sale price is worked out for you (25% off,
-     rounded down to a whole dollar) so there is no arithmetic to get wrong
-     and no second number to keep in step.
+     THE DISCOUNT LIVES ON A SEPARATE, HIDDEN CAL.COM EVENT — not on your real
+     one. Your real event keeps its full price, so someone who finds you on
+     Google during the sale still pays full. Only people who arrive with a
+     code, through /fall25/, are sent to the discounted twin.
 
-     TO TURN A TEACHER ON when she emails back — add her class's slug to the
-     list, save, then run:
+     This is the same shape as the HERHOUSE code: module-1-herhouse was a
+     second event at a lower price, reached from a page, never a code anyone
+     typed. Cal.com has no per-customer pricing — one event, one price — so a
+     second event is the only way to charge two different people differently.
 
-         node tools/set-sale-prices.mjs --sale --apply
+     WHAT EACH LINE MEANS
+       "real-slug": "twin-slug"
+     The class on the left keeps its full price everywhere on the site. The
+     event on the right is the hidden one that charges the sale price, and it
+     is what /fall25/ links to.
 
-     That second step is the one that actually changes what Cal.com charges.
-     Without it the website advertises a discount Cal.com will not honour.
+     TO ADD A CLASS TO THE SALE
+       1. In Cal.com, duplicate the real event. Name the copy <slug>-fall25.
+       2. Set its Stripe price to the sale figure (25% off, rounded DOWN).
+       3. HIDE it, so it never shows on your public Cal.com profile.
+       4. Give it dates. See the warning below — this is the step that gets
+          forgotten and it is the one that strands customers.
+       5. Add the pair here.
 
-     TO TURN SOMEONE OFF — take the slug out, then run:
+     TO END THE SALE
+       Empty CLASSES to {} — /fall25/ empties itself. Then hide or delete the
+       twins in Cal.com. Your real events were never touched, so there is no
+       price to put back and no way to be left quietly undercharging.
 
-         node tools/set-sale-prices.mjs --list --apply
-
-     TO END THE SALE ENTIRELY — empty the list to [] and run the same --list
-     command. List prices in classes.js are never overwritten, so there is
-     nothing to restore and nothing to look up.
-
-     The slugs, and who teaches what:
-       entity-setup ......... Erika          bookkeeping-2 ...... Tara
-       certification ........ Erika          brand-101 .......... Stephanie
-       module-1 ............. Erika          financial-planning . Joshlyn
-       module-2 ............. Erika          legacy-planning .... Nik
-                                             trademarks ......... Nik
-                                             insurance .......... Nery
-                                               (Nery needs dates set first —
-                                                a discount on a class with no
-                                                dates sells a seat that does
-                                                not exist)                    */
+     ⚠ THE TWINS DO NOT GET DATES AUTOMATICALLY.
+     The schedule-sync Worker finds Cal.com events by exact slug, so it syncs
+     "certification" and knows nothing about "certification-fall25". Dates you
+     set in the faculty portal reach the real event ONLY. Every twin's dates
+     are set by hand in Cal.com and will drift as new dates are added.
+     Before sending a code out, open each twin's link and check it shows the
+     sale price AND offers dates. A sale link with no bookable slot strands
+     exactly the people your code brought.                                   */
   SALE: {
     PERCENT_OFF: 25,
-    CLASSES: [
-      "entity-setup",
-      "certification",
-      "module-1",
-      "module-2"
-    ]
+    CLASSES: {
+      "entity-setup":  "entity-setup-fall25",
+      "certification": "certification-fall25",
+      "module-1":      "module-1-fall25",
+      "module-2":      "module-2-fall25"
+    }
   }
 };

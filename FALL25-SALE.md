@@ -1,92 +1,118 @@
-# Fall flash sale — 25% off
+# Fall flash sale — 25% off, for code holders only
 
-## Cal.com prices are set BY HAND. There is no API for it.
+## How it works
 
-This is the important thing on this page, so it is first.
+**Your real classes never change price.** Someone who finds Certification on
+Google during the sale still pays $299.
 
-- **Cal.com API v1 was decommissioned.** Any v1 call now returns
-  `410 API v1 has been decommissioned`.
-- **Cal.com API v2 cannot set a price.** Its event-type create and update
-  inputs (`UpdateEventTypeInput_2024_06_14`) contain no `price`, `currency`,
-  `paymentOption`, `metadata` or `apps` field. The Stripe price lives in the
-  event type's `metadata.apps.stripe`, and v2 does not expose metadata.
-  (`calcom/cal.diy#18442` — `hidden` was since added, metadata was not.)
+The discount lives on a **separate, hidden Cal.com event** — a twin. Only
+`/fall25/`, which people reach through a code link, points at the twin. This
+is the same shape as the HERHOUSE code: `module-1-herhouse` was a second event
+at a lower price, reached from a page.
 
-So there is no endpoint left to call. A script to do this was written and
-removed again; the button was worse than nothing, because it looked like the
-sale could be switched off with a click when it cannot. Anyone tempted to
-rebuild it should check whether v2 has gained a metadata or payments field
-first — that is the only thing that changed the answer.
+It has to work this way. Cal.com has no discount-code field and no
+per-customer pricing — one event, one price, for whoever books it. A second
+event is the only way to charge two people differently. (There is also no API
+for any of this: v1 was decommissioned, and v2's event-type input has no
+price, currency or metadata field. Every step below is done by hand.)
 
-The schedule-sync Worker is unaffected: it already speaks v2, and schedules
-are something v2 does support.
-
-### Setting a price
-
-Cal.com → **Event Types** → the event → **Apps → Stripe → Price**.
-
-| Cal.com event | Teacher | List | Sale |
-|---|---|---|---|
-| `entity-setup` | Erika | $175 | **$131** |
-| `certification` | Erika | $299 | **$224** |
-| `module-1` | Erika | $150 | **$112** |
-| `module-2` | Erika | $200 | **$150** |
-
-25% off, rounded **down** to a whole dollar — rounding down never overcharges.
-
-**Two steps make a sale, and both are needed.** `config.js` changes what the
-website advertises; Cal.com changes what the customer is charged. Doing one
-without the other means the site promises a discount that is not honoured, or
-quietly charges less than it advertises.
+```
+someone with a code   →  /fall25/  →  cal.com/quintaandco/certification-fall25  →  $224
+someone from Google   →  the class page  →  cal.com/quintaandco/certification   →  $299
+```
 
 ---
 
-## Who is on sale
+## Before a single code goes out
 
-One list, in `config.js`, beside `SITE_LIVE` and `FOUNDATIONS_OPEN`:
+For each class in the sale, in Cal.com:
+
+1. **Duplicate** the real event.
+2. **Name the copy `<slug>-fall25`** — exactly. The site builds the link from
+   this name, so `certification-fall25` and nothing else.
+3. **Set its Stripe price** to the sale figure below.
+4. **Hide it** so it never appears on your public Cal.com profile. The only
+   way in is the code link.
+5. **Give it dates.** See the warning below. This is the step that gets
+   forgotten and it is the one that strands customers.
+
+| Twin event | Price | Real event stays |
+|---|---|---|
+| `entity-setup-fall25` | **$131** | $175 |
+| `certification-fall25` | **$224** | $299 |
+| `module-1-fall25` | **$112** | $150 |
+| `module-2-fall25` | **$150** | $200 |
+
+25% off, rounded **down** to a whole dollar — rounding down never overcharges.
+
+### ⚠ The twins do not get dates automatically
+
+The schedule-sync Worker finds Cal.com events by **exact slug**
+(`workers/schedule-sync/worker.js:118`). It syncs `certification` and knows
+nothing about `certification-fall25`. Dates set in the faculty portal reach
+the real event **only**.
+
+So every twin's dates are set by hand, and they will drift as new dates are
+added to the real class. For a short sale on four classes that is a fair
+trade. For a long one it is a trap.
+
+### Pre-flight: open all four, in a private window
+
+Before you post a code, open each and check **the price is the sale price**
+and **dates are offered**:
+
+- `cal.com/quintaandco/entity-setup-fall25` → $131
+- `cal.com/quintaandco/certification-fall25` → $224
+- `cal.com/quintaandco/module-1-fall25` → $112
+- `cal.com/quintaandco/module-2-fall25` → $150
+
+A 404, a full price, or an empty calendar means the code sends people to a
+dead end — and it strands exactly the people your teachers brought in.
+
+---
+
+## The site side
+
+One list, in `config.js`, mapping the real class to its twin:
 
 ```js
 SALE: {
   PERCENT_OFF: 25,
-  CLASSES: ["entity-setup", "certification", "module-1", "module-2"]
+  CLASSES: {
+    "entity-setup":  "entity-setup-fall25",
+    "certification": "certification-fall25",
+    "module-1":      "module-1-fall25",
+    "module-2":      "module-2-fall25"
+  }
 }
 ```
 
-A class in the list is on sale; a class not in it is at full price. The
-discounted figure is worked out from `PERCENT_OFF`, so there is no arithmetic
-to get wrong and no second number to keep in step. List prices in `classes.js`
-are never overwritten.
-
-Right now that is **Erika's four classes only**. The 25% comes out of Erika's
-cut, so nobody else is discounted until they say yes. Everyone else's classes
-stay bookable at full price the whole time.
+The sale price is worked out from `PERCENT_OFF`, so there is no arithmetic to
+get wrong. The public site is untouched by this list — class pages, the hub
+pages and every Book button keep showing the full price and the real event.
+If a sale price ever shows up on a class page, the gate has been lost and
+every organic visitor is being discounted by accident.
 
 ### When a teacher opts in
 
-1. Add her class's slug to `SALE.CLASSES` in `config.js` and commit.
-2. Set her price in Cal.com, by hand, from the table below.
+1. Build her twin in Cal.com (the five steps above).
+2. Add the pair to `CLASSES` and commit.
 
-| Cal.com event | Teacher | List | Sale |
-|---|---|---|---|
-| `bookkeeping-2` | Tara | $99 | $74 |
-| `brand-101` | Stephanie | $175 | $131 |
-| `financial-planning` | Joshlyn | $250 | $187 |
-| `legacy-planning` | Nik | $299 | $224 |
-| `trademarks` | Nik | $299 | $224 |
-| `insurance` | Nery | $175 | $131 |
+| Class | Teacher | Twin to create | Price | Full |
+|---|---|---|---|---|
+| `bookkeeping-2` | Tara | `bookkeeping-2-fall25` | $74 | $99 |
+| `brand-101` | Stephanie | `brand-101-fall25` | $131 | $175 |
+| `financial-planning` | Joshlyn | `financial-planning-fall25` | $187 | $250 |
+| `legacy-planning` | Nik | `legacy-planning-fall25` | $224 | $299 |
+| `trademarks` | Nik | `trademarks-fall25` | $224 | $299 |
+| `insurance` | Nery | `insurance-fall25` | $131 | $175 |
 
-`insurance` needs dates set first — a discount on a class with no dates sells
-a seat that does not exist. `bookkeeping-1` is still on waitlist.
+`insurance` needs dates on the real class first. `bookkeeping-1` is still on
+waitlist.
 
 ---
 
 ## The codes
-
-Cal.com has **no discount-code field**. Its Stripe integration charges a fixed
-payment intent rather than opening a Stripe Checkout session, so Stripe's own
-coupon machinery never gets a turn (`calcom/cal.diy#12462`). The HERHOUSE code
-worked the same way: a word on a page in front of a discounted event, never
-something anyone typed.
 
 | Code | Link to share |
 |---|---|
@@ -97,9 +123,8 @@ something anyone typed.
 | NIKFALL25 | `quintaand.co/go/nikfall25` |
 | TARAFALL25 | `quintaand.co/go/tarafall25` |
 
-**Don't send a teacher her code until she has opted in** — a teacher promoting
-her own code while her class sits at full price is an awkward thing to have
-done to her.
+**Don't send a teacher her code until her twin exists** — a code that opens a
+page not listing her class is worse than no code.
 
 **The code is the name of the link, not a second attribution system.** Each
 redirects to `/fall25/?ref=<firstname>26` — the ref codes the faculty
@@ -109,25 +134,18 @@ leaderboard already counts. The board joins on `firstname || '26'`
 
 ---
 
-## Two other things
+## To end the sale
 
-- **Module 1 at $112 is below the HERHOUSE rate** ($112.50, promised "through
-  December" on `/herhouse/`). During the sale that tag is worth nothing extra.
-- **The faculty social kit still quotes list prices.**
-  `faculty/final-push-data.js` is a different campaign with prices written into
-  its captions. Left alone on purpose: changing the `price` field without
-  rewriting nine captions would leave the two contradicting each other.
+1. **Empty `CLASSES` to `{}`** in `config.js`. `/fall25/` empties itself.
+2. **Hide or delete the twins** in Cal.com.
+
+That is all. **Your real events were never touched, so there is no price to
+put back and no way to be left quietly undercharging.** That safety is the
+main reason this shape was chosen over discounting the real events.
 
 ---
 
-## To end the sale
+## One thing to know
 
-**Both steps. The Cal.com one is the one that stops the discount.**
-
-1. **In Cal.com**, set each event's Stripe price back to its **List** figure,
-   by hand, from the tables above.
-2. **In `config.js`**, empty `SALE.CLASSES` to `[]`. The site reverts
-   everywhere at once and `/fall25/` empties itself.
-
-Step 2 alone stops the website advertising the sale, and leaves Cal.com
-quietly charging 25% less than the site says. Step 1 is the one that matters.
+**Module 1 at $112 is below the HERHOUSE rate** ($112.50, promised "through
+December" on `/herhouse/`). During the sale that tag is worth nothing extra.
