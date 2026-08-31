@@ -1,45 +1,88 @@
 # Fall flash sale — 25% off
 
-Everything the sale touches, and how to switch it off. Read the last section
-first if you are here to *end* the sale.
+Everything the sale touches, and how to switch it off. Read **To end the sale**
+first if that is why you are here.
 
 ---
 
-## The part only you can do: Cal.com
+## Who is in the sale
 
-Cal.com has **no discount-code field**. Its Stripe integration charges a fixed
-payment intent rather than opening a Stripe Checkout session, so Stripe's own
-coupon machinery never gets a turn. (Open feature request since Nov 2023:
-`calcom/cal.diy#12462`.) That is why the codes below are share links, not
-something a student types.
+Only **Erika's own classes**, until each teacher confirms she wants in. The
+discount comes out of Erika's cut, so nobody else's class gets discounted
+without her say-so.
 
-So the discount has to be set **on each Cal.com event type by hand**. Until you
-do this, the website advertises a sale price and Cal.com still charges full
-price — the exact mismatch `classes.js` warns about.
+Everyone else's classes stay **bookable at full price** — nothing is hidden,
+nothing is withdrawn. They simply don't appear on `/fall25/` and don't show a
+"was $175".
 
-For each class: Cal.com → Event Types → the event → **Apps → Stripe → Price**.
+| Cal.com event | Teacher | List | **Sale** |
+|---|---|---|---|
+| `entity-setup` | Erika | $175 | **$131** |
+| `certification` | Erika | $299 | **$224** |
+| `module-1` | Erika | $150 | **$112** |
+| `module-2` | Erika | $200 | **$150** |
 
-| Cal.com event | List | **Set to** |
-|---|---|---|
-| `entity-setup` | $175 | **$131** |
-| `bookkeeping-2` | $99 | **$74** |
-| `certification` | $299 | **$224** |
-| `financial-planning` | $250 | **$187** |
-| `legacy-planning` | $299 | **$224** |
-| `trademarks` | $299 | **$224** |
-| `brand-101` | $175 | **$131** |
-| `module-1` | $150 | **$112** |
-| `module-2` | $200 | **$150** |
+> `module-1` is assumed to be Erika's — it sits in The Practice with Module 2,
+> which `faculty/final-push-data.js` records as hers, and `/herhouse/` sold it
+> as a Quinta offer. It is the one row here not confirmed by a record. If it
+> is someone else's, delete its `salePrice` line in `classes.js`.
 
 Every figure is 25% off, rounded **down** to a whole dollar — the site's prices
 are whole dollars by convention, and rounding down never overcharges.
+
+### When a teacher opts in
+
+Add her `salePrice` to `classes.js` and re-run the script. The numbers are
+already worked out:
+
+| Cal.com event | Teacher | List | Sale |
+|---|---|---|---|
+| `bookkeeping-2` | Tara | $99 | $74 |
+| `brand-101` | Stephanie | $175 | $131 |
+| `financial-planning` | Joshlyn | $250 | $187 |
+| `legacy-planning` | Nik | $299 | $224 |
+| `trademarks` | Nik | $299 | $224 |
+| `insurance` | Nery | $175 | $131 | — *only once she has dates* |
+
+`bookkeeping-1` is not listed: still on waitlist while Tara builds it.
+
+---
+
+## Setting the prices in Cal.com
+
+Cal.com has **no discount-code field**. Its Stripe integration charges a fixed
+payment intent rather than opening a Stripe Checkout session, so Stripe's own
+coupon machinery never gets a turn (`calcom/cal.diy#12462`, open since 2023).
+That is why the codes are share links, not something a student types — and why
+the discount has to be set on each Cal.com event type.
+
+**The script does it:**
+
+```
+export CAL_API_KEY=cal_live_...              # never commit this
+node tools/set-sale-prices.mjs --sale        # dry run — shows what would change
+node tools/set-sale-prices.mjs --sale --apply
+```
+
+It reads `classes.js`, so the site and Cal.com cannot disagree. It is a dry run
+unless you pass `--apply`, and it refuses rather than guesses: it will not make
+a free class paid, will not touch a class whose Stripe app is off, and will
+stop if Cal.com's current price matches neither the list price nor the sale
+price — because that means someone changed it in the dashboard and one of the
+two numbers is wrong.
+
+**By hand instead:** Cal.com → Event Types → the event → **Apps → Stripe →
+Price**, using the table above.
+
+Until this is done the website advertises a sale price and Cal.com still
+charges full price — the exact mismatch `classes.js` warns about.
 
 ---
 
 ## The codes
 
 Each link tags the booking with the teacher who sent it, so the Swarm board
-credits her. Give each teacher her own link:
+credits her:
 
 | Code | Link to share |
 |---|---|
@@ -50,50 +93,41 @@ credits her. Give each teacher her own link:
 | NIKFALL25 | `quintaand.co/go/nikfall25` |
 | TARAFALL25 | `quintaand.co/go/tarafall25` |
 
+**Don't send a teacher her code until she has opted in.** All six links work and
+credit correctly, but a teacher promoting her own code while her own class sits
+at full price is an awkward thing to have done to her. Erika's is ready now.
+
 **The code is the name of the link, not a second attribution system.** Each one
 redirects to `/fall25/?ref=<firstname>26` — the ref codes the faculty
 leaderboard already counts. The board joins on `firstname || '26'`
 (`supabase/sql/2026-08-24-campaign-swarm-board.sql`), so a booking tagged
-`erikafall25` would be credited to nobody. If you ever add a teacher, her code
-must keep pointing at her existing `<firstname>26` ref.
+`erikafall25` would be credited to nobody.
 
 ---
 
-## Three things to know
+## Two other things
 
-- **Nery has no class in the sale.** Insurance is her only class and it is on
-  waitlist — no dates, no Book button. NERYFALL25 works and credits her for
-  anything her audience books, but she has nothing of her own to sell. When she
-  sets dates, add `salePrice: 131` to `insurance` in `classes.js` and set $131
-  on the Cal.com event.
-- **Bookkeeping I is not in the sale** — still on waitlist while Tara builds it.
-  Bookkeeping II is, at $74.
 - **Module 1 at $112 is below the HERHOUSE rate** ($112.50, promised "through
   December" on `/herhouse/`). During the sale a HERHOUSE tag is worth nothing
   extra. Nothing breaks; just don't be surprised if someone asks.
-
----
-
-## The faculty social kit still quotes list prices
-
-`faculty/final-push-data.js` is a *different* campaign, and its captions have
-prices written into the prose ("$299 · Kiln · one focused class"). It has been
-left alone on purpose: changing the `price` field without rewriting nine
-captions would leave the two contradicting each other. If the faculty are
-posting those captions during the sale, the captions need rewriting by hand —
-a copy decision, not a code one.
+- **The faculty social kit still quotes list prices.**
+  `faculty/final-push-data.js` is a different campaign and its captions have
+  prices written into the prose ("$299 · Kiln · one focused class"). It was left
+  alone on purpose: changing the `price` field without rewriting nine captions
+  would leave the two contradicting each other. If the faculty are posting that
+  kit during the sale, the captions need rewriting by hand.
 
 ---
 
 ## To end the sale
 
-1. **In `classes.js`** — delete the nine `salePrice:` lines (each is marked
+1. **Cal.com** — `node tools/set-sale-prices.mjs --list --apply`. This is the
+   step that actually stops the discount. Do it even if you skip the rest.
+2. **`classes.js`** — delete the `salePrice:` lines (each is marked
    `// Fall flash sale — DELETE this line to end the sale`). List prices were
    never overwritten, so there is nothing to restore and nothing to look up.
    The site reverts everywhere at once and `/fall25/` empties itself.
-2. **In Cal.com** — put the nine Stripe prices back to the **List** column
-   above. This is the step that actually stops the discount. Missing it means
-   you are quietly selling at 25% off forever.
 3. Optionally delete `/fall25/` and the six `go/*fall25/` folders.
 
-Do step 2 even if you skip everything else.
+Do step 1 before step 2 — the script reads `classes.js` to know which classes
+to put back, so deleting the lines first leaves it with nothing to do.
