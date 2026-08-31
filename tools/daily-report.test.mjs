@@ -106,5 +106,35 @@ console.log('\n7. One dead table is still just a missing section');
   check('faculty still listed', r.html.includes('A B'));
 }
 
+console.log('\n8. A refused waitlist must never read as "no signups"');
+{
+  /* The live failure: waitlist 403s while the other tables answer, so the
+     total-failure guard never fires and the report goes out green saying
+     nothing happened. Signups were still arriving the whole time. */
+  const fetchStub = async (url) => {
+    if (url.includes('waitlist')) return { ok: false, status: 403, text: async () => 'permission denied for table waitlist' };
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    return { ok: true, json: async () => [] };
+  };
+  const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
+  check('still sends the report', !!r.html);
+  check('does NOT claim a quiet day', !r.html.includes('No signups today'));
+  check('says the waitlist could not be read', /could not be read/.test(r.html));
+  check('names the likely cause', /SUPABASE_SERVICE_ROLE_KEY|publishable key/.test(r.html));
+  check('the subject carries it', /WAITLIST UNREADABLE/.test(r.subject), r.subject);
+}
+
+console.log('\n9. A genuinely quiet day still reads as one');
+{
+  const fetchStub = async (url) => {
+    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    return { ok: true, json: async () => [] };
+  };
+  const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
+  check('says no signups', r.html.includes('No signups today'));
+  check('and does not cry wolf', !/could not be read/.test(r.html));
+  check('subject counts zero', /0 signups/.test(r.subject), r.subject);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
