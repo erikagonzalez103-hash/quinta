@@ -66,6 +66,13 @@ window.QUINTA_CONFIG = {
      exactly the people your code brought.                                   */
   SALE: {
     PERCENT_OFF: 25,
+
+    /* Faculty who have a /go/<name>fall25/ short link built, so the portal
+       can hand them something to paste. A name added here WITHOUT creating
+       the matching go/<name>fall25/ folder gives that teacher a dead link —
+       check the folder exists before adding a name. */
+    CODES: ["erika", "stephanie", "nery", "joshlyn", "nik", "tara"],
+
     CLASSES: {
       "entity-setup":  "entity-setup-fall25",
       "certification": "certification-fall25",

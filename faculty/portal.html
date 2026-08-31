@@ -93,6 +93,19 @@
         </div>
       </div>
 
+      <div class="pcard full" id="sale-card" style="display:none">
+        <h2>Your fall sale link</h2>
+        <p class="hint">This is the <em>only</em> place these prices exist — 25% off, and anyone who finds the class on their own still pays full. Every booking through your link is credited to you: your own class pays you 85%, a colleague's pays you 35%.</p>
+        <p class="hint" id="sale-whats-in"></p>
+        <div class="doc-row">
+          <span class="doc-name" id="sale-code" style="letter-spacing:.08em"></span>
+        </div>
+        <div class="doc-row">
+          <span class="doc-name" id="sale-link" style="word-break:break-all"></span>
+          <button class="btn-sm solid" id="sale-copy" type="button">Copy my sale link</button>
+        </div>
+      </div>
+
       <div class="pcard full">
         <h2>August campaign — your daily copy-paste</h2>
         <p class="hint">During launch weeks, this page knows whose day it is and hands you your exact posts — your name, your link, today's featured teacher, all filled in. Tap copy, paste, post.</p>
@@ -214,6 +227,8 @@
   </div>
 </footer>
 
+<script src="../config.js?v=6"></script>
+<script src="../classes.js?v=7"></script>
 <script src="../js/supabase-2.110.1.min.js"></script>
 <script>
 (function () {
@@ -288,6 +303,48 @@
         }
       });
     }
+
+    /* The fall sale link. Wrapped whole: this portal is how faculty schedule
+       their classes, and a sale that has ended — or a config typo — must never
+       be the reason a teacher can't get in. Card stays hidden on any error. */
+    try {
+      var sale = (window.QUINTA_CONFIG && window.QUINTA_CONFIG.SALE) || null;
+      var firstName = refName ? refName.split(" ")[0].toLowerCase().replace(/[^a-z0-9-]/g, "") : "";
+      var onSale = sale && sale.CLASSES ? Object.keys(sale.CLASSES) : [];
+      var hasCode = sale && sale.CODES && sale.CODES.indexOf(firstName) !== -1;
+
+      /* No sale on, or no short link built for her, means no card. A dead
+         link in front of a teacher is worse than no link at all. */
+      if (firstName && hasCode && onSale.length) {
+        var saleUrl = "https://quintaand.co/go/" + firstName + "fall25";
+        document.getElementById("sale-code").textContent = (firstName + "fall25").toUpperCase();
+        document.getElementById("sale-link").textContent = saleUrl;
+
+        /* Named from config, so this line stays true as teachers opt in
+           rather than going stale the moment the sale grows. */
+        var names = onSale.map(function (slug) {
+          var c = (typeof QUINTA_CLASSES !== "undefined" ? QUINTA_CLASSES : [])
+                    .filter(function (x) { return x.slug === slug; })[0];
+          return c ? c.name : slug;
+        });
+        var list = names.length === 1 ? names[0]
+                 : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+        document.getElementById("sale-whats-in").textContent =
+          "In the sale right now: " + list + ". Your link credits you for any of them. " +
+          "Want your own class in the sale? Tell Erika and she'll add it.";
+
+        var saleBtn = document.getElementById("sale-copy");
+        saleBtn.addEventListener("click", function () {
+          function done() { saleBtn.textContent = "Copied ✓"; setTimeout(function () { saleBtn.textContent = "Copy my sale link"; }, 2000); }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(saleUrl).then(done).catch(function () { window.prompt("Copy your sale link:", saleUrl); });
+          } else {
+            window.prompt("Copy your sale link:", saleUrl);
+          }
+        });
+        document.getElementById("sale-card").style.display = "block";
+      }
+    } catch (e) { /* the schedule matters more than the sale card */ }
 
     // Socials: URL on file = done; visibility chip shows public/private/unconfirmed.
     function setSocial(key) {
