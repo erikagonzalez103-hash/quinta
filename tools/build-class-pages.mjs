@@ -55,7 +55,7 @@ function page(c) {
 
   const booking = soon
     ? `      <p class="soon-note">${c.track === "foundations"
-        ? `The Foundations open this fall (2026). Be first to hear — and grab a free hour in the meantime — at <a href="../coffee.html">Coffee with Quinta</a>.`
+        ? `Dates for this class aren't set yet. Other classes are open for September — be first to hear about this one, and grab a free hour in the meantime, at <a href="../coffee.html">Coffee with Quinta</a>.`
         : `Not open just yet. Be first to hear at <a href="../coffee.html">Coffee with Quinta</a>.`}</p>
       <div class="book">
         <a class="btn btn-solid" href="../waitlist.html?c=${encodeURIComponent(c.slug)}">Join the waitlist</a>
@@ -85,7 +85,7 @@ function page(c) {
       : [{ q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." }]),
     ...(c.walkout ? [{ q: "What will I walk out with?", a: `${c.walkout} Every Quinta & Co. class ends with something real you keep.` }] : []),
     soon
-      ? { q: "When can I take this class?", a: "Enrollment opens Fall 2026. Join the waitlist at quintaand.co/waitlist.html to hear first — and the free monthly Coffee with Quinta is open in the meantime." }
+      ? { q: "When can I take this class?", a: "This one doesn't have dates yet. Other Quinta & Co. classes are open for September and bookable now — join the waitlist at quintaand.co/waitlist.html to hear the moment this one opens, and the free monthly Coffee with Quinta is open in the meantime." }
       : { q: "When can I take this class?", a: `It's open now — ${c.format || "live, small group"}. Dates and booking are right on this page.` },
   ];
   const faqHtml = faqs.map((f, i) => `      <div class="faq-item">

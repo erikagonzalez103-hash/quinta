@@ -551,6 +551,17 @@
         fn.textContent = cardMoney;
         bk.appendChild(fn);
       }
+      /* The hub card showed a price and a Book button and never said where.
+         A founder in Houston could read "$175", click through to Cal.com and
+         only discover at the end that it's a room in Preston Hollow. The
+         class page has said this since this afternoon; the card is where
+         most people decide. */
+      if (c.venue) {
+        var vn = document.createElement("span");
+        vn.className = "card-venue";
+        vn.textContent = c.venue;
+        bk.appendChild(vn);
+      }
       foot.appendChild(bk);
     }
     var more = document.createElement("a");

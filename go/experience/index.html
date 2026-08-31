@@ -14,8 +14,19 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Why I'm Not Replacing Experience">
 <meta name="twitter:image" content="https://quintaand.co/images/og-not-replacing-experience.jpg">
-<meta http-equiv="refresh" content="0; url=https://quintaand.co/blog/not-replacing-experience.html">
-<script>location.replace("https://quintaand.co/blog/not-replacing-experience.html");</script>
+<script>
+/* Carry the query string across the hop. It used to be dropped: ?ref=, every
+   utm_ and fbclid died here, so a faculty member sharing this short link was
+   paid nothing and a paid click arrived looking like direct traffic. */
+(function () {
+  var to = "https://quintaand.co/blog/not-replacing-experience.html";
+  var q = window.location.search;
+  if (q && q.length > 1) to += (to.indexOf("?") === -1 ? "?" : "&") + q.slice(1);
+  location.replace(to);
+})();
+</script>
+<!-- No-JS fallback only. Loses the query string, which is why the script above runs first. -->
+<meta http-equiv="refresh" content="2; url=https://quintaand.co/blog/not-replacing-experience.html">
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>
