@@ -197,14 +197,49 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     tara26:      "TARAFALL25"
   };
 
-  var ref = "";
+  var clean = function (v) {
+    return String(v || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+  };
+
+  /* WHOSE LINK BROUGHT HER. A ref in the URL wins; otherwise fall back to the
+     one app.js stored on an earlier visit (same key, same 60-day window).
+
+     The fallback is the whole point. This page can be reached by a NEUTRAL
+     link that carries no ref at all — posted into a partner community where
+     crediting one teacher over another would be unfair. Without the fallback
+     that link would not merely credit nobody, it would strip credit from a
+     teacher whose link the same woman clicked last week. Reading the URL
+     alone is how you take a booking away from the person who earned it. */
+  var ref = "", src = "";
   try {
-    ref = (new URLSearchParams(window.location.search).get("ref") || "")
-            .toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+    var q = new URLSearchParams(window.location.search);
+    ref = clean(q.get("ref"));
+    if (!ref) {
+      var saved = JSON.parse(localStorage.getItem("quinta_ref") || "null");
+      if (saved && saved.code && Date.now() - saved.at < 60 * 24 * 60 * 60 * 1000) {
+        ref = clean(saved.code);
+      }
+    }
+    /* A SOURCE, NOT A REF. ?src= says where the link was posted so it can be
+       counted in analytics, and does nothing else: never stored, never sent
+       to Cal.com, never allowed to overwrite whose link brought her. */
+    src = clean(q.get("src"));
   } catch (e) { /* attribution is best-effort and never breaks the page */ }
 
-  if (ref && CODE_BY_REF[ref]) {
+  /* Codes that belong to a place rather than a person. These credit nobody
+     on purpose, so there is no "applied to" line — just the name she was
+     given, so the page matches the post she clicked. */
+  var CODE_BY_SRC = { herhouse: "HOUSEFALL25" };
+
+  if (src && CODE_BY_SRC[src]) {
+    document.getElementById("saleCode").textContent = CODE_BY_SRC[src];
+  } else if (ref && CODE_BY_REF[ref]) {
     document.getElementById("saleCode").textContent = CODE_BY_REF[ref];
+  }
+
+  /* Said only when a teacher is actually being credited — including when the
+     credit came from a link she clicked earlier rather than this one. */
+  if (ref && CODE_BY_REF[ref]) {
     var credit = document.getElementById("saleCredit");
     credit.textContent = "Applied ✓";
     credit.hidden = false;
