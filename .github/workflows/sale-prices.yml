@@ -53,7 +53,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "24"
 
       # The money maths and the refusals, checked before anything is written.
       - name: Check the logic still holds
