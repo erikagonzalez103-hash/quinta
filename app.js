@@ -85,8 +85,13 @@
      she left for Cal.com, she came back booked. Those are view_item,
      begin_checkout and purchase. The gap between the last two is the
      Cal.com drop-off, and it is the number that actually matters. */
-  /* "$150", "Free", or nothing at all. A class with no price set says
-     nothing rather than guessing — an invented price is a promise. */
+  /* THE PUBLIC SITE ALWAYS SHOWS THE FULL PRICE.
+     The fall sale is deliberately NOT applied here. The discount lives on a
+     separate hidden Cal.com event that only /fall25/ links to, so someone who
+     arrives from Google during the sale sees, and pays, the real price. If a
+     sale price ever appears on a class page again, the gate has been lost and
+     every organic visitor is being discounted by accident. */
+
   function priceLabel(c) {
     if (c.free) return "Free";
     return (typeof c.price === "number" && c.price > 0) ? "$" + c.price : null;

@@ -64,7 +64,8 @@ const row = (left, right) => `
     <span>${left}</span><span style="color:#5A5E55;white-space:nowrap;">${right}</span>
   </div>`;
 
-export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable }) {
+export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
+                              waitlistUnreadable = false }) {
   const parts = [];
 
   // --- The Swarm ---
@@ -93,7 +94,14 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
       ? signups.map((s) => row(
           `${esc(s.name || s.email)} — <span style="color:#5A5E55;">${esc(s.class_name || "All classes")}</span>`,
           s.ref ? `via ${esc(s.ref)}` : `<span style="color:#C0BFB6;">no referral</span>`)).join("")
-      : quiet("No signups today.")));
+      /* "No signups today" and "the waitlist would not open" are opposite
+         pieces of news, and only one of them is a quiet day. A single dead
+         table is still just a missing section — but not a section that
+         quietly reads as good news about the one number that matters. */
+      : waitlistUnreadable
+        ? `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The waitlist could not be read — this is NOT "no signups".</p>
+           <p style="margin:8px 0 0 0;line-height:1.65;color:#5A5E55;">Supabase refused the read. Almost always a bad SUPABASE_SERVICE_ROLE_KEY: a publishable key hits row-level security and is refused, a secret key is not. Signups are still being saved, and nobody has been emailed about them.</p>`
+        : quiet("No signups today.")));
 
   // --- Referral standings ---
   const top = referrals.filter((r) => r.signups > 0);
@@ -139,7 +147,9 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   </div></body></html>`;
 
   const headline = [
-    `${signups.length} signup${signups.length === 1 ? "" : "s"}`,
+    waitlistUnreadable
+      ? "WAITLIST UNREADABLE"
+      : `${signups.length} signup${signups.length === 1 ? "" : "s"}`,
     `${posted.length}/${faculty.length} posted`,
     unbookable.length ? `${unbookable.length} unbookable` : null,
   ].filter(Boolean).join(" · ");
@@ -158,14 +168,20 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const since = startOfDallasDay(now).toISOString();
   const today = dallasDay(now);
 
+  /* Which reads were refused, as opposed to genuinely empty. The two look
+     identical downstream — both arrive as [] — and for the waitlist that
+     difference is the whole report. */
+  const refused = new Set();
+
   const get = async (path) => {
+    const table = path.split("?")[0];
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
     });
     /* A table that doesn't exist yet must not kill the whole report — the
        Swarm board tables were added later than the rest. Missing section,
        not a missing email. */
-    if (!r.ok) { log(`  (skipping ${path.split("?")[0]}: ${r.status})`); return []; }
+    if (!r.ok) { refused.add(table); log(`  (skipping ${table}: ${r.status})`); return []; }
     return r.json();
   };
 
@@ -223,6 +239,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
 
   const { html, subject } = buildReport({
     now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
+    waitlistUnreadable: refused.has("waitlist"),
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }

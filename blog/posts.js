@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "why-women-solopreneurs-undercharge",
+    title: "Why Do Women Solopreneurs Undercharge? It's Isolation, Not Ignorance",
+    date: "2026-08-29",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "42% of women entrepreneurs run their business alone — more than twice the rate of men. Undercharging isn't a confidence problem you can pep-talk away; it's what happens when nobody is in the room to say your number out loud with you.",
+    image: "blog-undercharge.webp"
+  },
+  {
     slug: "questions-new-founders-should-ask",
     title: "Ladies, What Questions Should a New Founder Be Asking? The Ones You Don't Know Exist Yet",
     date: "2026-08-11",
