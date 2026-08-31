@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fall Flash Sale — 25% Off Every Class | Quinta &amp; Co.</title>
-<meta name="description" content="25% off every Quinta & Co. class you can book right now. Bring your code, pick your date, keep the seat.">
+<meta name="description" content="Your Quinta &amp; Co. code, worth 25% off. Pick a class, pick your date — the discount is already applied.">
 <meta name="theme-color" content="#FAFAF6">
 <meta name="robots" content="noindex,follow">
 <link rel="canonical" href="https://quintaand.co/fall25/">
@@ -117,8 +117,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   <section class="hero">
     <div class="hero-content wrap">
       <p class="label hero-eyebrow">Fall flash sale</p>
-      <h1 class="hero-title">Twenty-five percent off, every class on the calendar.</h1>
-      <p class="hero-lead">No hoops. The price below is <em>already</em> the sale price — pick a class, pick your date, and the discount is waiting for you at checkout.</p>
+      <h1 class="hero-title">Twenty-five percent off, because someone sent you.</h1>
+      <p class="hero-lead">This price isn't on the rest of the site. Pick a class below, pick your date, and the discount is already waiting for you at checkout — nothing to type.</p>
     </div>
   </section>
 
@@ -128,7 +128,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       <div class="hub-cta-text-wrap">
         <p class="label" style="margin-bottom:6px">Your code</p>
         <h2 class="hub-cta-title" id="saleCode">FALL25</h2>
-        <p class="hub-cta-text">Worth <strong>25% off any class below</strong>. There's nothing to type — your code is already applied to every price on this page, and it follows you to checkout. Questions? <a href="mailto:hello@quintaand.co?subject=Fall%20flash%20sale">Email us</a> and a real person answers.</p>
+        <p class="hub-cta-text">Worth <strong>25% off any class below</strong> — a price you won't find anywhere else on the site. There's nothing to type: your code is already applied, and it follows you to checkout. Questions? <a href="mailto:hello@quintaand.co?subject=Fall%20flash%20sale">Email us</a> and a real person answers.</p>
         <p class="sale-code-applied" id="saleCredit" hidden></p>
       </div>
       <a href="#classes" class="btn btn-solid">See what's on sale &rarr;</a>
@@ -138,7 +138,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   <!-- Rendered from classes.js so a price can never drift out of sync -->
   <section class="wrap" id="classes">
     <p class="label">On sale now</p>
-    <h2 class="start-title">Every class with a date on the calendar.</h2>
+    <h2 class="start-title">What your code opens.</h2>
     <div class="sale-list" id="saleList"></div>
     <p class="hub-note" id="saleEmpty" style="margin-top:24px" hidden>The sale has ended — but every class is still here. <a href="../foundations.html">Browse The Foundations</a> or <a href="../practice.html">The Practice</a>.</p>
   </section>
@@ -213,22 +213,34 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
      config.js — and worked out here, so this page can never disagree with the
      rest of the site. A class that cannot be booked is never shown: a price
      cut on a class with no dates sells a seat that does not exist. */
+  /* The sale list maps a real class slug to the HIDDEN Cal.com event that
+     charges the sale price. The real event keeps its full price, which is why
+     this page — and only this page — links somewhere different. */
   var CFG = (window.QUINTA_CONFIG && window.QUINTA_CONFIG.SALE) || null;
   var PCT = CFG ? Number(CFG.PERCENT_OFF) : 0;
-  var ON = (CFG && CFG.CLASSES) || [];
+  var TWINS = (CFG && CFG.CLASSES) || {};
 
   function salePriceOf(c) {
     if (!CFG || !(PCT > 0 && PCT < 100)) return null;
     if (!c || c.free || !c.booking || c.soon) return null;
     if (typeof c.price !== "number" || c.price <= 0) return null;
-    if (ON.indexOf(c.slug) === -1) return null;
+    if (!TWINS[c.slug]) return null;
     var p = Math.floor(c.price * (100 - PCT) / 100);
     return (p > 0 && p < c.price) ? p : null;
   }
 
+  /* Built from the real booking URL with the last path segment swapped, so
+     the Cal.com username is never written down twice and cannot drift. */
+  function twinUrl(c) {
+    var twin = TWINS[c.slug];
+    if (!twin || !c.booking) return null;
+    var url = c.booking.replace(/\/[^\/]+$/, "/" + encodeURIComponent(twin));
+    return ref ? url + "?ref=" + encodeURIComponent(ref) : url;
+  }
+
   var list = document.getElementById("saleList");
   var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
-  var sale = all.filter(function (c) { return salePriceOf(c) !== null; });
+  var sale = all.filter(function (c) { return salePriceOf(c) !== null && twinUrl(c); });
 
   if (!sale.length) {
     document.getElementById("saleEmpty").hidden = false;
@@ -236,12 +248,13 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   }
 
   sale.forEach(function (c) {
+    var price = salePriceOf(c);
+
     var a = document.createElement("a");
     a.className = "sale-row";
-    /* Carry the ref on the link as well as in localStorage — private
-       browsing clears the one, the URL survives it. */
-    a.href = "../classes/" + encodeURIComponent(c.slug) + ".html" +
-             (ref ? "?ref=" + encodeURIComponent(ref) : "");
+    a.href = twinUrl(c);
+    a.target = "_blank";
+    a.rel = "noopener";
 
     var main = document.createElement("div");
     main.className = "sale-row-main";
@@ -254,27 +267,37 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     var bits = [];
     if (c.format) bits.push(c.format);
     if (c.venue) bits.push(c.venue);
-    if (bits.length) {
-      var meta = document.createElement("p");
-      meta.className = "sale-meta";
-      meta.textContent = bits.join(" · ");
-      main.appendChild(meta);
-    }
+    bits.push("opens Cal.com to pick your date");
+    var meta = document.createElement("p");
+    meta.className = "sale-meta";
+    meta.textContent = bits.join(" \u00b7 ");
+    main.appendChild(meta);
     a.appendChild(main);
 
-    var price = document.createElement("div");
-    price.className = "sale-price";
+    var priceEl = document.createElement("div");
+    priceEl.className = "sale-price";
     var now = document.createElement("span");
     now.className = "sale-now";
-    now.textContent = "$" + salePriceOf(c);
+    now.textContent = "$" + price;
     var was = document.createElement("span");
     was.className = "sale-was";
     was.textContent = "$" + c.price;
-    price.appendChild(now);
-    price.appendChild(was);
-    a.appendChild(price);
+    priceEl.appendChild(now);
+    priceEl.appendChild(was);
+    a.appendChild(priceEl);
 
     list.appendChild(a);
+
+    /* A quiet way to read the full description without leaving the sale —
+       the class page is full price, so it is a link to detail, not to book. */
+    var more = document.createElement("p");
+    more.className = "sale-meta";
+    more.style.margin = "-6px 0 4px 2px";
+    var ml = document.createElement("a");
+    ml.href = "../classes/" + encodeURIComponent(c.slug) + ".html";
+    ml.textContent = "What's covered in " + c.name + " \u2192";
+    more.appendChild(ml);
+    list.appendChild(more);
   });
 }());
 </script>

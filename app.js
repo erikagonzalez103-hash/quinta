@@ -85,57 +85,16 @@
      she left for Cal.com, she came back booked. Those are view_item,
      begin_checkout and purchase. The gap between the last two is the
      Cal.com drop-off, and it is the number that actually matters. */
-  /* THE SALE lives in one list in config.js — a class named there is on sale,
-     a class not named there is at full price. The discount is worked out here
-     rather than written down anywhere, so a slug can be added or removed in
-     seconds and no second number can fall out of step with the first.
+  /* THE PUBLIC SITE ALWAYS SHOWS THE FULL PRICE.
+     The fall sale is deliberately NOT applied here. The discount lives on a
+     separate hidden Cal.com event that only /fall25/ links to, so someone who
+     arrives from Google during the sale sees, and pays, the real price. If a
+     sale price ever appears on a class page again, the gate has been lost and
+     every organic visitor is being discounted by accident. */
 
-     List prices are never overwritten. Emptying the list ends the sale
-     everywhere at once, with nothing to restore.
-
-     Cal.com has no promo-code field, so the same change must also be made on
-     the Cal.com event or the site advertises a discount that is not honoured:
-     `node tools/set-sale-prices.mjs --sale --apply`. FALL25-SALE.md explains. */
-  function saleSettings() {
-    var s = window.QUINTA_CONFIG && window.QUINTA_CONFIG.SALE;
-    if (!s || !s.CLASSES || !s.CLASSES.length) return null;
-    var pct = Number(s.PERCENT_OFF);
-    if (!(pct > 0 && pct < 100)) return null;   // a nonsense discount is no discount
-    return { pct: pct, on: s.CLASSES };
-  }
-
-  /* What this class costs during the sale, or null if it isn't in it. A class
-     that can't be booked is never discounted — a price cut on a class with no
-     dates sells a seat that does not exist. */
-  function salePriceOf(c) {
-    var s = saleSettings();
-    if (!s || !c || c.free || !c.booking || c.soon) return null;
-    if (typeof c.price !== "number" || c.price <= 0) return null;
-    if (s.on.indexOf(c.slug) === -1) return null;
-    var p = Math.floor(c.price * (100 - s.pct) / 100);
-    return (p > 0 && p < c.price) ? p : null;
-  }
-
-  function saleOn(c) { return salePriceOf(c) !== null; }
-
-  /* "$150", "Free", or nothing at all. A class with no price set says
-     nothing rather than guessing — an invented price is a promise. While a
-     sale is on, this is the number she will actually be charged. */
   function priceLabel(c) {
     if (c.free) return "Free";
-    var sale = salePriceOf(c);
-    if (sale !== null) return "$" + sale;
     return (typeof c.price === "number" && c.price > 0) ? "$" + c.price : null;
-  }
-
-  /* What the price line shows. Same as priceLabel, except a sale also says
-     what the class normally costs — "$131 · was $175". A discount she can't
-     see the size of isn't a discount, it's just a price. Kept separate from
-     priceLabel so the GA4 item_variant stays a single clean number. */
-  function priceNote(c) {
-    var money = priceLabel(c);
-    if (!money || !saleOn(c)) return money;
-    return money + " · was $" + c.price;
   }
 
   /* The line under a Book button. It exists because the button used to hand
@@ -145,7 +104,7 @@
      booking. */
   function bookNoteText(c) {
     var bits = [];
-    var money = priceNote(c);
+    var money = priceLabel(c);
     if (money) bits.push(money);
     if (c.format) bits.push(String(c.format).split("·")[0].trim());
     /* Where it happens is one of the four things she needs before she'll
@@ -590,7 +549,7 @@
       b.textContent = c.free ? "Save your seat" : "See dates & book";
       wireBookClick(b, c, "card");
       bk.appendChild(b);
-      var cardMoney = priceNote(c);
+      var cardMoney = priceLabel(c);
       if (cardMoney) {
         var fn = document.createElement("span");
         fn.className = c.free ? "free-note" : "price-note";
@@ -1075,7 +1034,7 @@
       /* A class with no dates yet still has a price, and she still wants to
          know it — deciding whether to wait for something is easier when you
          know what it costs. */
-      var soonMoney = priceNote(c);
+      var soonMoney = priceLabel(c);
       if (soonMoney) {
         var sp = document.createElement("span");
         sp.className = c.free ? "free-note" : "price-note";
@@ -1104,7 +1063,7 @@
         freeNote.textContent = "Free";
         book.appendChild(freeNote);
       } else {
-        var money = priceNote(c);
+        var money = priceLabel(c);
         if (money) {
           var pn = document.createElement("span");
           pn.className = "price-note";

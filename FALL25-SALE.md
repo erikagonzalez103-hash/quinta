@@ -1,106 +1,118 @@
-# Fall flash sale — 25% off
+# Fall flash sale — 25% off, for code holders only
 
-## The one thing to know
+## How it works
 
-Who is on sale is decided in **one list**, in `config.js`:
+**Your real classes never change price.** Someone who finds Certification on
+Google during the sale still pays $299.
+
+The discount lives on a **separate, hidden Cal.com event** — a twin. Only
+`/fall25/`, which people reach through a code link, points at the twin. This
+is the same shape as the HERHOUSE code: `module-1-herhouse` was a second event
+at a lower price, reached from a page.
+
+It has to work this way. Cal.com has no discount-code field and no
+per-customer pricing — one event, one price, for whoever books it. A second
+event is the only way to charge two people differently. (There is also no API
+for any of this: v1 was decommissioned, and v2's event-type input has no
+price, currency or metadata field. Every step below is done by hand.)
+
+```
+someone with a code   →  /fall25/  →  cal.com/quintaandco/certification-fall25  →  $224
+someone from Google   →  the class page  →  cal.com/quintaandco/certification   →  $299
+```
+
+---
+
+## Before a single code goes out
+
+For each class in the sale, in Cal.com:
+
+1. **Duplicate** the real event.
+2. **Name the copy `<slug>-fall25`** — exactly. The site builds the link from
+   this name, so `certification-fall25` and nothing else.
+3. **Set its Stripe price** to the sale figure below.
+4. **Hide it** so it never appears on your public Cal.com profile. The only
+   way in is the code link.
+5. **Give it dates.** See the warning below. This is the step that gets
+   forgotten and it is the one that strands customers.
+
+| Twin event | Price | Real event stays |
+|---|---|---|
+| `entity-setup-fall25` | **$131** | $175 |
+| `certification-fall25` | **$224** | $299 |
+| `module-1-fall25` | **$112** | $150 |
+| `module-2-fall25` | **$150** | $200 |
+
+25% off, rounded **down** to a whole dollar — rounding down never overcharges.
+
+### ⚠ The twins do not get dates automatically
+
+The schedule-sync Worker finds Cal.com events by **exact slug**
+(`workers/schedule-sync/worker.js:118`). It syncs `certification` and knows
+nothing about `certification-fall25`. Dates set in the faculty portal reach
+the real event **only**.
+
+So every twin's dates are set by hand, and they will drift as new dates are
+added to the real class. For a short sale on four classes that is a fair
+trade. For a long one it is a trap.
+
+### Pre-flight: open all four, in a private window
+
+Before you post a code, open each and check **the price is the sale price**
+and **dates are offered**:
+
+- `cal.com/quintaandco/entity-setup-fall25` → $131
+- `cal.com/quintaandco/certification-fall25` → $224
+- `cal.com/quintaandco/module-1-fall25` → $112
+- `cal.com/quintaandco/module-2-fall25` → $150
+
+A 404, a full price, or an empty calendar means the code sends people to a
+dead end — and it strands exactly the people your teachers brought in.
+
+---
+
+## The site side
+
+One list, in `config.js`, mapping the real class to its twin:
 
 ```js
 SALE: {
   PERCENT_OFF: 25,
-  CLASSES: [
-    "entity-setup",
-    "certification",
-    "module-1",
-    "module-2"
-  ]
+  CLASSES: {
+    "entity-setup":  "entity-setup-fall25",
+    "certification": "certification-fall25",
+    "module-1":      "module-1-fall25",
+    "module-2":      "module-2-fall25"
+  }
 }
 ```
 
-A class in the list is on sale. A class not in it is at full price. The
-discounted figure is worked out from `PERCENT_OFF` — 25% off, rounded **down**
-to a whole dollar — so there is never a second number to keep in step, and
-rounding down never overcharges.
+The sale price is worked out from `PERCENT_OFF`, so there is no arithmetic to
+get wrong. The public site is untouched by this list — class pages, the hub
+pages and every Book button keep showing the full price and the real event.
+If a sale price ever shows up on a class page, the gate has been lost and
+every organic visitor is being discounted by accident.
 
-Right now that is **Erika's four classes only**. Nobody else is discounted
-until she says so; the 25% comes out of Erika's cut.
+### When a teacher opts in
 
----
+1. Build her twin in Cal.com (the five steps above).
+2. Add the pair to `CLASSES` and commit.
 
-## Turning a teacher on when she emails back
+| Class | Teacher | Twin to create | Price | Full |
+|---|---|---|---|---|
+| `bookkeeping-2` | Tara | `bookkeeping-2-fall25` | $74 | $99 |
+| `brand-101` | Stephanie | `brand-101-fall25` | $131 | $175 |
+| `financial-planning` | Joshlyn | `financial-planning-fall25` | $187 | $250 |
+| `legacy-planning` | Nik | `legacy-planning-fall25` | $224 | $299 |
+| `trademarks` | Nik | `trademarks-fall25` | $224 | $299 |
+| `insurance` | Nery | `insurance-fall25` | $131 | $175 |
 
-**Two steps. Both are needed.**
-
-1. **Add her class's slug** to `SALE.CLASSES` in `config.js`, and commit.
-   *This changes what the website advertises.*
-2. **Run the prices job.** *This changes what Cal.com charges.*
-
-Do only step 1 and the site promises a discount Cal.com will not honour.
-
-### Running the prices job without a terminal
-
-GitHub → **Actions** → **"Sale prices → Cal.com"** → **Run workflow**
-
-- **mode:** `sale` to put discounts on, `list` to take them off
-- **apply:** leave **unticked** the first time. It prints exactly what it would
-  change and changes nothing. Read that, then run again with it ticked.
-
-### Or from a terminal
-
-```
-export CAL_API_KEY=cal_live_...              # your own machine only
-node tools/set-sale-prices.mjs --sale        # dry run
-node tools/set-sale-prices.mjs --sale --apply
-```
-
-### The slugs, and who teaches what
-
-| Slug | Teacher | List | Sale |
-|---|---|---|---|
-| `entity-setup` | Erika | $175 | $131 |
-| `certification` | Erika | $299 | $224 |
-| `module-1` | Erika | $150 | $112 |
-| `module-2` | Erika | $200 | $150 |
-| `bookkeeping-2` | Tara | $99 | $74 |
-| `brand-101` | Stephanie | $175 | $131 |
-| `financial-planning` | Joshlyn | $250 | $187 |
-| `legacy-planning` | Nik | $299 | $224 |
-| `trademarks` | Nik | $299 | $224 |
-| `insurance` | Nery | $175 | $131 |
-
-`insurance` needs dates set before it goes in the list — a discount on a class
-with no dates sells a seat that does not exist. `bookkeeping-1` is still on
-waitlist while Tara builds it.
+`insurance` needs dates on the real class first. `bookkeeping-1` is still on
+waitlist.
 
 ---
 
-## The API key
-
-`CAL_API_KEY` is a bearer token for the whole booking calendar — anyone holding
-it could read student names and emails, or cancel bookings. **This repository
-is public.** It never goes in a file here.
-
-**Get it:** Cal.com → Settings → Developer → API keys → **+ Add**. Copy it when
-it is shown; it is not shown again.
-
-**Put it where it is needed:**
-
-| To run it from | Where the key goes |
-|---|---|
-| GitHub Actions (the button above) | Repo **Settings → Secrets and variables → Actions → New repository secret**, named `CAL_API_KEY` |
-| Your own laptop | `export CAL_API_KEY=cal_live_...` in Terminal — lasts only for that window |
-| The schedule-sync Worker | Already done: `wrangler secret put CAL_API_KEY` |
-
-Do **not** paste it into a chat, a commit, or any file in this repo.
-
----
-
-## Why the codes are links, not something to type
-
-Cal.com has **no discount-code field**. Its Stripe integration charges a fixed
-payment intent rather than opening a Stripe Checkout session, so Stripe's own
-coupon machinery never gets a turn (`calcom/cal.diy#12462`, open since 2023).
-The HERHOUSE code worked the same way: a word on a page in front of a
-discounted event, never something anyone typed.
+## The codes
 
 | Code | Link to share |
 |---|---|
@@ -111,9 +123,8 @@ discounted event, never something anyone typed.
 | NIKFALL25 | `quintaand.co/go/nikfall25` |
 | TARAFALL25 | `quintaand.co/go/tarafall25` |
 
-**Don't send a teacher her code until she has opted in.** All six work and
-credit correctly, but a teacher promoting her own code while her class sits at
-full price is an awkward thing to have done to her.
+**Don't send a teacher her code until her twin exists** — a code that opens a
+page not listing her class is worse than no code.
 
 **The code is the name of the link, not a second attribution system.** Each
 redirects to `/fall25/?ref=<firstname>26` — the ref codes the faculty
@@ -123,29 +134,18 @@ leaderboard already counts. The board joins on `firstname || '26'`
 
 ---
 
-## Two other things
+## To end the sale
 
-- **Module 1 at $112 is below the HERHOUSE rate** ($112.50, promised "through
-  December" on `/herhouse/`). During the sale a HERHOUSE tag is worth nothing
-  extra. Nothing breaks; just don't be surprised if someone asks.
-- **The faculty social kit still quotes list prices.**
-  `faculty/final-push-data.js` is a different campaign and its captions have
-  prices written into the prose ("$299 · Kiln · one focused class"). Left alone
-  on purpose: changing the `price` field without rewriting nine captions would
-  leave the two contradicting each other. If the faculty post that kit during
-  the sale, the captions need rewriting by hand.
+1. **Empty `CLASSES` to `{}`** in `config.js`. `/fall25/` empties itself.
+2. **Hide or delete the twins** in Cal.com.
+
+That is all. **Your real events were never touched, so there is no price to
+put back and no way to be left quietly undercharging.** That safety is the
+main reason this shape was chosen over discounting the real events.
 
 ---
 
-## To end the sale
+## One thing to know
 
-1. **Run the prices job with mode `list` and apply ticked.** This is the step
-   that actually stops the discount.
-2. **Empty `SALE.CLASSES` to `[]`** in `config.js`. The site reverts everywhere
-   at once and `/fall25/` empties itself. List prices in `classes.js` were never
-   overwritten, so there is nothing to restore and nothing to look up.
-3. Optionally delete `/fall25/` and the six `go/*fall25/` folders.
-
-The order does not matter. `--list` deliberately covers **every** sellable
-class, not just the ones still in the sale list, so emptying the list first
-cannot strand Cal.com on sale prices.
+**Module 1 at $112 is below the HERHOUSE rate** ($112.50, promised "through
+December" on `/herhouse/`). During the sale that tag is worth nothing extra.
