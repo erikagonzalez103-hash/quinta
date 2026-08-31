@@ -1,88 +1,106 @@
 # Fall flash sale — 25% off
 
-Everything the sale touches, and how to switch it off. Read **To end the sale**
-first if that is why you are here.
+## The one thing to know
+
+Who is on sale is decided in **one list**, in `config.js`:
+
+```js
+SALE: {
+  PERCENT_OFF: 25,
+  CLASSES: [
+    "entity-setup",
+    "certification",
+    "module-1",
+    "module-2"
+  ]
+}
+```
+
+A class in the list is on sale. A class not in it is at full price. The
+discounted figure is worked out from `PERCENT_OFF` — 25% off, rounded **down**
+to a whole dollar — so there is never a second number to keep in step, and
+rounding down never overcharges.
+
+Right now that is **Erika's four classes only**. Nobody else is discounted
+until she says so; the 25% comes out of Erika's cut.
 
 ---
 
-## Who is in the sale
+## Turning a teacher on when she emails back
 
-Only **Erika's own classes**, until each teacher confirms she wants in. The
-discount comes out of Erika's cut, so nobody else's class gets discounted
-without her say-so.
+**Two steps. Both are needed.**
 
-Everyone else's classes stay **bookable at full price** — nothing is hidden,
-nothing is withdrawn. They simply don't appear on `/fall25/` and don't show a
-"was $175".
+1. **Add her class's slug** to `SALE.CLASSES` in `config.js`, and commit.
+   *This changes what the website advertises.*
+2. **Run the prices job.** *This changes what Cal.com charges.*
 
-| Cal.com event | Teacher | List | **Sale** |
+Do only step 1 and the site promises a discount Cal.com will not honour.
+
+### Running the prices job without a terminal
+
+GitHub → **Actions** → **"Sale prices → Cal.com"** → **Run workflow**
+
+- **mode:** `sale` to put discounts on, `list` to take them off
+- **apply:** leave **unticked** the first time. It prints exactly what it would
+  change and changes nothing. Read that, then run again with it ticked.
+
+### Or from a terminal
+
+```
+export CAL_API_KEY=cal_live_...              # your own machine only
+node tools/set-sale-prices.mjs --sale        # dry run
+node tools/set-sale-prices.mjs --sale --apply
+```
+
+### The slugs, and who teaches what
+
+| Slug | Teacher | List | Sale |
 |---|---|---|---|
-| `entity-setup` | Erika | $175 | **$131** |
-| `certification` | Erika | $299 | **$224** |
-| `module-1` | Erika | $150 | **$112** |
-| `module-2` | Erika | $200 | **$150** |
-
-> `module-1` is assumed to be Erika's — it sits in The Practice with Module 2,
-> which `faculty/final-push-data.js` records as hers, and `/herhouse/` sold it
-> as a Quinta offer. It is the one row here not confirmed by a record. If it
-> is someone else's, delete its `salePrice` line in `classes.js`.
-
-Every figure is 25% off, rounded **down** to a whole dollar — the site's prices
-are whole dollars by convention, and rounding down never overcharges.
-
-### When a teacher opts in
-
-Add her `salePrice` to `classes.js` and re-run the script. The numbers are
-already worked out:
-
-| Cal.com event | Teacher | List | Sale |
-|---|---|---|---|
+| `entity-setup` | Erika | $175 | $131 |
+| `certification` | Erika | $299 | $224 |
+| `module-1` | Erika | $150 | $112 |
+| `module-2` | Erika | $200 | $150 |
 | `bookkeeping-2` | Tara | $99 | $74 |
 | `brand-101` | Stephanie | $175 | $131 |
 | `financial-planning` | Joshlyn | $250 | $187 |
 | `legacy-planning` | Nik | $299 | $224 |
 | `trademarks` | Nik | $299 | $224 |
-| `insurance` | Nery | $175 | $131 | — *only once she has dates* |
+| `insurance` | Nery | $175 | $131 |
 
-`bookkeeping-1` is not listed: still on waitlist while Tara builds it.
+`insurance` needs dates set before it goes in the list — a discount on a class
+with no dates sells a seat that does not exist. `bookkeeping-1` is still on
+waitlist while Tara builds it.
 
 ---
 
-## Setting the prices in Cal.com
+## The API key
+
+`CAL_API_KEY` is a bearer token for the whole booking calendar — anyone holding
+it could read student names and emails, or cancel bookings. **This repository
+is public.** It never goes in a file here.
+
+**Get it:** Cal.com → Settings → Developer → API keys → **+ Add**. Copy it when
+it is shown; it is not shown again.
+
+**Put it where it is needed:**
+
+| To run it from | Where the key goes |
+|---|---|
+| GitHub Actions (the button above) | Repo **Settings → Secrets and variables → Actions → New repository secret**, named `CAL_API_KEY` |
+| Your own laptop | `export CAL_API_KEY=cal_live_...` in Terminal — lasts only for that window |
+| The schedule-sync Worker | Already done: `wrangler secret put CAL_API_KEY` |
+
+Do **not** paste it into a chat, a commit, or any file in this repo.
+
+---
+
+## Why the codes are links, not something to type
 
 Cal.com has **no discount-code field**. Its Stripe integration charges a fixed
 payment intent rather than opening a Stripe Checkout session, so Stripe's own
 coupon machinery never gets a turn (`calcom/cal.diy#12462`, open since 2023).
-That is why the codes are share links, not something a student types — and why
-the discount has to be set on each Cal.com event type.
-
-**The script does it:**
-
-```
-export CAL_API_KEY=cal_live_...              # never commit this
-node tools/set-sale-prices.mjs --sale        # dry run — shows what would change
-node tools/set-sale-prices.mjs --sale --apply
-```
-
-It reads `classes.js`, so the site and Cal.com cannot disagree. It is a dry run
-unless you pass `--apply`, and it refuses rather than guesses: it will not make
-a free class paid, will not touch a class whose Stripe app is off, and will
-stop if Cal.com's current price matches neither the list price nor the sale
-price — because that means someone changed it in the dashboard and one of the
-two numbers is wrong.
-
-**By hand instead:** Cal.com → Event Types → the event → **Apps → Stripe →
-Price**, using the table above.
-
-Until this is done the website advertises a sale price and Cal.com still
-charges full price — the exact mismatch `classes.js` warns about.
-
----
-
-## The codes
-
-Each link tags the booking with the teacher who sent it, so the Swarm board
-credits her:
+The HERHOUSE code worked the same way: a word on a page in front of a
+discounted event, never something anyone typed.
 
 | Code | Link to share |
 |---|---|
@@ -93,11 +111,11 @@ credits her:
 | NIKFALL25 | `quintaand.co/go/nikfall25` |
 | TARAFALL25 | `quintaand.co/go/tarafall25` |
 
-**Don't send a teacher her code until she has opted in.** All six links work and
-credit correctly, but a teacher promoting her own code while her own class sits
-at full price is an awkward thing to have done to her. Erika's is ready now.
+**Don't send a teacher her code until she has opted in.** All six work and
+credit correctly, but a teacher promoting her own code while her class sits at
+full price is an awkward thing to have done to her.
 
-**The code is the name of the link, not a second attribution system.** Each one
+**The code is the name of the link, not a second attribution system.** Each
 redirects to `/fall25/?ref=<firstname>26` — the ref codes the faculty
 leaderboard already counts. The board joins on `firstname || '26'`
 (`supabase/sql/2026-08-24-campaign-swarm-board.sql`), so a booking tagged
@@ -112,22 +130,22 @@ leaderboard already counts. The board joins on `firstname || '26'`
   extra. Nothing breaks; just don't be surprised if someone asks.
 - **The faculty social kit still quotes list prices.**
   `faculty/final-push-data.js` is a different campaign and its captions have
-  prices written into the prose ("$299 · Kiln · one focused class"). It was left
-  alone on purpose: changing the `price` field without rewriting nine captions
-  would leave the two contradicting each other. If the faculty are posting that
-  kit during the sale, the captions need rewriting by hand.
+  prices written into the prose ("$299 · Kiln · one focused class"). Left alone
+  on purpose: changing the `price` field without rewriting nine captions would
+  leave the two contradicting each other. If the faculty post that kit during
+  the sale, the captions need rewriting by hand.
 
 ---
 
 ## To end the sale
 
-1. **Cal.com** — `node tools/set-sale-prices.mjs --list --apply`. This is the
-   step that actually stops the discount. Do it even if you skip the rest.
-2. **`classes.js`** — delete the `salePrice:` lines (each is marked
-   `// Fall flash sale — DELETE this line to end the sale`). List prices were
-   never overwritten, so there is nothing to restore and nothing to look up.
-   The site reverts everywhere at once and `/fall25/` empties itself.
+1. **Run the prices job with mode `list` and apply ticked.** This is the step
+   that actually stops the discount.
+2. **Empty `SALE.CLASSES` to `[]`** in `config.js`. The site reverts everywhere
+   at once and `/fall25/` empties itself. List prices in `classes.js` were never
+   overwritten, so there is nothing to restore and nothing to look up.
 3. Optionally delete `/fall25/` and the six `go/*fall25/` folders.
 
-Do step 1 before step 2 — the script reads `classes.js` to know which classes
-to put back, so deleting the lines first leaves it with nothing to do.
+The order does not matter. `--list` deliberately covers **every** sellable
+class, not just the ones still in the sale list, so emptying the list first
+cannot strand Cal.com on sale prices.

@@ -209,18 +209,26 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     credit.hidden = false;
   }
 
-  /* A class is on sale when classes.js gives it a salePrice below its list
-     price AND it can actually be booked. Discounting a class nobody can book
-     is how you sell a seat that does not exist. */
-  function onSale(c) {
-    return c && c.booking && !c.soon && !c.free &&
-           typeof c.salePrice === "number" && c.salePrice > 0 &&
-           typeof c.price === "number" && c.salePrice < c.price;
+  /* Which classes are on sale is decided in ONE place — the SALE list in
+     config.js — and worked out here, so this page can never disagree with the
+     rest of the site. A class that cannot be booked is never shown: a price
+     cut on a class with no dates sells a seat that does not exist. */
+  var CFG = (window.QUINTA_CONFIG && window.QUINTA_CONFIG.SALE) || null;
+  var PCT = CFG ? Number(CFG.PERCENT_OFF) : 0;
+  var ON = (CFG && CFG.CLASSES) || [];
+
+  function salePriceOf(c) {
+    if (!CFG || !(PCT > 0 && PCT < 100)) return null;
+    if (!c || c.free || !c.booking || c.soon) return null;
+    if (typeof c.price !== "number" || c.price <= 0) return null;
+    if (ON.indexOf(c.slug) === -1) return null;
+    var p = Math.floor(c.price * (100 - PCT) / 100);
+    return (p > 0 && p < c.price) ? p : null;
   }
 
   var list = document.getElementById("saleList");
   var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
-  var sale = all.filter(onSale);
+  var sale = all.filter(function (c) { return salePriceOf(c) !== null; });
 
   if (!sale.length) {
     document.getElementById("saleEmpty").hidden = false;
@@ -258,7 +266,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     price.className = "sale-price";
     var now = document.createElement("span");
     now.className = "sale-now";
-    now.textContent = "$" + c.salePrice;
+    now.textContent = "$" + salePriceOf(c);
     var was = document.createElement("span");
     was.className = "sale-was";
     was.textContent = "$" + c.price;

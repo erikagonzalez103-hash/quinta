@@ -85,23 +85,46 @@
      she left for Cal.com, she came back booked. Those are view_item,
      begin_checkout and purchase. The gap between the last two is the
      Cal.com drop-off, and it is the number that actually matters. */
-  /* A class is on sale when classes.js gives it a salePrice that is a real
-     number and genuinely lower than its list price. Deleting the salePrice
-     line ends the sale for that class everywhere on the site at once — the
-     list price is never overwritten, so there is nothing to remember and
-     restore. Cal.com has no promo-code field, so the discount also has to be
-     set on the Cal.com event itself; FALL25-SALE.md holds that checklist. */
-  function saleOn(c) {
-    return typeof c.salePrice === "number" && c.salePrice > 0 &&
-           typeof c.price === "number" && c.salePrice < c.price;
+  /* THE SALE lives in one list in config.js — a class named there is on sale,
+     a class not named there is at full price. The discount is worked out here
+     rather than written down anywhere, so a slug can be added or removed in
+     seconds and no second number can fall out of step with the first.
+
+     List prices are never overwritten. Emptying the list ends the sale
+     everywhere at once, with nothing to restore.
+
+     Cal.com has no promo-code field, so the same change must also be made on
+     the Cal.com event or the site advertises a discount that is not honoured:
+     `node tools/set-sale-prices.mjs --sale --apply`. FALL25-SALE.md explains. */
+  function saleSettings() {
+    var s = window.QUINTA_CONFIG && window.QUINTA_CONFIG.SALE;
+    if (!s || !s.CLASSES || !s.CLASSES.length) return null;
+    var pct = Number(s.PERCENT_OFF);
+    if (!(pct > 0 && pct < 100)) return null;   // a nonsense discount is no discount
+    return { pct: pct, on: s.CLASSES };
   }
+
+  /* What this class costs during the sale, or null if it isn't in it. A class
+     that can't be booked is never discounted — a price cut on a class with no
+     dates sells a seat that does not exist. */
+  function salePriceOf(c) {
+    var s = saleSettings();
+    if (!s || !c || c.free || !c.booking || c.soon) return null;
+    if (typeof c.price !== "number" || c.price <= 0) return null;
+    if (s.on.indexOf(c.slug) === -1) return null;
+    var p = Math.floor(c.price * (100 - s.pct) / 100);
+    return (p > 0 && p < c.price) ? p : null;
+  }
+
+  function saleOn(c) { return salePriceOf(c) !== null; }
 
   /* "$150", "Free", or nothing at all. A class with no price set says
      nothing rather than guessing — an invented price is a promise. While a
      sale is on, this is the number she will actually be charged. */
   function priceLabel(c) {
     if (c.free) return "Free";
-    if (saleOn(c)) return "$" + c.salePrice;
+    var sale = salePriceOf(c);
+    if (sale !== null) return "$" + sale;
     return (typeof c.price === "number" && c.price > 0) ? "$" + c.price : null;
   }
 
