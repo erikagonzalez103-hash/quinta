@@ -174,7 +174,7 @@ someone had earned.
 So there is a link that credits nobody:
 
 ```
-quintaand.co/go/housefall25   →   /fall25/?src=herhouse
+quintaand.co/go/hertexas25   →   /fall25/?src=hertexas
 ```
 
 **`?src=` is a source, not a ref.** It is never stored, never sent to Cal.com,
@@ -186,8 +186,8 @@ What each visitor gets:
 
 | Who arrives | Credited to | Sees |
 |---|---|---|
-| Clicked Tara's link last week, now clicks this | **still Tara** | HOUSEFALL25 |
-| Never been to the site before | **nobody** | HOUSEFALL25 |
+| Clicked Tara's link last week, now clicks this | **still Tara** | HER TEXAS 25 |
+| Never been to the site before | **nobody** | HER TEXAS 25 |
 
 That first row is the point, and it only works because `/fall25/` falls back to
 the ref app.js stored on an earlier visit. Reading the URL alone — which is
@@ -200,6 +200,16 @@ who earned it.
 to `SALE.CODES` — that list is faculty who get a portal card, and a place is
 not a person.
 
+### Reusing it for the next sale
+
+**HER TEXAS 25 is meant to outlive this sale.** The short link is the durable
+thing — it is what gets posted in their app and what people save — so to point
+it at October's sale, change the redirect target in `go/hertexas25/index.html`
+and nothing else. The link people kept goes on working.
+
+The name carries no season for that reason: "25" is the discount, not the
+month.
+
 ### ⚠ HERHOUSE already means something else
 
 `/herhouse/` promises HER House founders **25% off Module 1 through December**,
@@ -208,7 +218,7 @@ and `module-1-herhouse` charges $112.50 for it. The fall sale gives them Module
 closes on 30 September.
 
 So the two offers overlap for that community and neither is strictly better.
-The code is deliberately named **HOUSEFALL25**, not HERHOUSE, to keep them
+The code is deliberately named **HER TEXAS 25**, not HERHOUSE, to keep them
 apart. It is worth saying in the post that their HERHOUSE tag still works for
 Module 1 after this sale ends.
 
