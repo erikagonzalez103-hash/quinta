@@ -3,13 +3,29 @@
  *
  * WHY THIS EXISTS
  * Waitlist alerts failed 43 times in a row with "permission denied for table
- * waitlist", which means the key reaching it was the wrong KIND of key. There
- * was no way to check that without being able to see the secret, and a secret
- * you can see is not a secret. So you fix it, run it, and hope.
+ * waitlist". There was no way to see what was in the secret without printing
+ * it, and a secret you can print is not a secret. So the loop was: change it,
+ * run the real job, hope.
  *
  * This says which kind of key each secret holds — never the key itself — and
  * then makes the one read that has been failing, so the answer is a fact
  * rather than a guess.
+ *
+ * WHAT "permission denied" ACTUALLY MEANT — corrected 2026-09-10
+ * This script answered that question wrongly for two weeks. It treated every
+ * 403/42501 as proof that the PUBLIC key was in the secret, and said so even
+ * when its own kind-check three lines earlier had just passed the key as
+ * correct — telling you to replace a key with the key you already had.
+ *
+ * The real cause was a missing GRANT. service_role held REFERENCES, TRIGGER
+ * and TRUNCATE on public.waitlist but no SELECT and no UPDATE: the data
+ * privileges had been stripped from anon, authenticated and service_role to
+ * keep the public key away from customer emails, and service_role — which is
+ * what the notifier runs as — got caught in the same sweep.
+ *
+ * A wrong key and a missing grant produce an identical HTTP response, so the
+ * kind-check result is the only thing that can tell them apart. That is why
+ * explain() now takes it as an argument.
  *
  * WHAT IT WILL AND WILL NOT PRINT
  * It prints the TYPE PREFIX ("sb_secret_", "sb_publishable_") and the length.
@@ -19,7 +35,8 @@
  *
  * RUN IT: Actions → "Check secrets" → Run workflow.
  * Green means the waitlist is readable. Red means it is not, and the output
- * says which of the two keys is in there.
+ * says whether that is the wrong key or a missing grant — they are not the
+ * same problem and they do not have the same fix.
  */
 
 const SUPABASE_URL = "https://pmpaslevwimofohirves.supabase.co";
@@ -95,12 +112,46 @@ export async function probeWaitlist(fetchImpl, key) {
   return { status: r.status, ok: r.ok, body: body.slice(0, 300) };
 }
 
-export function explain(status, body) {
+/**
+ * Turn the probe result into an instruction.
+ *
+ * `keyKindOk` is whether the kind-check above passed the Supabase secret. It
+ * matters because a wrong key and a missing table grant both come back as
+ * 403/42501 — without it this function can only guess, and for two weeks it
+ * guessed the same wrong answer every time.
+ */
+export function explain(status, body, keyKindOk = false) {
   if (status === 200) return "The waitlist is readable. Waitlist alerts will work — run it next.";
   if (status === 403 && body.includes("42501")) {
-    return "The key is recognised, but the role it maps to has no permission to read the waitlist.\n" +
-           "That is what the PUBLIC key does. Replace SUPABASE_SERVICE_ROLE_KEY with the sb_secret_ key\n" +
-           "(Supabase → Project Settings → API Keys → Secret keys).";
+    if (keyKindOk) {
+      return [
+        "The key is the right kind — so this is a database permission, not a secret.",
+        "",
+        "Postgres 42501 means the role this key maps to holds no GRANT on the table.",
+        "It is not row-level security: RLS returns zero rows, it does not raise.",
+        "",
+        "Check who currently holds what:",
+        "",
+        "    select grantee, privilege_type",
+        "      from information_schema.role_table_grants",
+        "     where table_schema = 'public' and table_name = 'waitlist'",
+        "     order by grantee, privilege_type;",
+        "",
+        "The job needs SELECT (to find un-notified rows) and UPDATE (to stamp",
+        "notified_at). If service_role is missing them, in Supabase → SQL Editor:",
+        "",
+        "    grant select, update on table public.waitlist to service_role;",
+        "",
+        "Do NOT grant select to anon or authenticated. That would expose every",
+        "signup's name and email to the public key.",
+      ].join("\n");
+    }
+    return [
+      "The key is recognised, but the role it maps to has no permission to read the waitlist.",
+      "The kind-check above says this is not the secret key — that is the likeliest cause.",
+      "Replace SUPABASE_SERVICE_ROLE_KEY with the sb_secret_ key",
+      "(Supabase → Project Settings → API Keys → Secret keys).",
+    ].join("\n");
   }
   if (status === 401) {
     return "Supabase does not recognise this key at all — revoked, expired, or a partial paste.\n" +
@@ -140,7 +191,9 @@ export async function run({ env = process.env, fetchImpl = fetch, log = console.
 
   log(`  HTTP ${probe.status}`);
   if (probe.body) log(`  ${probe.body}`);
-  log(`\n${explain(probe.status, probe.body)}\n`);
+  /* checks[0] is the Supabase secret. Passing its verdict is what lets
+     explain() tell a wrong key apart from a missing grant. */
+  log(`\n${explain(probe.status, probe.body, checks[0].ok)}\n`);
 
   /* CAL_API_KEY is not probed. A wrong one costs a red run on the price job
      and nothing else, whereas this read is the thing that has been silently

@@ -66,8 +66,23 @@ console.log('\n5. Never leaks the key itself');
 console.log('\n6. Turning a status code into an instruction');
 {
   check('200 says it is fixed', /readable/.test(explain(200, '')));
-  check('403 + 42501 blames the public key',
-    /PUBLIC key|public key/i.test(explain(403, '{"code":"42501"}')), explain(403, '{"code":"42501"}'));
+
+  /* 403/42501 has two completely different causes and the same HTTP response.
+     The old version of this test asserted that it ALWAYS blamed the public
+     key, which is how the wrong diagnosis survived two weeks and a rewrite:
+     the test passed the whole time. What separates them is the kind-check. */
+  const denied = '{"code":"42501"}';
+
+  const wrongKey = explain(403, denied, false);
+  check('42501 with a bad key blames the key', /sb_secret_/.test(wrongKey), wrongKey);
+
+  const missingGrant = explain(403, denied, true);
+  check('42501 with a GOOD key blames the grant', /grant select, update/.test(missingGrant), missingGrant);
+  check('and never tells you to swap a correct key',
+    !/Replace SUPABASE_SERVICE_ROLE_KEY/.test(missingGrant), missingGrant);
+  check('and says it is not RLS', /row-level security|RLS/.test(missingGrant));
+  check('and warns off granting anon', /anon/.test(missingGrant));
+
   check('401 says the key is not recognised', /does not recognise/.test(explain(401, '')));
 }
 
@@ -93,6 +108,18 @@ console.log('\n7. End to end, against a stubbed Supabase');
   });
   check('a working key comes back ok', fixed.ok === true);
   check('and says what to do next', /run it next/.test(lines.join('\n')));
+
+  /* The real 2026-09-10 failure, end to end: a correct sb_secret_ key that
+     still cannot read, because service_role was never granted SELECT. */
+  lines.length = 0;
+  const missingGrant = await run({
+    env: { SUPABASE_SERVICE_ROLE_KEY: 'sb_secret_abc', RESEND_API_KEY: 're_x', CAL_API_KEY: 'cal_live_x' },
+    fetchImpl: async () => ({ status: 403, ok: false, text: async () => '{"code":"42501","message":"permission denied for table waitlist"}' }),
+    log,
+  });
+  check('a right key that cannot read still fails', missingGrant.ok === false);
+  check('but the grant is blamed, not the key', /grant select, update/.test(lines.join('\n')));
+  check('and the key is not called public', !/PUBLIC KEY/.test(lines.join('\n')), lines.join('\n'));
 
   lines.length = 0;
   const unset = await run({ env: {}, fetchImpl: async () => { throw new Error('should not be called'); }, log });
