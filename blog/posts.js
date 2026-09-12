@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "founder-mental-health-cost",
+    title: "Does Founder Mental Health Have a Monetary Cost? Yes — And It's Not Small, Especially for Women",
+    date: "2026-09-12",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Mental illness costs the U.S. economy $282 billion a year, and women founders report mental health challenges 30% more often than men. The reasons aren't a mystery and aren't a personal failing — they're financial pressure, caregiving load, and less support.",
+    image: "blog-founder-mental-health.webp"
+  },
+  {
     slug: "why-women-solopreneurs-undercharge",
     title: "Why Do Women Solopreneurs Undercharge? It's Isolation, Not Ignorance",
     date: "2026-08-29",
