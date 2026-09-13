@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "will-ai-end-humanity",
+    title: "Will AI End Humanity? What the Founders' Warnings Mean for Small Business Owners",
+    date: "2026-09-13",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "No, AI is not about to end humanity — but the people building it are asking to slow down, and that's a strange thing to do if you're confident everything is fine. What's genuinely concerning, what's marketing, and what actually touches your desk.",
+    image: "blog-ai-slowdown.webp"
+  },
+  {
     slug: "founder-mental-health-cost",
     title: "Does Founder Mental Health Have a Monetary Cost? Yes — And It's Not Small, Especially for Women",
     date: "2026-09-12",

@@ -28,15 +28,15 @@ from PIL import Image, ImageDraw, ImageFont
 # ===========================================================================
 #  POST  — this is the only block you normally change
 # ===========================================================================
-SLUG     = "founder-mental-health"
-PHOTO    = "blog-founder-mental-health-original.png"   # in images/_originals/
-FOCUS    = (0.42, 0.34)                                # subject: across, down
-HEADLINE = "Does Founder Mental Health Have a Monetary Cost?"
-SUBLINE  = "Yes \u2014 and it's not small, especially for women."
+SLUG     = "ai-slowdown"
+PHOTO    = "blog-ai-slowdown-original.png"             # in images/_originals/
+FOCUS    = (0.74, 0.33)                                # subject: across, down
+HEADLINE = "Will AI End Humanity?"
+SUBLINE  = "What the founders' warnings mean for small business owners."
 
 # How many lines the headline may use. Fewer lines = bigger type. If the
 # square card looks cramped, try 4; if it looks small, try 2.
-SQUARE_HEADLINE_LINES    = 3
+SQUARE_HEADLINE_LINES    = 2
 LANDSCAPE_HEADLINE_LINES = 2
 # ===========================================================================
 
