@@ -249,8 +249,8 @@ ${faqHtml}
   </div>
 </footer>
 
-<script src="../config.js?v=6"></script>
-<script src="../classes.js?v=7"></script>
+<script src="../config.js?v=7"></script>
+<script src="../classes.js?v=8"></script>
 <script src="../icons.js?v=3"></script>
 <script src="../app.js?v=7" defer></script>
 </body>

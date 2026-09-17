@@ -61,7 +61,13 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
-    open: true,   // real September dates are set - bookable
+    // NO INSTRUCTOR (Erika, 9/17). Erika stepped off this class - choosing an
+    // entity is a tax question and it should be taught by a tax professional.
+    // Her tax strategist is being asked to take it (meeting week of 9/22).
+    // `open: true` removed on purpose: the page, the syllabus and the SEO stay
+    // exactly as they are, the site shows "Coming soon" and collects waitlist
+    // signups instead of selling a seat nobody can teach. Put the line back the
+    // day it has a teacher and real dates.
     name: "Entity setup",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",

@@ -94,7 +94,10 @@ window.QUINTA_CONFIG = {
     CODES: ["erika", "stephanie", "nery", "joshlyn", "nik", "tara"],
 
     CLASSES: {
-      "entity-setup":  "entity-setup-fall25",
+      /* "entity-setup" pulled 9/17 - the class has no instructor. Leaving it
+         here would let a code holder buy a $131 seat for a class that cannot
+         run. The twin event itself is still bookable in Cal.com to anyone
+         holding the direct link until its dates are removed there. */
       "certification": "certification-fall25",
       "module-1":      "module-1-fall25",
       "module-2":      "module-2-fall25"
