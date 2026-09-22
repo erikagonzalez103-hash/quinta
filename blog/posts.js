@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "why-owners-put-off-investing",
+    title: "Why Do Small Business Owners Put Off Investing in Their Own Business? And I Don't Mean $$$",
+    date: "2026-09-22",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Not because they're lazy or afraid — because the payoff is hard to measure, so the brain files it under “someday.” What someday costs, and how to give the investment a finish line your brain will pay you to reach.",
+    image: "blog-someday.webp"
+  },
+  {
     slug: "will-ai-end-humanity",
     title: "Will AI End Humanity? What the Founders' Warnings Mean for Small Business Owners",
     date: "2026-09-13",
