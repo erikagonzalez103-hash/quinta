@@ -158,22 +158,39 @@ what faculty say out loud now agree.
 Worth fixing the PDF and the deck before either is sent anywhere again.
 
 ---
-## 6. Each of you: five women per class you teach
+## 6. The goal for 21 October: five women in every block
 
-From `quinta-faculty-outreach-scripts.pdf`. The scripts are written and ready —
-nothing to draft.
+**Five women in the morning block, five at midday, five in the afternoon.**
+Fifteen on the day. Each class seats ten, so this is half a room per block —
+modest on purpose, and countable.
 
-- **Five per class you teach.** One row per woman on the tracker on page 8.
-- **Script A** if she's thinking about starting, **Script B** if she's already
-  going. Each has a text/DM, an email, and something to say out loud.
-- **Always use your own `?ref=` link**, or the enrollment doesn't count to you.
-- **Point her at one class, not the whole day.** A full Wednesday is a big ask;
+### A wording problem to settle first
+
+`quinta-faculty-outreach-scripts.pdf` frames it differently. Page 1 says
+*"the enrollment counts toward your five"* and the page 8 tracker says
+**"Five per class you teach."** That reads as a personal outreach quota,
+not a fill target for the day.
+
+For an instructor teaching one class the number is the same either way, so
+it may not matter. But the two framings pull in different directions: one
+counts messages she sends, the other counts women in the room. **Decide
+which before the scripts go out**, because that page is the thing she'll
+keep on her desk.
+
+### What the scripts already give them
+
+Written and ready — nothing to draft:
+
+- **Script A** if she's thinking about starting, **Script B** if she's
+  already going. Each has a text/DM, an email, and something to say out loud.
+- Objection handling for *"I'm not ready"*, *"I'll just Google it"*,
+  *"I can't do a Wednesday"*, *"money's tight"*.
+- A gift angle for when she deflects.
+- **Always her own `?ref=` link**, or the enrolment doesn't count to her.
+- **Point at one class, not the whole day.** A full Wednesday is a big ask;
   a 10am class is not.
-- **Tell Erika when someone enrols**, and pass on any question you couldn't
+- **Tell Erika when someone enrols**, and pass on any question she couldn't
   answer — those become next month's posts.
-
-There is also a gift angle for when she deflects: buy one, gift one at 25% off
-the second seat.
 
 ---
 
@@ -182,9 +199,15 @@ the second seat.
 The one-pager promises: *"If a Get started buyer later wants The Practice, she
 gets $150 credit for Claude for Beginners."*
 
-Nothing implements this. It would be a manual adjustment at the moment, and
-nothing in the enrollments ledger records a credit. Worth deciding whether it
-survives the Bookwhen move, where it could be a real voucher.
+**Confirmed 28 September: keep it.** Erika didn't remember writing it but
+agrees with the logic — a Get started buyer has already paid for Module 1, so
+charging her for it again inside The Practice would be charging twice for the
+same class.
+
+Nothing implements it. Today it is a manual adjustment, and the enrollments
+ledger has no concept of a credit. It works out as **The Practice for $335**
+for someone who already holds Get started. Worth carrying into the Bookwhen
+move, where it could be a real voucher rather than a promise in a PDF.
 
 ---
 ## Not faculty, but blocking the same campaign
