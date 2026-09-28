@@ -75,7 +75,7 @@ window.QUINTA_CONFIG = {
        BUT THE PAGE EXPIRING IS NOT THE SALE ENDING. The twin events in
        Cal.com stay bookable to anyone holding a direct link until you hide
        them there. The page is the shop window; Cal.com is the till. */
-    ENDS: "2026-09-30",
+    ENDS: "2026-09-28",
 
     /* WHAT THE CODE IS GOOD FOR — shown on /fall25/ and echoed in terms.html.
        ENDS is the last day to BOOK; this is which class dates are eligible.
@@ -93,14 +93,31 @@ window.QUINTA_CONFIG = {
        check the folder exists before adding a name. */
     CODES: ["erika", "stephanie", "nery", "joshlyn", "nik", "tara"],
 
-    CLASSES: {
-      /* "entity-setup" pulled 9/17 - the class has no instructor. Leaving it
-         here would let a code holder buy a $131 seat for a class that cannot
-         run. The twin event itself is still bookable in Cal.com to anyone
-         holding the direct link until its dates are removed there. */
-      "certification": "certification-fall25",
-      "module-1":      "module-1-fall25",
-      "module-2":      "module-2-fall25"
-    }
+    /* ENDED 28 September 2026, two days early. Emptying this is what stops
+       /fall25/ advertising - the page reads CLASSES and empties itself.
+
+       Why early: the sale's own promise was "September 2026 class dates only"
+       and not one September date remained on any of the three. Certification
+       and Module 2 had no dates at all; Module 1 had a single 13 October slot,
+       which the sale could not honour. The offer had nothing left to sell.
+
+       All six promo twins were DELETED in Cal.com the same day - the three
+       above plus entity-setup-fall25, module-1-herhouse and
+       module-1-herhouse-duo. Every one had zero bookings, so nothing was lost.
+
+       THE LESSON, because it will happen again: a twin made by duplicating
+       INHERITS the original's scheduleId, and availability lives on the
+       schedule. So a twin shows every date its real class ever gets, forever.
+       The old instruction here - "cap each twin's dates at 30 September" - was
+       impossible: capping the twin caps the real class, because they read the
+       same calendar. On 28 September that left Module 1's October date
+       bookable at $112, $112.50 and $75 through three long-dead promo links.
+
+       So: a LIVE promo twin should share the schedule (build-to-last-fff does,
+       deliberately - it means Get Certified's dates reach the bundle with no
+       second set to maintain). An ENDED one must be deleted, or given its own
+       empty schedule. Leaving it hidden is not enough; hidden only removes it
+       from the public profile, and a direct link still books. */
+    CLASSES: {}
   }
 };
