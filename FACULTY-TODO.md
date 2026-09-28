@@ -57,11 +57,44 @@ used in September; no new instructions needed.
 
 ---
 
-## 2. Nik — pick one for 21 October
+## 2. Nik — three decisions, and they interact
+
+### a. Which class she teaches on 21 October
 
 Trademarks *or* Legacy planning, whichever she'd rather teach on the day.
 Both are $299 and both sit in Build to last. Legacy planning already has
 dates; Trademarks has none.
+
+### b. The Austin Fork & Femme dinner — which night
+
+Nik is hosting it. The plan has always had two dinners, Dallas and Austin,
+as separate events with separate hosts — Austin is now claimed, Dallas is
+still open.
+
+**The ask: hold it a day or two either side of 21 October rather than on
+it.** A day before builds toward the Dallas day; a day after gives people
+somewhere to land afterwards. On the night of the 21st it competes with our
+own wrap.
+
+### c. Would she come up to Dallas on the 21st?
+
+The real prize. Having her in the room on the day makes it a bigger
+splash — Joshlyn is already travelling up from Houston, and the more of the
+faculty physically there, the more it reads as one event rather than
+several.
+
+**This is why (b) and (c) have to be decided together.** If she's in Dallas
+on the 21st, the Austin dinner can't be that evening — she'd be driving
+back. Asking her to pick the dinner date without knowing whether we want
+her in Dallas risks locking in the one night that rules the other out.
+
+Worth saying plainly when we ask: **coming to Dallas is an invitation, not
+an expectation.** Teaching online is the floor. Nobody outside Dallas is
+being asked to travel.
+
+One scheduling note to check with her: she already has Legacy planning
+dates on **28 October**, a week after. That's clear of all of this, but
+worth confirming she isn't stacking three commitments in eight days.
 
 ---
 
@@ -75,7 +108,8 @@ Open in the plan doc as of 2 September, still open:
 
 - Which classes run in which block, and which repeat
 - Breakfast and lunch vendors — two woman-owned food businesses, both TBD
-- Dinner hosts and venues — Dallas and Austin, neither claimed
+- Dinner hosts and venues — **Austin now claimed by Nik** (see 2b); Dallas
+  still has no host, and nothing about the day depends on it happening
 
 ---
 
