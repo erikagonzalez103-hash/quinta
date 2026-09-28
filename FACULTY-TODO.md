@@ -1,0 +1,105 @@
+# Faculty to-do — running list
+
+What we need from the faculty, in priority order. Nothing here has been sent
+yet. Add to it as things come up; when it's ready to go out, it becomes the
+email.
+
+Last checked against Cal.com: **28 September 2026**.
+
+---
+
+## 1. October and November dates — blocks everything
+
+**Five of the six classes the site advertises as bookable have no dates in
+Cal.com.** September's dates have been used or have passed, and only Nik has
+put October dates in. Until this is fixed the Fork, Femme & Foundations sale
+has almost nothing it can actually sell.
+
+| Instructor | Class | Site says | Cal.com has | Needs |
+|---|---|---|---|---|
+| Erika | Get certified — WBE / MBE / DBE | Bookable | none | **dates** |
+| Tara | Bookkeeping II | Bookable | none | **dates** |
+| Joshlyn | Investing — how to pay yourself first | Bookable | none | **dates** |
+| Stephanie | Brand 101 | Bookable | none | **dates** |
+| Nik | Trademarks | Bookable | none | **dates** |
+| Nik | Legacy planning | Bookable | 3 slots from 28 Oct | ✅ done |
+| Erika | Module 1 — Claude for beginners | *Coming soon* | 1 slot, 13 Oct | flip `open: true` in `classes.js` |
+| Tara | Bookkeeping I | *Coming soon* | none | **dates** — open since 11 Sept |
+| Erika | Modules 2 and 3 | *Coming soon* | none | **dates** |
+
+### Why it matters this week
+
+- The sale runs **29 September – 21 October**. Every day without dates is a
+  day the campaign spends traffic on classes nobody can book.
+- A click from `foundations.html` or `fork-femme-foundations.html` lands on a
+  Cal.com page with no times on it. That is the exact failure
+  `FALL25-SALE.md` warns about: *a sale link with no bookable slot strands
+  exactly the people your code brought.*
+- **Build to last ($990) cannot be redeemed.** Four of its five classes have
+  no dates, so a buyer would pay and have nothing to book. The bundle twin
+  `build-to-last-fff` is built correctly and shows zero slots for this reason
+  alone — it inherits availability from Get certified, which is empty.
+
+### What each of them actually does
+
+Sign in to the portal → **Set your class schedule** → add dates → save. It
+syncs to Cal.com within seconds and the site corrects itself. Same flow they
+used in September; no new instructions needed.
+
+### Two things to decide before this goes out
+
+- **How far ahead to ask for.** The event is 21 October but redemption runs
+  across the semester, so dates through at least December make the bundles
+  worth buying.
+- **Module 1 is the reverse problem** — it has a 13 October slot and the site
+  says coming soon. That is a one-line fix in `classes.js`, not something to
+  ask an instructor for. Worth doing regardless of the rest.
+
+---
+
+## 2. Nik — pick one for 21 October
+
+Trademarks *or* Legacy planning, whichever she'd rather teach on the day.
+Both are $299 and both sit in Build to last. Legacy planning already has
+dates; Trademarks has none.
+
+---
+
+## 3. Confirmations for the day itself
+
+The original 18 September deadline passed with no record here of who
+confirmed. Before class titles can go on anything printed, we need to know
+who is teaching what on 21 October, and in which block.
+
+Open in the plan doc as of 2 September, still open:
+
+- Which classes run in which block, and which repeat
+- Breakfast and lunch vendors — two woman-owned food businesses, both TBD
+- Dinner hosts and venues — Dallas and Austin, neither claimed
+
+---
+
+## 4. Entity setup needs an instructor
+
+No instructor since **17 September**, when Erika stepped off it — choosing an
+entity is a tax question and should be taught by a tax professional. Her tax
+strategist was being asked to take it.
+
+Until it has one:
+
+- It stays off `fork-femme-foundations.html`
+- The **Get started** bundle ($275 = Entity setup + Module 1) cannot be sold
+  as written, and is collecting emails instead
+
+---
+
+## Not faculty, but blocking the same campaign
+
+- ~~**Get Certified price mismatch**~~ — **closed 28 September.** The artwork
+  said $299 against $250 in Cal.com. Cal.com now charges $299 and every class
+  price matches the site exactly (checked: Bookkeeping II $99, Get certified
+  $299, Investing $250, Legacy planning $299, Trademarks $299, Brand 101 $175,
+  Module 1 $150). Nothing to do.
+- **`docs/cal-api-key.txt` is still on disk.** Meant to be revoked when the
+  schedule-sync work finished in August. Gitignored, so it never reached
+  GitHub, but it is a live key two months past its usefulness.
