@@ -148,10 +148,43 @@ The site is now correct. Three other places are not:
 **The price had to move with it.** Entity setup ($175) + Module 1 ($150) was
 $325, so $275 was a fair 15% off. Bookkeeping I ($99) + Module 1 ($150) is
 **$249** — at which point $275 was $26 *more* than buying the two classes
-separately. It is now **$199**, a 20% saving, and the cheapest way into both
-tracks at once.
+separately.
+
+It is now **$212**, which is 15% off and matches Keep the books. That figure
+comes from Erika's own `quinta-sales-offers-one-pager.pdf` and is quoted three
+times in `quinta-faculty-outreach-scripts.pdf`, so the site, the one-pager and
+what faculty say out loud now agree.
 
 Worth fixing the PDF and the deck before either is sent anywhere again.
+
+---
+## 6. Each of you: five women per class you teach
+
+From `quinta-faculty-outreach-scripts.pdf`. The scripts are written and ready —
+nothing to draft.
+
+- **Five per class you teach.** One row per woman on the tracker on page 8.
+- **Script A** if she's thinking about starting, **Script B** if she's already
+  going. Each has a text/DM, an email, and something to say out loud.
+- **Always use your own `?ref=` link**, or the enrollment doesn't count to you.
+- **Point her at one class, not the whole day.** A full Wednesday is a big ask;
+  a 10am class is not.
+- **Tell Erika when someone enrols**, and pass on any question you couldn't
+  answer — those become next month's posts.
+
+There is also a gift angle for when she deflects: buy one, gift one at 25% off
+the second seat.
+
+---
+
+## 7. Not built yet: the Get started upgrade credit
+
+The one-pager promises: *"If a Get started buyer later wants The Practice, she
+gets $150 credit for Claude for Beginners."*
+
+Nothing implements this. It would be a manual adjustment at the moment, and
+nothing in the enrollments ledger records a credit. Worth deciding whether it
+survives the Bookwhen move, where it could be a real voucher.
 
 ---
 ## Not faculty, but blocking the same campaign
