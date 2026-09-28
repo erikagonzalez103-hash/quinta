@@ -764,6 +764,20 @@
   var MIN_GAP_MINUTES = 60;          // 30-min buffer before + 30 after
   var HOUR_ALIGN_FROM = 120;         // classes this long must start on the hour
 
+  /* DAYS WITH MORE THAN ONE ROOM.
+     Normally two in-person classes cannot overlap, because there is one room
+     and it holds one class. Fork, Femme & Foundations is the exception: kiln
+     gives us several rooms and the whole day is built on concurrent classes -
+     10am, 1pm and 3pm blocks, each with different teachers in different rooms.
+     Without this the second instructor to schedule a 10am class on 21 October
+     would be blocked by the first, and the day could not be built at all.
+
+     On these dates the room clash drops from an error to a warning: still
+     worth seeing, because two of you do need different rooms, but no longer a
+     wall. Everything else holds - you still cannot teach two classes at once,
+     and your own classes still need an hour between them. */
+  var MULTI_ROOM_DAYS = ["2026-10-21"];
+
   function toMin(hhmm) {
     var p = String(hhmm).slice(0, 5).split(":");
     return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
@@ -804,15 +818,29 @@
       var overlaps = start < sp[1] && sp[0] < end;
       var who = mine ? "your" : firstNameOf(s) + "'s";
 
-      // 2) the room only holds one class at a time
+      // 2) the room only holds one class at a time - unless it's a day with
+      //    several rooms, when overlapping is the point rather than a mistake
       if (overlaps && format === "in-person" && s.format === "in-person") {
-        out.errors.push({
-          text: "That overlaps " + who + " " + s.class_name + ".",
-          why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " is already in the room, and " +
-               "yours would run " + minToLabel(start) + "–" + minToLabel(end) + ".",
-          sessionId: s.id, mine: mine
-        });
-        return;
+        if (MULTI_ROOM_DAYS.indexOf(date) !== -1) {
+          if (!mine) {
+            out.warnings.push({
+              text: "Running at the same time as " + who + " " + s.class_name + ".",
+              why: "That's expected on this day - we have several rooms and classes run " +
+                   "side by side. Just make sure the two of you aren't counting on the " +
+                   "same room.",
+              sessionId: s.id, mine: mine
+            });
+          }
+          // a clash with your OWN class is still a real error; rule 3 catches it
+        } else {
+          out.errors.push({
+            text: "That overlaps " + who + " " + s.class_name + ".",
+            why: minToLabel(sp[0]) + "–" + minToLabel(sp[1]) + " is already in the room, and " +
+                 "yours would run " + minToLabel(start) + "–" + minToLabel(end) + ".",
+            sessionId: s.id, mine: mine
+          });
+          return;
+        }
       }
       // 3) you can't teach two things at once, online or not
       if (overlaps && mine) {
