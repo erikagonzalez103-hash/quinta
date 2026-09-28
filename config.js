@@ -91,7 +91,7 @@ window.QUINTA_CONFIG = {
        can hand them something to paste. A name added here WITHOUT creating
        the matching go/<name>fall25/ folder gives that teacher a dead link —
        check the folder exists before adding a name. */
-    CODES: ["erika", "stephanie", "nery", "joshlyn", "nik", "tara"],
+    CODES: ["erika", "stephanie", "joshlyn", "nik", "tara"],
 
     /* ENDED 28 September 2026, two days early. Emptying this is what stops
        /fall25/ advertising - the page reads CLASSES and empties itself.

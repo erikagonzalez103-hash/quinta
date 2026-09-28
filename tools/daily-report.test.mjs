@@ -26,7 +26,7 @@ console.log('\n2. A day where things happened');
     now: NOW, faculty: FACULTY,
     posts: { 'tara@quintaand.co': 3 },
     signups: [{ name: 'Robin Frazier', email: 'r@x.com', class_name: 'Bookkeeping II', ref: 'tara26' }],
-    referrals: [{ ref: 'tara26', signups: 1 }, { ref: 'nery26', signups: 0 }],
+    referrals: [{ ref: 'tara26', signups: 1 }, { ref: 'nik26', signups: 0 }],
     sessionsToday: [{ class_name: 'Brand 101', session_date: '2026-09-10', start_time: '18:00:00', instructor_name: 'Stephanie' }],
     unbookable: [{ class_name: 'Bookkeeping I', session_date: '2026-09-17', start_time: '17:30:00', note: 'a 2-hour class has to start on the hour' }],
   });
@@ -34,7 +34,7 @@ console.log('\n2. A day where things happened');
   check('names who posted', r.html.includes('Tara Johnson'));
   check('marks who did not', r.html.includes('nothing yet'));
   check('shows the signup and its credit', r.html.includes('Robin Frazier') && r.html.includes('via tara26'));
-  check('shows zero-signup codes are hidden', !r.html.includes('nery26'));
+  check('shows zero-signup codes are hidden', !r.html.includes('nik26'));
   check('surfaces the unbookable date loudly', r.html.includes('NOT bookable') && r.html.includes('start on the hour'));
   check('escapes HTML in names', !buildReport({ now: NOW, faculty: [{ email: 'a@b.c', name: '<script>x</script>' }], posts: {}, signups: [], referrals: [], sessionsToday: [], unbookable: [] }).html.includes('<script>x'));
 }
