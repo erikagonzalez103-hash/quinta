@@ -80,6 +80,7 @@ declare
   last_clean   text;
   full_name    text;
   did_match    boolean;
+  already      boolean;
 begin
   first_clean := btrim(coalesce(p_first, ''));
   last_clean  := btrim(coalesce(p_last, ''));
@@ -110,6 +111,8 @@ begin
 
   did_match := e_id is not null;
 
+  already := false;
+
   begin
     insert into public.attendance
       (session_id, class_slug, class_name, session_date,
@@ -119,17 +122,30 @@ begin
        first_clean, last_clean, e_id, did_match);
   exception
     when unique_violation then
-      return jsonb_build_object('ok', true, 'again', true,
-                                'class_name', s.class_name, 'first', first_clean);
+      already := true;
+      -- She scanned before her purchase was in the ledger, and is scanning
+      -- again now that it is. Attach it rather than returning early, or the
+      -- class she paid for stays marked unused forever.
+      if did_match then
+        update public.attendance
+           set enrollment_id = e_id, matched = true
+         where session_id = s.id
+           and lower(btrim(first_name)) = lower(first_clean)
+           and lower(btrim(last_name)) = lower(last_clean)
+           and not matched;
+      end if;
   end;
 
+  -- Runs on a first scan and on a repeat, so a late-arriving purchase still
+  -- gets closed. Guarded on status so a finished class is never reopened.
   if did_match then
     update public.enrollments
        set status = 'taken', session_on = s.session_date
-     where id = e_id;
+     where id = e_id
+       and status in ('owed', 'booked');
   end if;
 
-  return jsonb_build_object('ok', true, 'again', false,
+  return jsonb_build_object('ok', true, 'again', already,
                             'class_name', s.class_name, 'first', first_clean);
 end
 $checkin$;
