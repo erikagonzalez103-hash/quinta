@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My to-do · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<style>
+/* Page-specific only — the portal's chrome comes from styles.css. */
+.td-head{max-width:760px}
+.td-progress{display:flex;align-items:center;gap:12px;margin:18px 0 0}
+.td-bar{flex:1;height:4px;background:rgba(78,107,92,.18);border-radius:3px;overflow:hidden;max-width:320px}
+.td-bar i{display:block;height:100%;background:var(--sage-deep);width:0;transition:width .25s}
+.td-count{font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;
+  font-weight:600;color:var(--sage-deep)}
+.td-list{max-width:760px;margin:26px auto 0;display:grid;gap:14px}
+.td-item{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:18px 20px}
+.td-item.is-done{background:#F2F5F1;border-color:rgba(78,107,92,.3)}
+.td-top{display:flex;gap:13px;align-items:flex-start}
+.td-check{flex:none;width:22px;height:22px;margin-top:2px;border:1.5px solid var(--sage-deep);
+  border-radius:5px;background:var(--cream);cursor:pointer;display:grid;place-items:center;padding:0}
+.td-check[aria-pressed="true"]{background:var(--sage-deep)}
+.td-check svg{width:13px;height:13px;stroke:var(--cream);stroke-width:2.6;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.td-check[aria-pressed="true"] svg{opacity:1}
+.td-title{font-family:var(--display);font-weight:500;font-size:1.13rem;line-height:1.3;
+  color:var(--moss);margin:0}
+.is-done .td-title{color:var(--sage-deep)}
+.td-detail{font-size:14.5px;line-height:1.6;color:var(--ink);margin:9px 0 0;padding-left:35px}
+.td-due{display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;margin-left:8px;
+  background:#DCC28E;color:#4A3B1E;vertical-align:middle}
+.td-mine{background:var(--sage-deep);color:var(--cream)}
+.td-answer{padding-left:35px;margin-top:13px}
+.td-answer label{display:block;font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.1em;font-size:10.5px;font-weight:600;color:var(--sage-deep);margin-bottom:6px}
+.td-answer textarea{width:100%;min-height:74px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:8px;font-family:inherit;font-size:15px;line-height:1.5;background:#fff;
+  color:var(--ink);resize:vertical}
+.td-answer textarea:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+.td-save{display:flex;align-items:center;gap:12px;margin-top:9px;flex-wrap:wrap}
+.td-state{font-size:13px;color:var(--sage-deep);min-height:1.2em}
+.td-state.ok{color:var(--moss);font-weight:600}
+.td-state.bad{color:#9C3B2E}
+.td-note{max-width:760px;margin:26px auto 0;font-size:13.5px;line-height:1.55;color:var(--sage-deep)}
+@media(max-width:560px){
+  .td-detail,.td-answer{padding-left:0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="portal.html">Back to portal</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate" class="wrap">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap" id="todo" style="display:none">
+    <div class="td-head">
+      <p class="phase-label">Faculty Portal · Private</p>
+      <h1>My to-do</h1>
+      <p class="desc" id="td-hello">Everything we need from you before 21 October. It saves as you go — there's no submit button, and you can come back to it.</p>
+      <div class="td-progress">
+        <span class="td-count" id="td-count">—</span>
+        <span class="td-bar"><i id="td-fill"></i></span>
+      </div>
+    </div>
+    <div class="td-list" id="td-list"></div>
+    <p class="td-note">Only you and Erika can see your answers. If something here doesn't apply to you, or you'd rather just talk it through, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script src="todo-data.js?v=1"></script>
+<script>
+(function () {
+  "use strict";
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  var userEmail = "", firstName = "", tasks = [], answers = {};
+
+  function showGate(title, text, action) {
+    document.getElementById("gate").style.display = "block";
+    document.getElementById("todo").style.display = "none";
+    document.getElementById("gate-title").textContent = title;
+    document.getElementById("gate-text").textContent = text;
+    document.getElementById("gate-action").style.display = action ? "block" : "none";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* Which tasks belong to this person: everything without a `who`, plus
+     anything naming her first name. Matching on first name rather than email
+     means a task keeps working if her sign-in address changes. */
+  function mine(all, name) {
+    var f = String(name || "").trim().split(/\s+/)[0].toLowerCase();
+    return all.filter(function (t) {
+      if (!t.who || !t.who.length) return true;
+      return t.who.map(String).map(function (w) { return w.toLowerCase(); }).indexOf(f) !== -1;
+    });
+  }
+
+  function progress() {
+    var need = tasks.filter(function (t) { return t.type !== "answer"; });
+    var done = need.filter(function (t) { return answers[t.key] && answers[t.key].done; });
+    var pct = need.length ? Math.round(100 * done.length / need.length) : 0;
+    document.getElementById("td-count").textContent =
+      need.length ? (done.length + " of " + need.length + " done") : "Nothing to tick";
+    document.getElementById("td-fill").style.width = pct + "%";
+  }
+
+  function save(key, patch, stateEl) {
+    var row = answers[key] || (answers[key] = { done: false, answer: "" });
+    if ("done" in patch) row.done = patch.done;
+    if ("answer" in patch) row.answer = patch.answer;
+    if (!sb) { stateEl.className = "td-state bad"; stateEl.textContent = "Not saved — no connection."; return; }
+    stateEl.className = "td-state"; stateEl.textContent = "Saving…";
+    sb.from("faculty_tasks").upsert({
+      email: userEmail, task_key: key, done: !!row.done,
+      answer: row.answer || null, updated_at: new Date().toISOString()
+    }, { onConflict: "email,task_key" }).then(function (res) {
+      if (res.error) {
+        console.error(res.error);
+        stateEl.className = "td-state bad";
+        stateEl.textContent = "Didn't save — " + (res.error.message || "try again");
+        return;
+      }
+      stateEl.className = "td-state ok";
+      stateEl.textContent = "Saved";
+      window.setTimeout(function () { if (stateEl.textContent === "Saved") stateEl.textContent = ""; }, 2200);
+    }).catch(function (e) {
+      console.error(e);
+      stateEl.className = "td-state bad"; stateEl.textContent = "Didn't save — try again.";
+    });
+    progress();
+  }
+
+  function render() {
+    var list = document.getElementById("td-list");
+    list.innerHTML = tasks.map(function (t) {
+      var a = answers[t.key] || { done: false, answer: "" };
+      var box = (t.type === "check" || t.type === "both");
+      var txt = (t.type === "answer" || t.type === "both");
+      return '<article class="td-item' + (a.done ? " is-done" : "") + '" data-key="' + esc(t.key) + '">' +
+          '<div class="td-top">' +
+            (box
+              ? '<button class="td-check" type="button" aria-pressed="' + (a.done ? "true" : "false") +
+                '" aria-label="Mark done"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg></button>'
+              : '<span class="td-check" style="border-style:dashed;cursor:default" aria-hidden="true"></span>') +
+            '<h2 class="td-title">' + esc(t.title) +
+              (t.due ? '<span class="td-due">' + esc(t.due) + '</span>' : "") +
+              (t.who ? '<span class="td-due td-mine">Just you</span>' : "") +
+            '</h2>' +
+          '</div>' +
+          '<p class="td-detail">' + esc(t.detail) + '</p>' +
+          (txt
+            ? '<div class="td-answer">' +
+                '<label for="a-' + esc(t.key) + '">Your answer</label>' +
+                '<textarea id="a-' + esc(t.key) + '" placeholder="Type here — it saves when you click away.">' + esc(a.answer) + '</textarea>' +
+              '</div>'
+            : "") +
+          '<div class="td-save"><span class="td-state" role="status" aria-live="polite"></span></div>' +
+        '</article>';
+    }).join("");
+
+    Array.prototype.forEach.call(list.querySelectorAll(".td-item"), function (el) {
+      var key = el.getAttribute("data-key");
+      var state = el.querySelector(".td-state");
+      var btn = el.querySelector("button.td-check");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          var now = btn.getAttribute("aria-pressed") !== "true";
+          btn.setAttribute("aria-pressed", now ? "true" : "false");
+          el.classList.toggle("is-done", now);
+          save(key, { done: now }, state);
+        });
+      }
+      var ta = el.querySelector("textarea");
+      if (ta) {
+        /* Save on blur rather than on every keystroke — one write per edit,
+           and no half-typed answers landing in the table. */
+        ta.addEventListener("blur", function () {
+          var v = ta.value.trim();
+          var was = (answers[key] && answers[key].answer) || "";
+          if (v === was) return;
+          save(key, { answer: v }, state);
+        });
+      }
+    });
+    progress();
+  }
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { showGate("You're not signed in", "Sign in first, then come back to your to-do list.", true); return; }
+    userEmail = session.user.email.toLowerCase();
+
+    sb.from("faculty").select("*").eq("email", userEmail).maybeSingle().then(function (r) {
+      if (r.error) {
+        console.error(r.error);
+        showGate("Hmm — the database said no",
+          "Signed in as " + userEmail + ", but your record couldn't be read. Technical note: \"" +
+          (r.error.message || r.error.code || "unknown") + "\". Try signing out and back in — if it persists, email hello@quintaand.co with this message.", true);
+        return;
+      }
+      var row = r.data;
+      if (!row) {
+        showGate("Almost there", "You're signed in as " + userEmail +
+          ", but there's no faculty record under that email yet — email hello@quintaand.co and Erika will finish it.", true);
+        return;
+      }
+      firstName = row.display_name || row.full_name || "";
+      tasks = mine(typeof QUINTA_FACULTY_TASKS !== "undefined" ? QUINTA_FACULTY_TASKS : [], firstName);
+
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("todo").style.display = "block";
+      var f = String(firstName).trim().split(/\s+/)[0];
+      if (f) {
+        document.getElementById("td-hello").textContent =
+          f + " — everything we need from you before 21 October. It saves as you go, " +
+          "there's no submit button, and you can come back to it.";
+      }
+
+      sb.from("faculty_tasks").select("task_key,done,answer").eq("email", userEmail)
+        .then(function (rr) {
+          if (rr.error) { console.error(rr.error); }
+          (rr.data || []).forEach(function (x) {
+            answers[x.task_key] = { done: !!x.done, answer: x.answer || "" };
+          });
+          render();
+        });
+    });
+  });
+})();
+</script>
+
+<script>
+  try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}
+</script>
+</body>
+</html>

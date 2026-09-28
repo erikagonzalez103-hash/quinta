@@ -78,10 +78,10 @@ own wrap.
 
 ### c. Would she come up to Dallas on the 21st?
 
-The real prize. Having her in the room on the day makes it a bigger
-splash — Joshlyn is already travelling up from Houston, and the more of the
-faculty physically there, the more it reads as one event rather than
-several.
+The real prize. Having her in the room on the day makes it a bigger splash,
+and the more of the faculty physically there, the more it reads as one event
+rather than several. (Joshlyn is *planned* to come up from Houston — see 3 —
+but that isn't confirmed, so don't use it as the reason when asking Nik.)
 
 **This is why (b) and (c) have to be decided together.** If she's in Dallas
 on the 21st, the Austin dinner can't be that evening — she'd be driving
@@ -108,8 +108,13 @@ Open in the plan doc as of 2 September, still open:
 
 - Which classes run in which block, and which repeat
 - Breakfast and lunch vendors — two woman-owned food businesses, both TBD
-- Dinner hosts and venues — **Austin now claimed by Nik** (see 2b); Dallas
-  still has no host, and nothing about the day depends on it happening
+- ~~Dinner hosts~~ — **both claimed.** Austin is Nik's (see 2b), Dallas is
+  Erika's. Venues still TBD for each.
+- **Joshlyn's travel is unconfirmed.** The plan doc says she "comes up from
+  Houston so the day lands as one big splash" and that she is "traveling from
+  Houston for the in-person day" — but that was written on 2 September as a
+  plan, and nobody has recorded her agreeing to it. Ask before it is repeated
+  anywhere public or used to encourage anyone else to travel.
 
 ---
 
