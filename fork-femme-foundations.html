@@ -282,7 +282,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
 <script src="js/supabase-2.110.1.min.js"></script>
 <script src="config.js?v=8"></script>
-<script src="classes.js?v=7"></script>
+<script src="classes.js?v=9"></script>
 <script src="app.js?v=7" defer></script>
 
 <script>
@@ -331,14 +331,22 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       slugs: ["module-1", "module-2", "module-3"], twin: "the-practice-fff" }
   ];
 
-  /* Which classes appear in "The classes". Entity setup is deliberately
-     absent: it has no instructor as of 17 September. Put it back the day
-     it has one. */
-  var DAY_CLASSES = [
-    "bookkeeping-1", "bookkeeping-2", "certification",
-    "financial-planning", "brand-101", "trademarks", "legacy-planning",
-    "module-1", "module-2", "module-3"
-  ];
+  /* EVERY class, taken straight from classes.js rather than listed here.
+     A class added to the catalogue appears on this page by itself, and one
+     that is retired disappears - there is no second list to forget.
+
+     Coffee with Quinta is the only exclusion: it is free, it runs monthly
+     regardless, and it is not part of the day.
+
+     Classes with no dates show "Dates coming" on purpose. That is the
+     honest state and it is meant to be visible - to buyers, and to the
+     faculty who have not scheduled yet. */
+  function dayClasses() {
+    var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+    return all.filter(function (c) {
+      return c && c.slug && c.slug !== "coffee" && !c.free;
+    }).map(function (c) { return c.slug; });
+  }
 
   function bySlug(slug) {
     try { if (typeof quintaBySlug === "function") { var c = quintaBySlug(slug); if (c) return c; } } catch (e) {}
@@ -441,7 +449,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
   /* ---------- the classes, straight from classes.js ---------- */
   var list = document.getElementById("fffClasses");
-  list.innerHTML = DAY_CLASSES.map(function (slug) {
+  list.innerHTML = dayClasses().map(function (slug) {
     var c = bySlug(slug);
     if (!c) return "";
     var isOpen = !!c.open;

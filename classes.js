@@ -379,6 +379,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
+    open: true,   // Erika set 13 & 27 Oct and 3 Nov - bookable
     name: "Module 1 — Claude for beginners",
     price: 150,
     venue: "Kiln, Preston Hollow (Dallas)",
