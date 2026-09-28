@@ -54,23 +54,32 @@ revoke all on public.attendance from anon, authenticated;
 
 -- Just enough to show "Brand 101, Tuesday 29 September" so she knows she
 -- scanned the right code. No names, no roster, no counts.
+-- NOTE the column is class_sessions.id. The schedule_sync_read RPC returns it
+-- aliased as "session_id", which is where the confusion comes from — but the
+-- column itself is plain id.
 create or replace function public.session_label(p_session uuid)
 returns jsonb
-language sql
+language plpgsql
 security definer
 set search_path = public
 as $$
-  select case when s.session_id is null then jsonb_build_object('ok', false)
-              else jsonb_build_object('ok', true,
-                                      'class_name', s.class_name,
-                                      'class_slug', s.class_slug,
-                                      'session_date', s.session_date,
-                                      'start_time', s.start_time)
-         end
-  from (select * from public.class_sessions where session_id = p_session) s
-  right join (select 1) x on true
-  limit 1;
-$$;
+declare s record;
+begin
+  select id, class_slug, class_name, session_date, start_time
+    into s
+    from public.class_sessions
+   where id = p_session;
+
+  if not found then
+    return jsonb_build_object('ok', false);
+  end if;
+
+  return jsonb_build_object('ok', true,
+                            'class_name', s.class_name,
+                            'class_slug', s.class_slug,
+                            'session_date', s.session_date,
+                            'start_time', s.start_time);
+end $$;
 
 
 create or replace function public.check_in(p_session uuid, p_first text, p_last text)
@@ -87,10 +96,10 @@ declare
   full_name    text;
   did_match    boolean := false;
 begin
-  select session_id, class_slug, class_name, session_date
+  select id, class_slug, class_name, session_date
     into s
     from public.class_sessions
-   where session_id = p_session;
+   where id = p_session;
 
   if not found then
     return jsonb_build_object('ok', false, 'reason', 'unknown_session');
@@ -119,7 +128,7 @@ begin
       (session_id, class_slug, class_name, session_date,
        first_name, last_name, enrollment_id, matched)
     values
-      (s.session_id, s.class_slug, s.class_name, s.session_date,
+      (s.id, s.class_slug, s.class_name, s.session_date,
        first_clean, last_clean, e_id, did_match);
   exception when unique_violation then
     -- already scanned in; say yes rather than confuse her
