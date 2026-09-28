@@ -132,6 +132,28 @@ Until it has one:
 
 ---
 
+## 5. Get started changed and nothing wrote it down
+
+Erika confirmed on 28 September that **Get started is Bookkeeping I +
+Module 1**, not Entity setup + Module 1. Almost certainly a consequence of
+Entity setup losing its instructor on 17 September.
+
+The site is now correct. Three other places are not:
+
+- `Desktop\Quinta and Co\Marketingork-and-femme-event.pdf` (2 September) still
+  says Entity Setup + Module 1 at $325 / $275
+- The faculty meeting deck of 23 September carries $275 with no contents listed
+- Any printed or posted artwork built from either
+
+**The price had to move with it.** Entity setup ($175) + Module 1 ($150) was
+$325, so $275 was a fair 15% off. Bookkeeping I ($99) + Module 1 ($150) is
+**$249** — at which point $275 was $26 *more* than buying the two classes
+separately. It is now **$199**, a 20% saving, and the cheapest way into both
+tracks at once.
+
+Worth fixing the PDF and the deck before either is sent anywhere again.
+
+---
 ## Not faculty, but blocking the same campaign
 
 - ~~**Get Certified price mismatch**~~ — **closed 28 September.** The artwork
