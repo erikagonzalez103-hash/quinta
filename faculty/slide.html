@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Title slide · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<style>
+/* The slide is drawn on a canvas at 1920x1080 so what you download is
+   exactly what you see, and drops straight into any deck. */
+.sl-wrap{max-width:1100px;margin:0 auto;padding:26px var(--edge) 60px}
+.sl-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.sl-bar .grow{flex:1}
+#slide{width:100%;height:auto;display:block;border:1px solid var(--line);
+  border-radius:10px;box-shadow:0 2px 18px rgba(61,84,74,.10)}
+.sl-hint{font-size:13.5px;line-height:1.6;color:var(--sage-deep);margin:16px 0 0;max-width:70ch}
+.sl-hint code{background:#EEF2EC;padding:1px 5px;border-radius:4px;font-size:12.5px}
+:fullscreen #slide{border:0;border-radius:0;height:100vh;width:auto;margin:0 auto}
+:fullscreen .sl-bar,:fullscreen .sl-hint,:fullscreen header,:fullscreen footer{display:none}
+:fullscreen .sl-wrap{max-width:none;padding:0;background:#FAFAF6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="sign-in.html">All my codes</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div class="sl-wrap">
+    <div class="sl-bar">
+      <span class="grow"></span>
+      <button class="btn" id="full" type="button">Present full screen</button>
+      <button class="btn btn-solid" id="dl" type="button">Download as image</button>
+    </div>
+    <canvas id="slide" width="1920" height="1080" aria-label="Class title slide with sign-in code"></canvas>
+    <p class="sl-hint" id="hint">Drawing your slide…</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script src="../js/qrcode-1.4.4.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var CREAM = "#FAFAF6", MOSS = "#3D544A", SAGE = "#6E8B7A",
+      SAGED = "#4F6B5C", LINE = "#C8D2CB", INK = "#2B3A33";
+  var BASE = "https://quintaand.co/here/?s=";
+  var sid = new URLSearchParams(location.search).get("s") || "";
+  var cv = document.getElementById("slide"), cx = cv.getContext("2d");
+  var slug = "class";
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  function say(t) { document.getElementById("hint").textContent = t; }
+
+  function prettyDate(iso) {
+    var p = String(iso).split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    try { return d.toLocaleDateString("en-US",
+      { weekday: "long", month: "long", day: "numeric" }); } catch (e) { return iso; }
+  }
+  function prettyTime(t) {
+    var hh = parseInt(String(t).slice(0, 2), 10), mm = String(t).slice(3, 5);
+    return (hh % 12 || 12) + ":" + mm + (hh < 12 ? "am" : "pm");
+  }
+
+  function wrap(text, font, maxw) {
+    cx.font = font;
+    var words = String(text).split(/\s+/), lines = [], cur = "";
+    for (var i = 0; i < words.length; i++) {
+      var t = (cur + " " + words[i]).trim();
+      if (cx.measureText(t).width <= maxw) { cur = t; }
+      else { if (cur) lines.push(cur); cur = words[i]; }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  /* The brand mark, from brand/mark-sprout.svg. viewBox 0 0 18 13.5,
+     stroke 0.5, round caps. Drawn rather than loaded so the downloaded
+     PNG never has a missing image in it. */
+  function sprout(x, y, h, color, lw) {
+    var s = h / 13.5, X = function (a) { return x + a * s; }, Y = function (b) { return y + b * s; };
+    cx.strokeStyle = color; cx.fillStyle = color;
+    cx.lineWidth = (lw || 0.5) * s; cx.lineCap = "round"; cx.lineJoin = "round";
+    cx.beginPath(); cx.moveTo(X(9), Y(8.5)); cx.lineTo(X(9), Y(13.5)); cx.stroke();
+    cx.beginPath();
+    cx.moveTo(X(9), Y(8.5));
+    cx.bezierCurveTo(X(6.5), Y(7.9), X(2.8), Y(6), X(1), Y(1.1));
+    cx.bezierCurveTo(X(4), Y(0), X(7.8), Y(2.9), X(9), Y(8.5));
+    cx.closePath(); cx.stroke();
+    cx.beginPath();
+    cx.moveTo(X(9), Y(8.5));
+    cx.bezierCurveTo(X(11.5), Y(7.9), X(15.2), Y(6), X(17), Y(1.1));
+    cx.bezierCurveTo(X(14), Y(0), X(10.2), Y(2.9), X(9), Y(8.5));
+    cx.closePath(); cx.stroke();
+    cx.beginPath(); cx.arc(X(9), Y(3.5), 0.8 * s, 0, Math.PI * 2); cx.fill();
+  }
+
+  function qrOn(x, y, size, url) {
+    var q = qrcode(0, "M");
+    q.addData(url);
+    q.make();
+    var n = q.getModuleCount(), cell = size / n;
+    cx.fillStyle = "#FFFFFF";
+    cx.fillRect(x - cell * 2, y - cell * 2, size + cell * 4, size + cell * 4);
+    cx.fillStyle = MOSS;
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (q.isDark(r, c)) {
+          cx.fillRect(Math.floor(x + c * cell), Math.floor(y + r * cell),
+                      Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+  }
+
+  function draw(name, dateText, timeText, fmt, url) {
+    var W = 1920, H = 1080;
+    cx.fillStyle = CREAM; cx.fillRect(0, 0, W, H);
+
+    // a quiet sage band down the right, behind the code
+    cx.fillStyle = "#EEF2EC";
+    cx.fillRect(W - 660, 0, 660, H);
+
+    sprout(120, 96, 92, SAGED, 0.5);
+
+    cx.fillStyle = SAGE;
+    cx.font = '500 26px Cinzel, Georgia, serif';
+    cx.letterSpacing = "8px";
+    cx.fillText("QUINTA & CO.", 232, 168);
+    cx.letterSpacing = "0px";
+
+    var maxw = W - 660 - 240;
+    var size = 104;
+    var lines = wrap(name, '500 ' + size + 'px Fraunces, Georgia, serif', maxw);
+    while (lines.length > 3 && size > 54) {
+      size -= 6;
+      lines = wrap(name, '500 ' + size + 'px Fraunces, Georgia, serif', maxw);
+    }
+    cx.fillStyle = MOSS;
+    cx.font = '500 ' + size + 'px Fraunces, Georgia, serif';
+    var ty = 420 - (lines.length - 1) * size * 0.58;
+    for (var i = 0; i < lines.length; i++) { cx.fillText(lines[i], 120, ty + i * size * 1.14); }
+
+    var by = ty + (lines.length - 1) * size * 1.14 + 76;
+    cx.strokeStyle = LINE; cx.lineWidth = 2;
+    cx.beginPath(); cx.moveTo(120, by); cx.lineTo(120 + maxw, by); cx.stroke();
+
+    cx.fillStyle = SAGED;
+    cx.font = '400 40px Cinzel, Georgia, serif';
+    cx.fillText(dateText, 120, by + 74);
+    cx.font = '400 34px Cinzel, Georgia, serif';
+    cx.fillText(timeText + (fmt ? "   ·   " + fmt : ""), 120, by + 130);
+
+    // the ask
+    var qx = W - 660 + 148, qs = 364, qy = 232;
+    qrOn(qx, qy, qs, url);
+
+    cx.fillStyle = MOSS;
+    cx.font = '500 46px Fraunces, Georgia, serif';
+    cx.textAlign = "center";
+    cx.fillText("Scan to sign in", W - 330, qy + qs + 108);
+    cx.fillStyle = INK;
+    cx.font = '400 31px Fraunces, Georgia, serif';
+    cx.fillText("Point your phone camera at the code.", W - 330, qy + qs + 168);
+    cx.fillText("Type your name. That's it.", W - 330, qy + qs + 212);
+    cx.fillStyle = SAGE;
+    cx.font = '400 22px Cinzel, Georgia, serif';
+    cx.fillText("IT MARKS THE CLASS OFF FOR YOU", W - 330, qy + qs + 282);
+    cx.textAlign = "left";
+  }
+
+  function render(d) {
+    var url = BASE + sid;
+    slug = d.class_slug || "class";
+    var go = function () {
+      draw(d.class_name || "Today's class", prettyDate(d.session_date),
+           prettyTime(d.start_time || "00:00"), d.format || "", url);
+      say("This is slide one. Put it up while people settle — the code is live now and stops working " +
+          "on its own after the class. Download it for your deck, or press Present full screen.");
+    };
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go).catch(go); }
+    else { go(); }
+  }
+
+  function fail(msg) {
+    cx.fillStyle = CREAM; cx.fillRect(0, 0, 1920, 1080);
+    cx.fillStyle = MOSS; cx.font = '500 64px Fraunces, Georgia, serif';
+    cx.fillText("Couldn't build that slide", 120, 520);
+    cx.fillStyle = "#2B3A33"; cx.font = '400 34px Fraunces, Georgia, serif';
+    cx.fillText(msg, 120, 600);
+    say(msg);
+  }
+
+  document.getElementById("dl").addEventListener("click", function () {
+    try {
+      var a = document.createElement("a");
+      a.download = "quinta-" + slug + "-sign-in.png";
+      a.href = cv.toDataURL("image/png");
+      a.click();
+    } catch (e) { say("Couldn't save the image — try right-clicking the slide and 'Save image as'."); }
+  });
+  document.getElementById("full").addEventListener("click", function () {
+    var el = document.querySelector(".sl-wrap");
+    if (el.requestFullscreen) { el.requestFullscreen(); }
+  });
+
+  if (!sid) { fail("This link is missing its class code."); return; }
+  if (!sb)  { fail("Couldn't connect. Refresh and try again."); return; }
+
+  sb.rpc("session_label", { p_session: sid }).then(function (res) {
+    if (res.error) { console.error(res.error); fail("Couldn't look that class up."); return; }
+    var d = res.data || {};
+    if (!d.ok) { fail("That class code isn't recognised."); return; }
+    render(d);
+  }).catch(function (e) { console.error(e); fail("Couldn't connect."); });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>

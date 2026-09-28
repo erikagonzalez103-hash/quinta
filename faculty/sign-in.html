@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign-in codes · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<style>
+.sc-head{max-width:780px}
+.sc-list{max-width:780px;margin:26px auto 0;display:grid;gap:16px}
+.sc-item{border:1px solid var(--line);border-radius:12px;background:var(--cream);
+  padding:20px 22px;display:grid;grid-template-columns:132px 1fr;gap:22px;align-items:center}
+.sc-qr{width:132px;height:132px;display:grid;place-items:center;background:#fff;
+  border:1px solid var(--line);border-radius:8px;padding:7px}
+.sc-qr svg,.sc-qr img{width:100%;height:100%;display:block}
+.sc-when{font-family:var(--label);text-transform:uppercase;letter-spacing:.13em;
+  font-size:11px;font-weight:600;color:var(--sage-deep);margin:0 0 5px}
+.sc-name{font-family:var(--display);font-weight:500;font-size:1.3rem;line-height:1.2;
+  color:var(--moss);margin:0 0 4px}
+.sc-fmt{font-size:13.5px;color:var(--sage-deep);margin:0 0 14px}
+.sc-acts{display:flex;gap:9px;flex-wrap:wrap}
+.sc-soon{background:#EEF2EC}
+.sc-past{opacity:.55}
+.sc-empty{max-width:780px;margin:26px auto 0;border:1px dashed var(--line);
+  border-radius:12px;padding:30px;text-align:center;color:var(--sage-deep);line-height:1.6}
+.sc-note{max-width:780px;margin:28px auto 0;font-size:13.5px;line-height:1.6;color:var(--sage-deep)}
+.sc-how{max-width:780px;margin:30px auto 0;background:#EEF2EC;border:1px solid var(--line);
+  border-radius:12px;padding:22px 24px}
+.sc-how h2{font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--moss);margin:0 0 10px}
+.sc-how ol{margin:0;padding-left:20px}
+.sc-how li{font-size:14.5px;line-height:1.65;color:var(--ink);margin-bottom:5px}
+@media(max-width:620px){
+  .sc-item{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .sc-acts{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top"><a href="portal.html">Back to portal</a></nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate" class="wrap">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap" id="codes" style="display:none">
+    <div class="sc-head">
+      <p class="phase-label">Faculty Portal · Private</p>
+      <h1>Sign-in codes</h1>
+      <p class="desc">One code per class date. Students scan it, type their name, and the class is marked off for them — no list to keep, nothing to send us afterwards.</p>
+    </div>
+
+    <div class="sc-how">
+      <h2>On the day</h2>
+      <ol>
+        <li><strong>Open the title slide</strong> below and put it up as your first slide, in the room or on Zoom.</li>
+        <li>Leave it up for the first few minutes while people settle.</li>
+        <li>That's it. You don't need to do anything else.</li>
+      </ol>
+    </div>
+
+    <div class="sc-list" id="list"></div>
+    <p class="sc-note" id="note"></p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script src="../js/qrcode-1.4.4.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var BASE = "https://quintaand.co/here/?s=";
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  function gate(title, text, action) {
+    document.getElementById("gate").style.display = "block";
+    document.getElementById("codes").style.display = "none";
+    document.getElementById("gate-title").textContent = title;
+    document.getElementById("gate-text").textContent = text;
+    document.getElementById("gate-action").style.display = action ? "block" : "none";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function when(d, t) {
+    var p = String(d).split("-");
+    var dt = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    var hh = parseInt(String(t).slice(0, 2), 10), mm = String(t).slice(3, 5);
+    var h = hh % 12 || 12;
+    var day;
+    try {
+      day = dt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    } catch (e) { day = d; }
+    return day + " · " + h + ":" + mm + (hh < 12 ? "am" : "pm");
+  }
+  function qrSvg(text) {
+    var q = qrcode(0, "M");
+    q.addData(text);
+    q.make();
+    return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  }
+
+  if (!sb) { gate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { gate("You're not signed in", "Sign in first, then come back for your codes.", true); return; }
+    var email = session.user.email.toLowerCase();
+
+    sb.from("faculty").select("*").eq("email", email).maybeSingle().then(function (r) {
+      if (r.error || !r.data) {
+        gate("Almost there", "You're signed in as " + email +
+          ", but there's no faculty record under that email yet — email hello@quintaand.co.", true);
+        return;
+      }
+      var me = r.data.display_name || r.data.full_name || "";
+
+      sb.from("class_sessions").select("*")
+        .or("status.is.null,status.neq.canceled")
+        .then(function (rr) {
+          if (rr.error) { console.error(rr.error); gate("Hmm", "Your classes couldn't be read. " + (rr.error.message || "")); return; }
+          document.getElementById("gate").style.display = "none";
+          document.getElementById("codes").style.display = "block";
+
+          var today = new Date(); today.setHours(0, 0, 0, 0);
+          var mine = (rr.data || []).filter(function (s) {
+            return String(s.instructor_email || "").toLowerCase() === email;
+          }).filter(function (s) {
+            var p = String(s.session_date).split("-");
+            return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])) >= today;
+          }).sort(function (a, b) {
+            return (a.session_date + a.start_time).localeCompare(b.session_date + b.start_time);
+          });
+
+          var list = document.getElementById("list");
+          if (!mine.length) {
+            list.innerHTML = '<div class="sc-empty"><strong>No upcoming classes yet.</strong><br>' +
+              'Once you add dates in <a href="schedule.html">My classes</a>, each one gets its own code here — automatically.</div>';
+            return;
+          }
+
+          list.innerHTML = mine.map(function (s) {
+            var url = BASE + s.id;
+            return '<div class="sc-item">' +
+                '<div class="sc-qr">' + qrSvg(url) + '</div>' +
+                '<div>' +
+                  '<p class="sc-when">' + esc(when(s.session_date, s.start_time)) + '</p>' +
+                  '<p class="sc-name">' + esc(s.class_name || s.class_slug) + '</p>' +
+                  '<p class="sc-fmt">' + esc(s.format || "") + '</p>' +
+                  '<div class="sc-acts">' +
+                    '<a class="btn btn-solid" href="slide.html?s=' + encodeURIComponent(s.id) + '" target="_blank" rel="noopener">Open title slide</a>' +
+                    '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Test the code</a>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          }).join("");
+
+          document.getElementById("note").innerHTML =
+            "Showing " + mine.length + " upcoming class" + (mine.length === 1 ? "" : "es") +
+            " for " + esc(me) + ". Every code is different, because the date is part of what it records. " +
+            "Old codes stop working on their own, so there's nothing to tidy up.";
+        });
+    });
+  });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>
