@@ -127,8 +127,8 @@ strategist was being asked to take it.
 Until it has one:
 
 - It stays off `fork-femme-foundations.html`
-- The **Get started** bundle ($275 = Entity setup + Module 1) cannot be sold
-  as written, and is collecting emails instead
+- It is no longer in any bundle. **Get started was rebuilt around Bookkeeping I**
+  on 28 September precisely because of this — see 5.
 
 ---
 
@@ -140,7 +140,7 @@ Entity setup losing its instructor on 17 September.
 
 The site is now correct. Three other places are not:
 
-- `Desktop\Quinta and Co\Marketingork-and-femme-event.pdf` (2 September) still
+- `Desktop/Quinta and Co/Marketing/fork-and-femme-event.pdf` (2 September) still
   says Entity Setup + Module 1 at $325 / $275
 - The faculty meeting deck of 23 September carries $275 with no contents listed
 - Any printed or posted artwork built from either
