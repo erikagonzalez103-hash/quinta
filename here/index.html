@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sign in to class | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<style>
+/* A phone, held in a room, possibly on bad wifi. Big type, big targets,
+   nothing below the fold that matters, no analytics chasing her. */
+.ci-wrap{max-width:440px;margin:0 auto;padding:clamp(28px,7vw,54px) 22px 60px;
+  min-height:100vh;display:flex;flex-direction:column}
+.ci-mark{display:block;margin:0 auto 26px}
+.ci-class{font-family:var(--display);font-weight:500;font-size:clamp(1.9rem,7vw,2.5rem);
+  line-height:1.12;letter-spacing:-.02em;color:var(--moss);margin:0 0 6px;text-align:center}
+.ci-when{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:12px;color:var(--sage-deep);text-align:center;margin:0 0 30px}
+.ci-lead{font-size:17px;line-height:1.55;color:var(--ink);text-align:center;margin:0 0 26px}
+.ci-field{margin-bottom:16px}
+.ci-field label{display:block;font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.12em;font-size:11px;font-weight:600;color:var(--sage-deep);margin-bottom:7px}
+.ci-field input{width:100%;padding:16px 15px;font-size:18px;font-family:inherit;
+  border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.ci-field input:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+.ci-go{width:100%;padding:17px;font-size:18px;font-family:inherit;font-weight:600;
+  border:0;border-radius:10px;background:var(--sage-deep);color:var(--cream);cursor:pointer;
+  margin-top:8px}
+.ci-go:disabled{opacity:.5}
+.ci-msg{font-size:15px;line-height:1.5;margin-top:16px;text-align:center;min-height:1.4em}
+.ci-msg.bad{color:#9C3B2E}
+.ci-done{text-align:center;padding-top:8px}
+.ci-tick{width:74px;height:74px;margin:0 auto 22px;border-radius:50%;
+  background:var(--sage-deep);display:grid;place-items:center}
+.ci-tick svg{width:36px;height:36px;stroke:var(--cream);stroke-width:2.6;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.ci-done h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,8vw,2.7rem);
+  line-height:1.1;color:var(--moss);margin:0 0 12px}
+.ci-done p{font-size:17px;line-height:1.55;color:var(--ink);margin:0 0 8px}
+.ci-foot{margin-top:auto;padding-top:34px;text-align:center;font-size:12.5px;
+  line-height:1.5;color:var(--sage-deep)}
+.ci-foot a{color:var(--sage-deep)}
+</style>
+</head>
+<body>
+
+<div class="ci-wrap">
+  <svg class="ci-mark" viewBox="0 0 18 13.5" width="58" height="43.5" fill="none"
+       stroke="#4F6B5C" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5"
+       role="img" aria-label="Quinta and Co.">
+    <path d="M9 8.5 V 13.5"/>
+    <path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/>
+    <path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/>
+    <circle cx="9" cy="3.5" r="0.8" fill="#4F6B5C" stroke="none"/>
+  </svg>
+
+  <div id="app">
+    <p class="ci-when" id="boot">One moment…</p>
+  </div>
+
+  <p class="ci-foot">
+    Quinta &amp; Co. · We keep your name and the class you attended, nothing else.
+    <a href="../privacy.html">Privacy</a>
+  </p>
+</div>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var app = document.getElementById("app");
+  var sid = new URLSearchParams(location.search).get("s") || "";
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient(
+        "https://pmpaslevwimofohirves.supabase.co",
+        "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf"
+      );
+    }
+  } catch (e) { console.error(e); }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function prettyDate(iso) {
+    if (!iso) return "";
+    var p = String(iso).split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    try {
+      return d.toLocaleDateString("en-US",
+        { weekday: "long", month: "long", day: "numeric" });
+    } catch (e) { return iso; }
+  }
+
+  function trouble(msg) {
+    app.innerHTML =
+      '<h1 class="ci-class">Hmm</h1>' +
+      '<p class="ci-lead">' + esc(msg) + '</p>' +
+      '<p class="ci-lead" style="font-size:15px">Your instructor can sign you in by hand — ' +
+      'or email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and we\'ll sort it.</p>';
+  }
+
+  function done(label, first, again) {
+    app.innerHTML =
+      '<div class="ci-done">' +
+        '<div class="ci-tick"><svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="M4 12.5l5 5L20 6.5"/></svg></div>' +
+        '<h1>' + (again ? "Already in" : "You’re in") + '</h1>' +
+        '<p>' + (first ? esc(first) + ", you" : "You") + "'re signed in to <strong>" +
+          esc(label) + '</strong>.</p>' +
+        '<p style="color:var(--sage-deep);font-size:15px">' +
+          (again ? "We already had you — no need to scan again."
+                 : "That’s everything. Enjoy the class.") + '</p>' +
+      '</div>';
+  }
+
+  function form(label, when) {
+    app.innerHTML =
+      '<h1 class="ci-class">' + esc(label) + '</h1>' +
+      '<p class="ci-when">' + esc(when) + '</p>' +
+      '<p class="ci-lead">Sign in so we can mark the class off for you.</p>' +
+      '<form id="ciForm" novalidate>' +
+        '<div class="ci-field"><label for="f">First name</label>' +
+          '<input id="f" name="fname" type="text" autocomplete="given-name" ' +
+          'autocapitalize="words" enterkeyhint="next" required></div>' +
+        '<div class="ci-field"><label for="l">Last name</label>' +
+          '<input id="l" name="lname" type="text" autocomplete="family-name" ' +
+          'autocapitalize="words" enterkeyhint="done" required></div>' +
+        '<button class="ci-go" type="submit">Sign me in</button>' +
+      '</form>' +
+      '<p class="ci-msg" id="m" role="status" aria-live="polite"></p>';
+
+    document.getElementById("f").focus();
+    document.getElementById("ciForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var f = document.getElementById("f").value.trim();
+      var l = document.getElementById("l").value.trim();
+      var m = document.getElementById("m");
+      var btn = ev.target.querySelector("button");
+      m.className = "ci-msg";
+      if (!f || !l) {
+        m.className = "ci-msg bad";
+        m.textContent = "We need both names, so we can find your class.";
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Signing you in…";
+      sb.rpc("check_in", { p_session: sid, p_first: f, p_last: l })
+        .then(function (res) {
+          if (res.error) { throw res.error; }
+          var d = res.data || {};
+          if (!d.ok) {
+            btn.disabled = false; btn.textContent = "Sign me in";
+            m.className = "ci-msg bad";
+            m.textContent = d.reason === "need_both_names"
+              ? "We need both names, so we can find your class."
+              : "That code didn’t work — ask your instructor.";
+            return;
+          }
+          done(d.class_name || label, d.first || f, !!d.again);
+        })
+        .catch(function (err) {
+          console.error(err);
+          btn.disabled = false; btn.textContent = "Sign me in";
+          m.className = "ci-msg bad";
+          m.textContent = "That didn’t save — check your signal and try once more.";
+        });
+    });
+  }
+
+  if (!sid) { trouble("This link is missing its class code. Scan the code in the room again."); return; }
+  if (!sb)  { trouble("We couldn’t connect. Check your signal and reload."); return; }
+
+  sb.rpc("session_label", { p_session: sid }).then(function (res) {
+    if (res.error) { console.error(res.error); trouble("We couldn’t look that class up."); return; }
+    var d = res.data || {};
+    if (!d.ok) { trouble("We don’t recognise that code. It may be from an old class."); return; }
+    form(d.class_name || "Today’s class", prettyDate(d.session_date));
+  }).catch(function (e) {
+    console.error(e);
+    trouble("We couldn’t connect. Check your signal and reload.");
+  });
+})();
+</script>
+</body>
+</html>

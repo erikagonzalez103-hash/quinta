@@ -22,3 +22,6 @@ playbook/
 m1/
 m2/
 signup/
+
+# generated sign-in cards
+qr-cards/
