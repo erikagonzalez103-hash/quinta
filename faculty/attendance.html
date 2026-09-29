@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unmatched check-ins · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<style>
+.um-wrap{max-width:860px;margin:0 auto;padding:26px var(--edge) 70px}
+.um-h1{font-family:var(--display);font-weight:500;font-size:clamp(1.8rem,5vw,2.4rem);
+  line-height:1.15;color:var(--moss);margin:0 0 10px}
+.um-lead{font-size:16px;line-height:1.6;color:var(--ink);margin:0 0 6px;max-width:66ch}
+.um-sub{font-size:14.5px;line-height:1.6;color:var(--sage-deep);margin:0 0 30px;max-width:66ch}
+.um-card{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:20px 22px;margin:0 0 16px}
+.um-who{font-family:var(--display);font-weight:500;font-size:20px;color:var(--moss);margin:0 0 3px}
+.um-meta{font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;
+  font-size:11px;color:var(--sage-deep);margin:0 0 16px}
+.um-cands{border-top:1px solid var(--line);padding-top:14px}
+.um-cand{display:flex;gap:14px;align-items:center;justify-content:space-between;
+  padding:10px 0;flex-wrap:wrap}
+.um-cand + .um-cand{border-top:1px dashed var(--line)}
+/* Let the name and email shrink instead of shoving the button onto its own
+   line — otherwise a long email address makes one candidate look different
+   from the next for no reason. */
+.um-cand > div{flex:1 1 220px;min-width:0}
+.um-cname{font-size:15.5px;color:var(--ink);margin:0;overflow-wrap:anywhere}
+.um-cmail{overflow-wrap:anywhere}
+.um-cmail{font-size:13px;color:var(--sage-deep);margin:2px 0 0}
+.um-link{flex:0 0 auto;padding:10px 18px;border-radius:8px;border:0;
+  background:var(--sage-deep);color:var(--cream);font-family:inherit;
+  font-size:14px;font-weight:600;cursor:pointer}
+.um-link:disabled{opacity:.5;cursor:default}
+.um-none{font-size:14.5px;color:var(--sage-deep);margin:4px 0 0;font-style:italic}
+.um-msg{font-size:14.5px;margin:14px 0 0;min-height:1.3em}
+.um-msg.bad{color:#9C3B2E}
+.um-msg.good{color:var(--sage-deep)}
+.um-clear{border:1px solid var(--line);border-radius:12px;padding:26px 22px;
+  text-align:center;color:var(--sage-deep);font-size:16px;background:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="portal.html">Portal</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div class="um-wrap">
+    <h1 class="um-h1">Unmatched check-ins</h1>
+    <p class="um-lead">Someone scanned in, and the ledger couldn't tell who she was.
+      She's marked present either way — what's missing is the link to what she
+      bought, so her bundle still shows this class as owed.</p>
+    <p class="um-sub">Almost always a name typed differently from the one she
+      booked with. Pick her from the list and it's done.</p>
+    <div id="um">
+      <p class="um-sub">Loading…</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* The RPCs behind this page check the caller's email themselves and answer
+     nothing to anyone but Erika. The sign-in below is for the redirect, not
+     for the security - a signed-in instructor who opens this URL gets an
+     empty, honest "not for you" rather than someone else's students. */
+  var sb = supabase.createClient(
+    "https://pmpaslevwimofohirves.supabase.co",
+    "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+
+  var box = document.getElementById("um");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function prettyDate(iso) {
+    if (!iso) return "no date";
+    var p = String(iso).split("-");
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    try {
+      return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    } catch (e) { return iso; }
+  }
+
+  function card(r) {
+    var cands = (r.candidates || []).map(function (c) {
+      return '<div class="um-cand">' +
+               '<div><p class="um-cname">' + esc(c.student_name || "(no name)") + '</p>' +
+               '<p class="um-cmail">' + esc(c.student_email) +
+                 (c.bundle_key ? ' &middot; ' + esc(c.bundle_key) + ' bundle' : '') +
+                 ' &middot; ' + esc(c.status) + '</p></div>' +
+               '<button class="um-link" data-a="' + esc(r.id) + '" ' +
+                 'data-e="' + esc(c.id) + '">This is her</button>' +
+             '</div>';
+    }).join("");
+
+    return '<div class="um-card" id="c-' + esc(r.id) + '">' +
+             '<p class="um-who">' + esc(r.first_name) + ' ' + esc(r.last_name) + '</p>' +
+             '<p class="um-meta">' + esc(r.class_name || r.class_slug) +
+               ' &middot; ' + esc(prettyDate(r.session_date)) + '</p>' +
+             '<div class="um-cands">' +
+               (cands || '<p class="um-none">Nobody is still owed this class — ' +
+                 'she may have booked it under another email, or paid on the day. ' +
+                 'Her attendance is recorded; nothing else to do here.</p>') +
+             '</div>' +
+             '<p class="um-msg" id="m-' + esc(r.id) + '" role="status" aria-live="polite"></p>' +
+           '</div>';
+  }
+
+  function render(rows) {
+    if (!rows.length) {
+      box.innerHTML = '<div class="um-clear">Every check-in is matched. ' +
+        'Nothing waiting on you.</div>';
+      return;
+    }
+    box.innerHTML = rows.map(card).join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".um-link"), function (b) {
+      b.addEventListener("click", function () { link(b); });
+    });
+  }
+
+  function link(btn) {
+    var a = btn.getAttribute("data-a"), e = btn.getAttribute("data-e");
+    var msg = document.getElementById("m-" + a);
+    btn.disabled = true;
+    btn.textContent = "Linking…";
+    sb.rpc("link_checkin", { p_attendance: a, p_enrollment: e }).then(function (res) {
+      if (res.error) { throw res.error; }
+      var d = res.data || {};
+      if (!d.ok) {
+        btn.disabled = false; btn.textContent = "This is her";
+        msg.className = "um-msg bad";
+        msg.textContent = d.reason === "different_class"
+          ? "That enrollment is for a different class."
+          : "Couldn't link that one — " + (d.reason || "unknown reason") + ".";
+        return;
+      }
+      var cardEl = document.getElementById("c-" + a);
+      cardEl.innerHTML = '<p class="um-who">Linked</p>' +
+        '<p class="um-meta">Marked as taken. One less thing.</p>';
+    }).catch(function (err) {
+      console.error(err);
+      btn.disabled = false; btn.textContent = "This is her";
+      msg.className = "um-msg bad";
+      msg.textContent = "That didn't save. Check your signal and try again.";
+    });
+  }
+
+  function load() {
+    sb.rpc("unmatched_checkins").then(function (res) {
+      if (res.error) { throw res.error; }
+      var d = res.data || {};
+      if (!d.ok) {
+        box.innerHTML = '<div class="um-clear">This page is Erika’s — it lists ' +
+          'students across every class. Your own classes are on ' +
+          '<a href="portal.html">the portal</a>.</div>';
+        return;
+      }
+      render(d.rows || []);
+    }).catch(function (e) {
+      console.error(e);
+      box.innerHTML = '<div class="um-clear">Couldn’t load that. Refresh and try again.</div>';
+    });
+  }
+
+  sb.auth.getSession().then(function (res) {
+    if (!res || !res.data || !res.data.session) {
+      window.location.replace("login.html");
+      return;
+    }
+    load();
+  }).catch(function () { window.location.replace("login.html"); });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>

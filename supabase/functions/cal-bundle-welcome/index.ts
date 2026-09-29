@@ -1,8 +1,23 @@
 // Edge Function: cal-bundle-welcome
 //
-// Cal.com webhook -> the buyer's inbox, with the link to the rest of her bundle.
+// Cal.com webhook -> the enrollments ledger, and the buyer's inbox.
 //
-// WHY THIS EXISTS
+// IT DOES TWO JOBS, and the name only says one. It writes an enrollment row
+// for EVERY booking, and additionally emails the buyer when that booking was
+// a bundle. The name is kept because renaming an Edge Function means taking
+// the webhook down in Cal.com and rebuilding it with the secret, and a
+// misleading name is cheaper than a window where sales record nothing.
+//
+// WHY THE LEDGER LIVES HERE
+// Cal.com was the only record of who bought what. cal-booking speaks to Meta
+// and writes nothing; cal-instructor-notify emails a teacher and writes
+// nothing. So enrollments was filled by hand, with tools/enrollments-from-cal.py,
+// which means the QR check-in on class day could not close anybody's
+// entitlement unless someone had remembered to run an import first. This
+// function already receives the buyer, her email, the bundle and the Cal.com
+// booking id at exactly the right moment, so it writes the rows itself.
+//
+// WHY THE LINK IS EMAILED
 // Buying a bundle in Cal.com books exactly one class — whichever one the
 // bundle event is anchored to. The other classes are $0 "redeem" twins, and
 // they are hidden so the public booking page never lists them. Hidden means
@@ -23,32 +38,82 @@
 //
 // SECRETS: CAL_WEBHOOK_SECRET (the same one the other Cal.com functions
 //          verify against), RESEND_API_KEY (already set).
+// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected by Supabase.
+// enrollments has RLS on with no policies and anon/authenticated revoked, so
+// the service role is the only way in — which is the point.
 //
 // Deploy with --no-verify-jwt — Cal.com cannot send a Supabase JWT, and the
 // signature check below is what authenticates the caller.
+//
+// The Cal.com webhook must have BOTH "Booking created" and "Booking
+// cancelled" ticked. Without the second one a cancelled class stays on the
+// ledger as still owed, and the seat is never released.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const CAL_WEBHOOK_SECRET = Deno.env.get("CAL_WEBHOOK_SECRET");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const SEND_FROM = "Quinta & Co. <hello@quintaand.co>";
 const BCC = "erika@quintaand.co";          // so a silent failure is visible
 const PAGE = "https://quintaand.co/bundle/?b=";
 
 /* The four bundles, by the slug Cal.com actually books.
-   `key` is the ?b= value on the bundle page; `count` is how many classes are
-   still to book after this one, used only to write a true sentence.
 
-   The page itself owns the class list. Deliberately not repeated here — a
-   third copy is a third thing to forget. Keep these keys in step with the
-   BUNDLES block in bundle/index.html. */
-const BUNDLES: Record<string, { key: string; name: string; count: number }> = {
-  "get-started-fff": { key: "get-started", name: "Get started", count: 1 },
-  "keep-the-books-fff": { key: "keep-the-books", name: "Keep the books", count: 1 },
-  "build-to-last-fff": { key: "build-to-last", name: "Build to last", count: 4 },
-  "the-practice-fff": { key: "the-practice", name: "The Practice", count: 2 },
+   `anchor` is the class that buying the bundle actually books — read off the
+   event type's schedule in Cal.com, NOT off the bundle's name. Two of these
+   were re-anchored onto a class that had dates when the headline one did not.
+
+   `classes` is every class the bundle entitles her to, anchor included. The
+   anchor's row is written as 'booked' with a date; the rest as 'owed'.
+
+   This is the third place the bundle contents are written down, after
+   bundle/index.html and fork-femme-foundations.html. Nothing keeps the three
+   in step automatically, so change them together. */
+const BUNDLES: Record<string, {
+  key: string; name: string; anchor: string; classes: string[];
+}> = {
+  "get-started-fff": {
+    key: "get-started", name: "Get started", anchor: "module-1",
+    classes: ["module-1", "bookkeeping-1"],
+  },
+  "keep-the-books-fff": {
+    key: "keep-the-books", name: "Keep the books", anchor: "bookkeeping-2",
+    classes: ["bookkeeping-2", "bookkeeping-1"],
+  },
+  "build-to-last-fff": {
+    key: "build-to-last", name: "Build to last", anchor: "legacy-planning",
+    classes: ["legacy-planning", "certification", "financial-planning",
+              "trademarks", "brand-101"],
+  },
+  "the-practice-fff": {
+    key: "the-practice", name: "The Practice", anchor: "module-1",
+    classes: ["module-1", "module-2", "module-3"],
+  },
 };
+
+/* Readable names for the ledger, so a report does not read as slugs. Only the
+   classes that appear inside a bundle need to be here; a single-class booking
+   takes its name from the Cal.com event title. */
+const CLASS_NAMES: Record<string, string> = {
+  "module-1": "Module 1 — Claude for beginners",
+  "module-2": "Module 2 — Give Claude a memory",
+  "module-3": "Module 3 — Databases and automation",
+  "bookkeeping-1": "Bookkeeping I — Set up QuickBooks",
+  "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
+  "legacy-planning": "Legacy planning",
+  "certification": "Get certified — WBE / MBE / DBE",
+  "financial-planning": "Investing — How to pay yourself first",
+  "trademarks": "Trademarks",
+  "brand-101": "Brand 101",
+};
+
+/* A booking can land on a twin. Strip the suffix to get the real class. */
+function realSlug(slug: string): string {
+  return String(slug || "").replace(/-(redeem|fall25|herhouse(-duo)?)$/i, "");
+}
 
 async function signatureOk(raw: string, header: string | null): Promise<boolean> {
   if (!CAL_WEBHOOK_SECRET || !header) return false;
@@ -80,6 +145,135 @@ function dallas(iso: string): string {
   } catch { return iso; }
 }
 
+/* ---------------------------------------------------------------- ledger -- */
+
+function db(path: string, init: RequestInit = {}) {
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      apikey: SERVICE_KEY as string,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+  });
+}
+
+type Buyer = {
+  name: string; email: string; uid: string;
+  start: string; day: string | null; ref: string | null;
+};
+
+/* Every booking writes to the ledger, but there are three shapes of it.
+
+   1. A BUNDLE writes one row per class it contains. The anchor - the class
+      this booking actually reserved - is 'booked' with its date. The others
+      are 'owed' until she books them with a redeem link.
+   2. A REDEEM twin is one of those owed rows coming due. It updates the row
+      rather than inserting, or the ledger would double-count what she paid
+      for once.
+   3. A PLAIN CLASS writes a single 'booked' row.
+
+   Idempotent by (order_ref, class_slug), which has a unique index, so a
+   Cal.com retry lands on a 409 and is treated as already done. */
+async function recordBooking(
+  bookedSlug: string, buyer: Buyer, title: string, amountCents: number | null,
+): Promise<Record<string, unknown>> {
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    console.error("Supabase service credentials missing - nothing written");
+    return { ledger: "skipped, no credentials" };
+  }
+
+  const bundle = BUNDLES[bookedSlug];
+  const slug = realSlug(bookedSlug);
+  const isRedeem = /-redeem$/i.test(bookedSlug);
+
+  if (isRedeem) {
+    /* Close the oldest matching owed row. Matching on email and class, not on
+       order_ref, because the redeem booking is a different Cal.com order from
+       the bundle that paid for it. */
+    const q = `enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
+      + `&class_slug=eq.${encodeURIComponent(slug)}&status=eq.owed`
+      + `&order=created_at.asc&limit=1`;
+    const res = await db(q, {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ status: "booked", session_on: buyer.day }),
+    });
+    const rows = res.ok ? await res.json() : [];
+    if (!res.ok) console.error("redeem patch failed", res.status, await res.text());
+    if (!rows.length) {
+      /* She booked a redeem link with nothing owed against it. Record it so
+         it is visible rather than silently free. */
+      console.warn(`Redeem of ${slug} by ${buyer.email} matched no owed row.`);
+      return { ledger: "redeem with no owed row", class_slug: slug };
+    }
+    return { ledger: "redeem closed", class_slug: slug };
+  }
+
+  const rows = bundle
+    ? bundle.classes.map((cs) => ({
+        student_name: buyer.name,
+        student_email: buyer.email,
+        class_slug: cs,
+        class_name: CLASS_NAMES[cs] || cs,
+        source: "bundle",
+        bundle_key: bundle.key,
+        order_ref: buyer.uid,
+        amount_cents: cs === bundle.anchor ? amountCents : 0,
+        ref_code: buyer.ref,
+        status: cs === bundle.anchor ? "booked" : "owed",
+        session_on: cs === bundle.anchor ? buyer.day : null,
+      }))
+    : [{
+        student_name: buyer.name,
+        student_email: buyer.email,
+        class_slug: slug,
+        class_name: CLASS_NAMES[slug] || title || slug,
+        source: "single",
+        bundle_key: null,
+        order_ref: buyer.uid,
+        amount_cents: amountCents,
+        ref_code: buyer.ref,
+        status: "booked",
+        session_on: buyer.day,
+      }];
+
+  const res = await db("enrollments", { method: "POST", body: JSON.stringify(rows) });
+  if (res.status === 409) {
+    return { ledger: "already recorded", rows: rows.length };
+  }
+  if (!res.ok) {
+    console.error("enrollment insert failed", res.status, await res.text());
+    return { ledger: "insert failed", status: res.status };
+  }
+  return { ledger: bundle ? "bundle recorded" : "class recorded", rows: rows.length };
+}
+
+/* A cancellation. A bundle or class she cancelled was never owed to her, so
+   those rows go. A cancelled REDEEM is different - she still owns that class,
+   she just gave back the date, so it returns to 'owed'. A class already taken
+   is left alone; she attended it whatever the booking now says. */
+async function undoBooking(bookedSlug: string, buyer: Buyer) {
+  if (!SUPABASE_URL || !SERVICE_KEY) return { ledger: "skipped, no credentials" };
+  const slug = realSlug(bookedSlug);
+
+  if (/-redeem$/i.test(bookedSlug)) {
+    const q = `enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
+      + `&class_slug=eq.${encodeURIComponent(slug)}&status=eq.booked`;
+    const res = await db(q, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "owed", session_on: null }),
+    });
+    return { ledger: res.ok ? "redeem returned to owed" : "redeem undo failed" };
+  }
+
+  const res = await db(
+    `enrollments?order_ref=eq.${encodeURIComponent(buyer.uid)}&status=neq.taken`,
+    { method: "DELETE" });
+  return { ledger: res.ok ? "booking removed" : "removal failed" };
+}
+
 serve(async (req) => {
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -102,32 +296,69 @@ serve(async (req) => {
     const trigger = String(body?.triggerEvent || body?.type || "");
     const p = body?.payload ?? body;
 
-    /* Only a new booking. A reschedule keeps the same bundle and she already
-       has the link; a cancellation should not be congratulated. */
-    if (!/BOOKING_CREATED/i.test(trigger)) {
-      return json({ skipped: `not a new booking: ${trigger}` });
+    const created = /BOOKING_CREATED/i.test(trigger);
+    const cancelled = /BOOKING_CANCELLED/i.test(trigger);
+    if (!created && !cancelled) {
+      return json({ skipped: `not a booking event: ${trigger}` });
     }
 
     const bookedSlug = String(p?.eventType?.slug || p?.type || "");
     const bundle = BUNDLES[bookedSlug];
-    if (!bundle) {
-      return json({ skipped: `not a bundle: ${bookedSlug}` });
-    }
 
     const who = (p?.attendees && p.attendees[0]) || {};
-    const to = who?.email || "";
-    if (!to) {
-      console.error(`Bundle ${bookedSlug} booked with no attendee email — nothing to send to.`);
-      return json({ error: "no attendee email" }, 422);
-    }
-    const first = String(who?.name || "").trim().split(/\s+/)[0] || "there";
+    const to = String(who?.email || "");
+    const start = String(p?.startTime || p?.start || "");
     const booked = p?.eventType?.title || p?.title || "your first class";
-    const start = p?.startTime || p?.start || "";
-    const link = PAGE + bundle.key;
 
-    const rest = bundle.count === 1
+    /* A referral code, if the booking carried one. Cal.com puts anything
+       passed on the booking URL into metadata or the tracking fields; take
+       whichever turned up and do not mind if neither did. */
+    const ref = String(
+      p?.metadata?.ref || p?.metadata?.utm_source || p?.tracking?.utm_source || "",
+    ).trim() || null;
+
+    const buyer: Buyer = {
+      name: String(who?.name || "").trim(),
+      email: to,
+      uid: String(p?.uid || p?.bookingUid || ""),
+      start,
+      day: start ? start.slice(0, 10) : null,
+      ref,
+    };
+
+    /* The ledger first, and inside its own try. A write that fails must not
+       stop the buyer being emailed - she has paid, and a missing row is a
+       reconciliation job while a missing email is a lost customer. */
+    let ledger: Record<string, unknown> = { ledger: "not attempted" };
+    if (!to) {
+      console.error(`${bookedSlug} booked with no attendee email — cannot record or send.`);
+    } else {
+      try {
+        ledger = cancelled
+          ? await undoBooking(bookedSlug, buyer)
+          : await recordBooking(
+              bookedSlug, buyer, String(booked),
+              typeof p?.price === "number" ? Math.round(p.price * 100) : null);
+      } catch (e) {
+        console.error("ledger write threw", e);
+        ledger = { ledger: "threw", detail: String(e) };
+      }
+    }
+
+    /* Email only a new bundle sale. A reschedule keeps the same bundle and she
+       already has the link; a cancellation should not be congratulated. */
+    if (!created || !bundle) {
+      return json({ ok: true, slug: bookedSlug, emailed: false, ...ledger });
+    }
+    if (!to) return json({ error: "no attendee email" }, 422);
+
+    const first = String(who?.name || "").trim().split(/\s+/)[0] || "there";
+    const link = PAGE + bundle.key;
+    const count = bundle.classes.length - 1;
+
+    const rest = count === 1
       ? "the one remaining class in your bundle"
-      : `the other ${bundle.count} classes in your bundle`;
+      : `the other ${count} classes in your bundle`;
 
     const subject = `Your ${bundle.name} bundle — booking the rest`;
 
@@ -179,7 +410,7 @@ serve(async (req) => {
       return json({ error: "send failed", status: send.status, detail }, 500);
     }
 
-    return json({ ok: true, bundle: bundle.key, sent_to: to });
+    return json({ ok: true, bundle: bundle.key, emailed: true, sent_to: to, ...ledger });
   } catch (e) {
     console.error(e);
     return json({ error: String(e) }, 500);
