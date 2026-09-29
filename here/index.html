@@ -44,6 +44,18 @@
 .ci-foot{margin-top:auto;padding-top:34px;text-align:center;font-size:12.5px;
   line-height:1.5;color:var(--sage-deep)}
 .ci-foot a{color:var(--sage-deep)}
+/* The follow ask, only ever on the confirmation screen — she is done, her
+   phone is already in her hand, and nothing else is competing for the tap. */
+.ci-follow{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+.ci-follow h2{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:12px;font-weight:600;color:var(--sage-deep);margin:0 0 8px}
+.ci-follow p.why{font-size:15px;line-height:1.5;color:var(--ink);margin:0 0 16px}
+.ci-socs{display:flex;gap:10px}
+.ci-soc{flex:1;display:block;padding:15px 8px;border:1px solid var(--sage-deep);
+  border-radius:10px;background:#fff;color:var(--sage-deep);text-decoration:none;
+  font-size:16px;font-weight:600;line-height:1.2}
+.ci-soc:active{background:#EEF2EC}
+.ci-handle{font-size:13px;color:var(--sage-deep);margin:14px 0 0}
 </style>
 </head>
 <body>
@@ -120,6 +132,18 @@
         '<p style="color:var(--sage-deep);font-size:15px">' +
           (again ? "We already had you — no need to scan again."
                  : "That’s everything. Enjoy the class.") + '</p>' +
+        '<div class="ci-follow">' +
+          '<h2>Follow along</h2>' +
+          '<p class="why">Class dates, and the things nobody tells you about ' +
+            'running a business.</p>' +
+          '<div class="ci-socs">' +
+            '<a class="ci-soc" href="https://www.instagram.com/quintapractice/" ' +
+              'target="_blank" rel="noopener">Instagram</a>' +
+            '<a class="ci-soc" href="https://www.linkedin.com/company/quintaandco/" ' +
+              'target="_blank" rel="noopener">LinkedIn</a>' +
+          '</div>' +
+          '<p class="ci-handle">@quintapractice</p>' +
+        '</div>' +
       '</div>';
   }
 

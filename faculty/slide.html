@@ -190,6 +190,20 @@
     cx.font = '400 22px Cinzel, Georgia, serif';
     cx.fillText("IT MARKS THE CLASS OFF FOR YOU", W - 330, qy + qs + 282);
     cx.textAlign = "left";
+
+    /* The follow ask, bottom left. Anchored to the canvas floor rather than
+       to the title block, so a three-line class name can never run into it. */
+    cx.fillStyle = SAGE;
+    cx.font = '400 22px Cinzel, Georgia, serif';
+    cx.letterSpacing = "6px";
+    cx.fillText("FOLLOW ALONG", 120, 880);
+    cx.letterSpacing = "0px";
+    cx.fillStyle = MOSS;
+    cx.font = '500 46px Fraunces, Georgia, serif';
+    cx.fillText("@quintapractice", 120, 944);
+    cx.fillStyle = INK;
+    cx.font = '400 30px Fraunces, Georgia, serif';
+    cx.fillText("on Instagram · Quinta & Co. on LinkedIn", 120, 992);
   }
 
   function render(d) {
@@ -199,7 +213,8 @@
       draw(d.class_name || "Today's class", prettyDate(d.session_date),
            prettyTime(d.start_time || "00:00"), d.format || "", url);
       say("This is slide one. Put it up while people settle — the code is live now and stops working " +
-          "on its own after the class. Download it for your deck, or press Present full screen.");
+          "on its own after the class. Download it for your deck, or press Present full screen. " +
+          "Say the follow line out loud while they're scanning; a slide asks quietly, you asking works.");
     };
     if (document.fonts && document.fonts.ready) { document.fonts.ready.then(go).catch(go); }
     else { go(); }
