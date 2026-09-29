@@ -1,0 +1,305 @@
+// Edge Function: stripe-webhook
+//
+// Stripe -> the enrollments ledger, and the buyer's inbox.
+//
+// WHY THIS EXISTS
+// A choose-your-own purchase is paid on Stripe, not Cal.com, so none of the
+// Cal.com webhooks fire for it. Without this, a woman could pay for three
+// classes and nothing at all would happen: no ledger row, no booking links,
+// no way for her to get what she bought.
+//
+// It is the Stripe-side twin of cal-bundle-welcome, and writes the same
+// shape of rows so that the QR check-in on class day closes her entitlement
+// the same way.
+//
+// WHAT IT LISTENS FOR
+// checkout.session.completed only. A session that expires or is abandoned
+// never reaches here, which is correct - she has not paid.
+//
+// SHORT-LIVED BY DESIGN. Delete with the Bookwhen migration after 21 October.
+//
+// SECRETS: STRIPE_WEBHOOK_SECRET (the signing secret Stripe shows when you add
+//          the endpoint), RESEND_API_KEY.
+// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected.
+//
+// Deploy with --no-verify-jwt - Stripe cannot send a Supabase JWT, and the
+// signature check below is what authenticates the caller.
+
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+
+const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+const SEND_FROM = "Quinta & Co. <hello@quintaand.co>";
+const BCC = "erika@quintaand.co";
+const CAL = "https://cal.com/quintaandco/";
+
+const CLASS_NAMES: Record<string, string> = {
+  "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
+  "module-1": "Module 1 — Claude for beginners",
+  "brand-101": "Brand 101",
+  "financial-planning": "Investing — How to pay yourself first",
+  "certification": "Get certified — WBE / MBE / DBE",
+  "legacy-planning": "Legacy planning",
+  "trademarks": "Trademarks",
+};
+
+/* Stripe signs the raw body as `t=<unix>,v1=<hex>` over "<t>.<body>".
+   Constant-time compare, and reject anything older than five minutes so a
+   captured request cannot be replayed later. */
+async function signatureOk(raw: string, header: string | null): Promise<boolean> {
+  if (!STRIPE_WEBHOOK_SECRET || !header) return false;
+
+  let t = "";
+  const v1: string[] = [];
+  for (const part of header.split(",")) {
+    const [k, v] = part.split("=");
+    if (k === "t") t = v;
+    if (k === "v1") v1.push(v);
+  }
+  if (!t || !v1.length) return false;
+
+  const age = Math.abs(Math.floor(Date.now() / 1000) - Number(t));
+  if (!Number.isFinite(age) || age > 300) {
+    console.error("Rejected: timestamp outside the five-minute window");
+    return false;
+  }
+
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(STRIPE_WEBHOOK_SECRET),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const mac = await crypto.subtle.sign(
+    "HMAC", key, new TextEncoder().encode(`${t}.${raw}`));
+  const mine = Array.from(new Uint8Array(mac))
+    .map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  return v1.some((theirs) => {
+    if (mine.length !== theirs.length) return false;
+    let diff = 0;
+    for (let i = 0; i < mine.length; i++) diff |= mine.charCodeAt(i) ^ theirs.charCodeAt(i);
+    return diff === 0;
+  });
+}
+
+function esc(s: unknown): string {
+  return String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+}
+
+function db(path: string, init: RequestInit = {}) {
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      apikey: SERVICE_KEY as string,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+  });
+}
+
+serve(async (req) => {
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status, headers: { "Content-Type": "application/json" },
+    });
+
+  try {
+    const raw = await req.text();
+    if (!(await signatureOk(raw, req.headers.get("stripe-signature")))) {
+      console.error("Rejected: bad or missing stripe-signature. Does STRIPE_WEBHOOK_SECRET match the endpoint's signing secret?");
+      return json({ error: "bad signature" }, 401);
+    }
+
+    const event = JSON.parse(raw);
+    if (event?.type !== "checkout.session.completed") {
+      return json({ skipped: `not a completed checkout: ${event?.type}` });
+    }
+
+    const s = event?.data?.object ?? {};
+    const slugs = String(s?.metadata?.slugs || "")
+      .split(",").map((x: string) => x.trim()).filter(Boolean);
+    if (!slugs.length) {
+      console.error(`Session ${s?.id} completed with no slugs in metadata - nothing to grant.`);
+      return json({ error: "no slugs" }, 422);
+    }
+
+    /* A gift carries a second class for a second person. Her email is
+       optional: the offer is written so the buyer may be handing the voucher
+       over herself, and in that case both links go to the payer with the
+       gifted one clearly marked. */
+    const giftSlug = String(s?.metadata?.gift_slug || "").trim();
+    const giftEmail = String(s?.metadata?.gift_email || "").trim();
+    const giftName = String(s?.metadata?.gift_name || "").trim();
+
+    const email = String(s?.customer_details?.email || "");
+    const name = String(s?.customer_details?.name || "").trim();
+    if (!email) {
+      console.error(`Session ${s?.id} completed with no email - cannot record or send.`);
+      return json({ error: "no email" }, 422);
+    }
+    const first = name.split(/\s+/)[0] || "there";
+    const paid = typeof s?.amount_total === "number" ? s.amount_total : null;
+
+    /* One row per class, all 'owed' - unlike a Cal.com bundle, paying here
+       books nothing, so there is no anchor with a date on it yet. Split the
+       amount evenly so the rows sum to what she actually paid after the
+       discount rather than to the list price. */
+    const each = paid === null ? null : Math.round(paid / (slugs.length + (giftSlug ? 1 : 0)));
+    const rows: Record<string, unknown>[] = slugs.map((slug) => ({
+      student_name: name || null,
+      student_email: email,
+      class_slug: slug,
+      class_name: CLASS_NAMES[slug] || slug,
+      source: giftSlug ? "gift" : "multi-discount",
+      bundle_key: null,
+      order_ref: String(s?.id || ""),
+      amount_cents: each,
+      status: "owed",
+      session_on: null,
+    }));
+
+    /* The gifted class belongs to the recipient, not the payer - it is her
+       entitlement, and the QR check-in has to find it under her name on the
+       day. When no recipient email was given the row goes to the buyer, who
+       is passing the voucher on herself. */
+    if (giftSlug) {
+      rows.push({
+        student_name: giftName || null,
+        student_email: giftEmail || email,
+        class_slug: giftSlug,
+        class_name: CLASS_NAMES[giftSlug] || giftSlug,
+        source: "gift",
+        bundle_key: null,
+        order_ref: String(s?.id || ""),
+        amount_cents: each,
+        status: "owed",
+        session_on: null,
+        notes: giftEmail
+          ? `Gift from ${name || email}`
+          : `Gift bought by ${name || email} — voucher not yet handed over`,
+      });
+    }
+
+    let ledger = "written";
+    try {
+      const res = await db("enrollments", { method: "POST", body: JSON.stringify(rows) });
+      if (res.status === 409) {
+        ledger = "already recorded";
+      } else if (!res.ok) {
+        ledger = "insert failed";
+        console.error("enrollment insert failed", res.status, await res.text());
+      }
+    } catch (e) {
+      ledger = "threw";
+      console.error("ledger write threw", e);
+    }
+
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not set - she has paid and has no links");
+      return json({ ok: true, ledger, emailed: false }, 200);
+    }
+
+    function bookLine(slug: string) {
+      return `<li style="margin:0 0 12px"><a href="${CAL}${esc(slug)}-redeem" ` +
+        `style="color:#4F6B5C;font-weight:bold">${esc(CLASS_NAMES[slug] || slug)}</a></li>`;
+    }
+    function bookText(slug: string) {
+      return `- ${CLASS_NAMES[slug] || slug}: ${CAL}${slug}-redeem`;
+    }
+    function wrap(inner: string) {
+      return `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">`
+        + inner
+        + `<p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p></div>`;
+    }
+    const KEEP_HTML = `<p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Keep this
+      email — the links stay good. If a class you want doesn't have a date yet,
+      reply here and we'll tell you the moment it's on the calendar. Your seat
+      keeps until you take it.</p>`;
+    const KEEP_TEXT = `Keep this email — the links stay good. If a class you want `
+      + `doesn't have a date yet, reply here and we'll tell you the moment it's on `
+      + `the calendar. Your seat keeps until you take it.`;
+
+    async function send(to: string, subject: string, html: string, text: string) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: SEND_FROM, to: [to], bcc: [BCC], reply_to: BCC, subject, html, text,
+        }),
+      });
+      if (!res.ok) console.error("Resend failed", to, res.status, await res.text());
+      return res.ok;
+    }
+
+    /* Two shapes of email. A gift to a named recipient sends her her own,
+       and tells the buyer it has gone. Everything else is one email with a
+       link per class. */
+    const sentTo: string[] = [];
+
+    if (giftSlug && giftEmail) {
+      const who = giftName ? esc(giftName.split(/\s+/)[0]) : "there";
+      const from = esc(name || "a friend");
+      const ok1 = await send(giftEmail,
+        `${name ? name.split(/\s+/)[0] + " has" : "Someone has"} given you a class`,
+        wrap(`<p style="margin:0 0 16px">Hi ${who},</p>
+          <p style="margin:0 0 16px"><strong>${from}</strong> has given you a place in
+            <strong>${esc(CLASS_NAMES[giftSlug] || giftSlug)}</strong> at Quinta &amp; Co.
+            It's paid for — all that's left is picking a date that suits you:</p>
+          <ul style="margin:0 0 20px;padding-left:20px">${bookLine(giftSlug)}</ul>
+          ${KEEP_HTML}`),
+        `Hi ${who},\n\n${name || "A friend"} has given you a place in `
+          + `${CLASS_NAMES[giftSlug] || giftSlug} at Quinta & Co. It's paid for — `
+          + `all that's left is picking a date:\n\n${bookText(giftSlug)}\n\n${KEEP_TEXT}\n`);
+      if (ok1) sentTo.push(giftEmail);
+    }
+
+    /* The buyer's own list. When she kept the voucher to hand over herself,
+       the gifted class is on it too, marked so she does not book it by
+       mistake. */
+    const mine = giftSlug && !giftEmail ? slugs.concat([giftSlug]) : slugs;
+    const giftNote = giftSlug && !giftEmail
+      ? `<p style="margin:0 0 16px">The second one is the gift — pass that link on
+         to whoever you're giving it to, and she picks her own date.</p>`
+      : "";
+    const giftNoteText = giftSlug && !giftEmail
+      ? `\nThe second one is the gift — pass that link on and she picks her own date.\n`
+      : "";
+    const sentNote = giftSlug && giftEmail
+      ? `<p style="margin:0 0 16px">We've emailed ${esc(giftName || giftEmail)} her own
+         link for ${esc(CLASS_NAMES[giftSlug] || giftSlug)} — nothing for you to forward.</p>`
+      : "";
+    const sentNoteText = giftSlug && giftEmail
+      ? `\nWe've emailed ${giftName || giftEmail} her own link for `
+        + `${CLASS_NAMES[giftSlug] || giftSlug} — nothing for you to forward.\n`
+      : "";
+
+    const many = mine.length > 1;
+    const ok2 = await send(email,
+      giftSlug ? "Your class, and the one you gave" : "Your classes — now pick your dates",
+      wrap(`<p style="margin:0 0 16px">Hi ${esc(first)},</p>
+        <p style="margin:0 0 16px">Thank you — genuinely. ${many ? "Those are" : "That's"}
+          paid for. Now pick your ${many ? "dates" : "date"}. Each link books one class
+          and there's nothing more to pay:</p>
+        <ul style="margin:0 0 20px;padding-left:20px">${mine.map(bookLine).join("")}</ul>
+        ${giftNote}${sentNote}${KEEP_HTML}`),
+      `Hi ${first},\n\nThank you — genuinely. Now pick your ${many ? "dates" : "date"}. `
+        + `Each link books one class, nothing more to pay:\n\n`
+        + `${mine.map(bookText).join("\n")}\n${giftNoteText}${sentNoteText}\n${KEEP_TEXT}\n`);
+    if (ok2) sentTo.push(email);
+
+    return json({
+      ok: true, ledger, emailed: sentTo.length, rows: rows.length,
+      gift: giftSlug ? (giftEmail ? "sent to recipient" : "voucher to buyer") : null,
+    });
+  } catch (e) {
+    console.error(e);
+    return json({ error: String(e) }, 500);
+  }
+});

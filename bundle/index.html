@@ -131,6 +131,35 @@
   }
 
   var key = (new URLSearchParams(location.search).get("b") || "").toLowerCase();
+
+  /* A Stripe purchase lands here too - choose-your-own and gifts both use
+     this as their success url. Those are not bundles: what she bought is
+     whatever she picked, which only the webhook knows, so this page thanks
+     her and the email carries the links. Saying "check your email" is the
+     honest thing when the page genuinely cannot know. */
+  if (key === "custom" || key === "gift") {
+    var isGift = key === "gift";
+    el.innerHTML =
+      '<p class="bd-kicker">Quinta &amp; Co.</p>' +
+      '<h1 class="bd-h1">' + (isGift ? "That’s a good thing to have done."
+                                     : "You’re in.") + '</h1>' +
+      '<p class="bd-lead">Your payment went through. Check your email — ' +
+        'there’s a booking link for each class, and you pick the dates ' +
+        'that suit you.</p>' +
+      (isGift
+        ? '<p class="bd-lead">If you gave us her email, hers is on its way to ' +
+          'her too. If you didn’t, your email has both links — the ' +
+          'second one is the one to pass on.</p>'
+        : '') +
+      '<p class="bd-note">It usually arrives within a minute. If it hasn’t ' +
+        'in ten, check spam and then email ' +
+        '<a href="mailto:hello@quintaand.co">hello@quintaand.co</a> — ' +
+        'we can see your order and will resend it.</p>' +
+      '<p class="bd-after">If a class you picked doesn’t have a date yet, ' +
+        'that’s us, not you. <strong>Your seat keeps until you take it.</strong></p>';
+    return;
+  }
+
   var b = BUNDLES[key];
   if (!b) {
     lost("This link is missing its bundle name, so we can’t tell which classes are yours.");

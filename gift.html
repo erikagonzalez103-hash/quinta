@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift a class | Quinta &amp; Co.</title>
+<meta name="description" content="Take a Quinta &amp; Co. class and give one to another woman at 25% off. She picks her own date — or keep the voucher and hand it over yourself.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://quintaand.co/gift.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Quinta &amp; Co.">
+<meta property="og:title" content="Buy one, gift one — 25% off the gifted class">
+<meta property="og:description" content="Take a class and give one to a woman who'd use it. She picks her own date, any time this semester.">
+<meta property="og:url" content="https://quintaand.co/gift.html">
+<meta property="og:image" content="https://quintaand.co/images/og-default.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=4">
+<style>
+.gf-wrap{max-width:620px;margin:0 auto;padding:clamp(28px,6vw,60px) var(--edge) 80px}
+.gf-h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,6vw,2.7rem);
+  line-height:1.12;letter-spacing:-.02em;color:var(--moss);margin:0 0 14px}
+.gf-lead{font-size:17px;line-height:1.6;color:var(--ink);margin:0 0 30px}
+.gf-step{border-top:1px solid var(--line);padding:24px 0 4px}
+.gf-num{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;font-weight:600;color:var(--sage-deep);margin:0 0 8px}
+.gf-q{font-family:var(--display);font-weight:500;font-size:19px;color:var(--moss);margin:0 0 14px}
+.gf-field{margin-bottom:14px}
+.gf-field label{display:block;font-size:13.5px;color:var(--sage-deep);margin-bottom:6px}
+.gf-field select,.gf-field input{width:100%;padding:14px 13px;font-size:16px;
+  font-family:inherit;border:1px solid var(--line);border-radius:9px;background:#fff;
+  color:var(--ink)}
+.gf-field select:focus,.gf-field input:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+.gf-hint{font-size:13.5px;line-height:1.55;color:var(--sage-deep);margin:-4px 0 0}
+.gf-bar{position:sticky;bottom:0;background:var(--cream);border-top:1px solid var(--line);
+  padding:18px 0 20px;margin-top:20px}
+.gf-sum{font-size:16px;line-height:1.5;color:var(--ink);margin:0 0 14px}
+.gf-sum b{color:var(--moss)}
+.gf-go{width:100%;padding:16px;font-size:17px;font-family:inherit;font-weight:600;
+  border:0;border-radius:10px;background:var(--sage-deep);color:var(--cream);cursor:pointer}
+.gf-go:disabled{opacity:.45;cursor:default}
+.gf-msg{font-size:14.5px;margin:12px 0 0;min-height:1.3em;text-align:center}
+.gf-msg.bad{color:#9C3B2E}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="index.html" class="wordmark"><img class="logo-img" src="brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="fork-femme-foundations.html">October 21</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div class="gf-wrap">
+    <h1 class="gf-h1">Buy one, gift one.</h1>
+    <p class="gf-lead">Take a class yourself and give one to a woman who'd use
+      it — hers is 25% off. She picks her own date, any time this semester.</p>
+
+    <form id="gfForm" novalidate>
+      <div class="gf-step">
+        <p class="gf-num">One</p>
+        <p class="gf-q">Which class are you taking?</p>
+        <div class="gf-field"><select id="gfMine"></select></div>
+      </div>
+
+      <div class="gf-step">
+        <p class="gf-num">Two</p>
+        <p class="gf-q">And which one are you giving?</p>
+        <div class="gf-field"><select id="gfGift"></select></div>
+        <p class="gf-hint">It can be the same class — plenty of people come together.</p>
+      </div>
+
+      <div class="gf-step">
+        <p class="gf-num">Three</p>
+        <p class="gf-q">Who's it for?</p>
+        <div class="gf-field">
+          <label for="gfName">Her name <span style="opacity:.7">(optional)</span></label>
+          <input id="gfName" type="text" autocomplete="off" autocapitalize="words">
+        </div>
+        <div class="gf-field">
+          <label for="gfTo">Her email <span style="opacity:.7">(optional)</span></label>
+          <input id="gfTo" type="email" autocomplete="off" inputmode="email">
+        </div>
+        <p class="gf-hint">Fill this in and we'll send her the class directly.
+          Leave it blank and we'll send the voucher to you, to give her yourself —
+          which is the nicer way round if you want to hand it over in person.</p>
+      </div>
+
+      <div class="gf-bar">
+        <p class="gf-sum" id="gfSum">Pick two classes to see the price.</p>
+        <button class="gf-go" id="gfGo" type="submit" disabled>Continue to payment</button>
+        <p class="gf-msg" id="gfMsg" role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas ·
+      <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+  </div>
+</footer>
+
+<script src="classes.js?v=9"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* A gift is priced, not discounted. There is no code here and Stripe is
+     told not to accept one, because a percentage code applies to a whole
+     cart and this offer only discounts the second class. The real prices
+     live in the stripe-checkout function; the ones shown here are for
+     reading, and the browser sends nothing but slugs and the recipient. */
+  var FN = "https://pmpaslevwimofohirves.supabase.co/functions/v1/stripe-checkout";
+  var RATE = 0.75;
+
+  /* Same list as choose.html: open, and with a $0 redeem twin in Cal.com to
+     book it with afterwards. */
+  var SELLABLE = ["bookkeeping-2", "module-1", "brand-101", "financial-planning",
+                  "certification", "legacy-planning", "trademarks"];
+
+  var mine = document.getElementById("gfMine");
+  var gift = document.getElementById("gfGift");
+  var sum = document.getElementById("gfSum");
+  var go = document.getElementById("gfGo");
+  var msg = document.getElementById("gfMsg");
+
+  function bySlug(slug) {
+    var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+    for (var i = 0; i < all.length; i++) { if (all[i].slug === slug) return all[i]; }
+    return null;
+  }
+
+  var opts = '<option value="">Choose a class…</option>' +
+    SELLABLE.map(function (slug) {
+      var c = bySlug(slug);
+      if (!c) return "";
+      return '<option value="' + slug + '">' + c.name + " — $" + Number(c.price || 0) + "</option>";
+    }).join("");
+  mine.innerHTML = opts;
+  gift.innerHTML = opts;
+
+  function price(slug) {
+    var c = bySlug(slug);
+    return Number((c && c.price) || 0);
+  }
+
+  function update() {
+    var a = mine.value, b = gift.value;
+    if (!a || !b) {
+      sum.textContent = "Pick two classes to see the price.";
+      go.disabled = true;
+      return;
+    }
+    var full = price(a);
+    var gifted = Math.round(price(b) * RATE);
+    sum.innerHTML = "Yours <b>$" + full + "</b> &middot; hers <b>$" + gifted +
+      '</b> <span style="color:var(--sage-deep)">(was $' + price(b) + ")</span> &middot; total <b>$" +
+      (full + gifted) + "</b>";
+    go.disabled = false;
+  }
+
+  mine.addEventListener("change", function () { msg.textContent = ""; update(); });
+  gift.addEventListener("change", function () { msg.textContent = ""; update(); });
+
+  document.getElementById("gfForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var a = mine.value, b = gift.value;
+    if (!a || !b) return;
+
+    var to = document.getElementById("gfTo").value.trim();
+    msg.className = "gf-msg";
+    /* Only a shape check. An address that bounces is a support email, but a
+       typo caught here saves the gift going nowhere at all. */
+    if (to && !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(to)) {
+      msg.className = "gf-msg bad";
+      msg.textContent = "That email doesn't look right — check it, or leave it blank and we'll send the voucher to you.";
+      return;
+    }
+
+    go.disabled = true;
+    go.textContent = "Taking you to payment…";
+    msg.textContent = "";
+
+    fetch(FN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        offer: "gift",
+        slug: a,
+        gift: b,
+        to: to,
+        toName: document.getElementById("gfName").value.trim()
+      })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d && d.url) { window.location.href = d.url; return; }
+      throw new Error((d && d.error) || "no url");
+    }).catch(function (err) {
+      console.error(err);
+      go.disabled = false;
+      go.textContent = "Continue to payment";
+      msg.className = "gf-msg bad";
+      msg.textContent = "We couldn't open the payment page. Try again, or email " +
+        "hello@quintaand.co and we'll send you a link.";
+    });
+  });
+
+  update();
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>
