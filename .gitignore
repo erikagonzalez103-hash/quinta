@@ -25,3 +25,6 @@ signup/
 
 # generated sign-in cards
 qr-cards/
+
+# Supabase CLI scratch — project ref and cached version, not the website
+supabase/.temp/
