@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your bundle | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<style>
+.bd-wrap{max-width:660px;margin:0 auto;padding:clamp(30px,6vw,64px) var(--edge) 70px}
+.bd-kicker{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:12px;color:var(--sage-deep);margin:0 0 10px}
+.bd-h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,6vw,2.8rem);
+  line-height:1.12;letter-spacing:-.02em;color:var(--moss);margin:0 0 14px}
+.bd-lead{font-size:17px;line-height:1.6;color:var(--ink);margin:0 0 10px}
+.bd-note{font-size:15px;line-height:1.6;color:var(--sage-deep);margin:0 0 34px}
+.bd-row{display:flex;gap:16px;align-items:center;justify-content:space-between;
+  padding:20px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.bd-row:last-of-type{border-bottom:1px solid var(--line)}
+.bd-name{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.3;
+  color:var(--moss);margin:0 0 4px}
+.bd-what{font-size:14px;line-height:1.5;color:var(--sage-deep);margin:0;max-width:44ch}
+.bd-book{flex:0 0 auto;display:inline-block;padding:13px 22px;border-radius:9px;
+  background:var(--sage-deep);color:var(--cream);text-decoration:none;
+  font-size:15px;font-weight:600;white-space:nowrap}
+.bd-taken{flex:0 0 auto;font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.12em;font-size:11px;color:var(--sage-deep)}
+.bd-after{margin-top:34px;font-size:15px;line-height:1.6;color:var(--ink)}
+.bd-after strong{color:var(--moss)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+  </div>
+</header>
+
+<main>
+  <div class="bd-wrap" id="bd">
+    <p class="bd-kicker">One moment…</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas ·
+      <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+  </div>
+</footer>
+
+<script src="../classes.js?v=9"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* WHAT THIS PAGE IS FOR
+     A bundle is sold in Cal.com as a single paid event, and buying it books
+     exactly one class — whichever one the bundle is anchored to. The other
+     classes in the bundle are booked afterwards through their $0 "redeem"
+     twins, which are hidden in Cal.com so they never show up on the public
+     booking page.
+
+     Hidden means the buyer cannot find them either. This page is what hands
+     them over: it is set as the success redirect on each bundle event, so
+     she lands here the moment her payment clears.
+
+     The links are obscure, not secret. A redeem twin's URL is the class slug
+     plus "-redeem", so anyone who works out the pattern can book a free seat
+     whether or not this page exists. The controls are the ten-seat cap on
+     each twin and watching the numbers with tools/class-capacity.py — not
+     this page. Worth remembering when the migration to Bookwhen lands.
+
+     ANCHORS: each bundle's anchor must be a class that actually has dates,
+     or checkout sends a buyer to an empty calendar. It does NOT have to be
+     the bundle's headline class. Keep this in step with the BUNDLES block in
+     fork-femme-foundations.html and with BUNDLE_STARTS_WITH in the
+     cal-instructor-notify Edge Function — all three describe the same fact
+     and there is nothing that keeps them honest automatically. */
+  var BUNDLES = {
+    "get-started": {
+      name: "Get started", price: 212,
+      anchor: "module-1",
+      redeem: ["bookkeeping-1"]
+    },
+    "keep-the-books": {
+      name: "Keep the books", price: 168,
+      anchor: "bookkeeping-2",
+      redeem: ["bookkeeping-1"]
+    },
+    "build-to-last": {
+      name: "Build to last", price: 990,
+      anchor: "legacy-planning",
+      redeem: ["certification", "financial-planning", "trademarks", "brand-101"]
+    },
+    "the-practice": {
+      name: "The Practice", price: 485,
+      anchor: "module-1",
+      redeem: ["module-2", "module-3"]
+    }
+  };
+
+  var CAL = "https://cal.com/quintaandco/";
+  var el = document.getElementById("bd");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function bySlug(slug) {
+    var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+    for (var i = 0; i < all.length; i++) { if (all[i].slug === slug) return all[i]; }
+    return null;
+  }
+
+  function lost(msg) {
+    el.innerHTML =
+      '<p class="bd-kicker">Quinta &amp; Co.</p>' +
+      '<h1 class="bd-h1">Let’s find your bundle</h1>' +
+      '<p class="bd-lead">' + esc(msg) + '</p>' +
+      '<p class="bd-lead">Email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> ' +
+      'and we’ll send your booking links straight back — nothing is lost, ' +
+      'your classes are held either way.</p>';
+  }
+
+  var key = (new URLSearchParams(location.search).get("b") || "").toLowerCase();
+  var b = BUNDLES[key];
+  if (!b) {
+    lost("This link is missing its bundle name, so we can’t tell which classes are yours.");
+    return;
+  }
+
+  var anchor = bySlug(b.anchor);
+  var rows = b.redeem.map(function (slug) {
+    var c = bySlug(slug);
+    if (!c) return "";
+    return '<div class="bd-row">' +
+             '<div><p class="bd-name">' + esc(c.name) + '</p>' +
+             '<p class="bd-what">' + esc(c.walkout || "") + '</p></div>' +
+             '<a class="bd-book" href="' + CAL + esc(slug) + '-redeem" ' +
+               'target="_blank" rel="noopener">Book this</a>' +
+           '</div>';
+  }).join("");
+
+  el.innerHTML =
+    '<p class="bd-kicker">' + esc(b.name) + ' · $' + b.price + '</p>' +
+    '<h1 class="bd-h1">You’re in. Here’s the rest of it.</h1>' +
+    '<p class="bd-lead">You’ve just booked <strong>' +
+      esc(anchor ? anchor.name : "your first class") +
+      '</strong>. Everything below is already paid for — book each one ' +
+      'whenever it suits you.</p>' +
+    '<p class="bd-note">There’s no card and nothing more to pay. ' +
+      'Bookmark this page, or keep the email — the same link brings you ' +
+      'back here any time.</p>' +
+    rows +
+    '<p class="bd-after">If a class you want doesn’t have a date yet, that’s ' +
+      'us, not you — email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> ' +
+      'and we’ll tell you the moment it’s on the calendar. ' +
+      '<strong>Your seat keeps until you take it.</strong></p>';
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>

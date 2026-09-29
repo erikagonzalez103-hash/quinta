@@ -43,12 +43,17 @@ const FALLBACK_TO = "erika@quintaand.co";   // used when no instructor is found
    class the buyer starts with, so it has to be mapped explicitly. Getting
    this wrong sends the email to nobody, because there is no class called
    "the-practice". Keep it in step with the BUNDLES block in
-   fork-femme-foundations.html. */
+   fork-femme-foundations.html and with bundle/index.html.
+
+   A bundle's anchor is whichever class it was pointed at in Cal.com, which
+   is not always its headline class - two of these were re-anchored onto a
+   class that actually had dates. Read the anchor off the event type's
+   schedule in Cal.com, never off the bundle's name. */
 const BUNDLE_STARTS_WITH: Record<string, string> = {
   "the-practice-fff": "module-1",
-  "build-to-last-fff": "certification",
-  "keep-the-books-fff": "bookkeeping-1",
-  "get-started-fff": "entity-setup",
+  "build-to-last-fff": "legacy-planning",   // re-anchored; Certification had no dates
+  "keep-the-books-fff": "bookkeeping-2",    // re-anchored; Bookkeeping I has no dates
+  "get-started-fff": "module-1",            // Entity setup has no instructor
 };
 
 function realSlug(slug: string): string {
