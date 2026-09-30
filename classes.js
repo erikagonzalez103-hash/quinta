@@ -141,7 +141,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: true,   // Tara set September dates - bookable
+    open: false,  // WAITLIST since 30 Sep: Tara's September dates passed. Set true when she adds new ones.
     name: "Bookkeeping II — Prep for your bookkeeper",
     price: 99,
     venue: "Zoom",
@@ -264,7 +264,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: true,   // Joshlyn set September dates - bookable
+    open: false,  // WAITLIST since 30 Sep: Joshlyn's September dates passed. Set true when she adds new ones.
     name: "Investing — How to pay yourself first",
     price: 250,
     venue: "Zoom",
@@ -305,7 +305,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
-    open: true,   // Nik set a September date - bookable
+    open: false,  // WAITLIST since 30 Sep: Nik's September date passed. Set true when she adds a new one.
     name: "Trademarks",
     price: 299,
     venue: "Zoom",
@@ -340,7 +340,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
-    open: true,   // Stephanie set September dates - bookable
+    open: false,  // WAITLIST since 30 Sep: Stephanie's September dates passed. Set true when she adds new ones.
     name: "Brand 101",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",

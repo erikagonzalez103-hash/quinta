@@ -15,10 +15,56 @@
 // becoming a second marketing channel.
 //
 // SECRETS: RESEND_API_KEY (already set for signup-notification).
+// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected by Supabase.
+//
+// WHY IT CHECKS THE TABLE BEFORE SENDING ANYTHING
+// This function is public: a database webhook calls it with no signature. As
+// first written it trusted whatever it was handed - so anyone who found the
+// URL could post a made-up "signup" with any address in it and have
+// hello@quintaand.co email that address, as many times as they liked. That
+// is an open relay on the domain every Quinta email is sent from, and a
+// quick way to get the domain marked as spam and the Resend account shut.
+//
+// So nothing is sent unless the row it describes really exists in
+// public.waitlist, with the same email, created within the last hour. A
+// forged payload fails the lookup. A real one replayed later fails the
+// window. And each confirmation carries a Resend idempotency key built from
+// the row id, so the same real row cannot be sent twice even inside it.
+//
+// It was finished on 11 September and never deployed; this guard went in
+// on 30 September, before it was.
+//
+// Deploy with --no-verify-jwt - the database webhook sends no Supabase JWT,
+// and the table lookup below is what authenticates the call.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+const FRESH_MS = 60 * 60 * 1000;   // a real signup reaches us in seconds
+
+/* Is this a real signup, made just now? Returns the row as the database has
+   it - never the payload's copy, which is what an attacker controls. */
+async function realRow(r: { id?: string; email?: string }): Promise<WaitlistRecord | null> {
+  if (!SUPABASE_URL || !SERVICE_KEY || !r?.id || !r?.email) return null;
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/waitlist?id=eq.${encodeURIComponent(String(r.id))}&select=*&limit=1`,
+    { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } },
+  );
+  if (!res.ok) {
+    console.error("waitlist lookup failed", res.status, await res.text());
+    return null;
+  }
+  const rows = await res.json();
+  const row = Array.isArray(rows) ? rows[0] : null;
+  if (!row) return null;
+  if (String(row.email || "").toLowerCase() !== String(r.email).toLowerCase()) return null;
+  const age = Date.now() - new Date(row.created_at).getTime();
+  if (!Number.isFinite(age) || age < -60000 || age > FRESH_MS) return null;
+  return row as WaitlistRecord;
+}
 
 // The Zoho mailbox, not the old eridionglass.com address that
 // signup-notification still points at.
@@ -128,8 +174,7 @@ function confirmHtml(r: WaitlistRecord): string {
 
     <p style="margin:0 0 16px 0;line-height:1.65;">${hello}</p>
     <p style="margin:0 0 16px 0;line-height:1.65;">You're on the list for <strong>${escapeHtml(wanted)}</strong>. When dates open, you'll hear from us before it's announced anywhere else.</p>
-    <p style="margin:0 0 16px 0;line-height:1.65;">That's the only email you'll get from this. The waitlist isn't a newsletter, and your address is never shared or sold.</p>
-    <p style="margin:0 0 28px 0;line-height:1.65;">In the meantime, <a href="https://quintaand.co/coffee.html" style="color:#4F6B5C;">Coffee with Quinta</a> is free and the best seat in the house.</p>
+    <p style="margin:0 0 28px 0;line-height:1.65;">That's the only email you'll get from this. The waitlist isn't a newsletter, and your address is never shared or sold.</p>
 
     <div style="border-top:1px solid #E8E3D7;padding-top:22px;font-size:13px;color:#8A8E83;line-height:1.6;">
       Practical business &amp; AI education · Dallas, Texas &amp; online<br>
@@ -150,9 +195,6 @@ it's announced anywhere else.
 That's the only email you'll get from this. The waitlist isn't a newsletter,
 and your address is never shared or sold.
 
-In the meantime, Coffee with Quinta is free and the best seat in the house:
-https://quintaand.co/coffee.html
-
 —
 Quinta & Co. · Practical business & AI education · Dallas, Texas & online
 Questions? Just reply — this address is read by a person.`;
@@ -160,12 +202,15 @@ Questions? Just reply — this address is read by a person.`;
 
 /* ---------- send ---------- */
 
-async function sendEmail(msg: Record<string, unknown>): Promise<string | null> {
+async function sendEmail(msg: Record<string, unknown>, onceKey: string): Promise<string | null> {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       "Content-Type": "application/json",
+      // Resend sends each key at most once in 24 hours, so a replayed real
+      // signup cannot fan out into repeat emails to the same person.
+      "Idempotency-Key": onceKey,
     },
     body: JSON.stringify(msg),
   });
@@ -194,7 +239,16 @@ serve(async (req) => {
       );
     }
 
-    const r = payload.record;
+    /* Everything below uses the DATABASE's copy of the row. If it is not a
+       real signup from the last hour, nobody is emailed - and the answer is a
+       plain 200 so a probing caller learns nothing about why. */
+    const r = await realRow(payload.record || {});
+    if (!r) {
+      console.warn(`refused: no fresh waitlist row matches id ${payload.record?.id}`);
+      return new Response(JSON.stringify({ skipped: "not a current signup" }), {
+        status: 200, headers: { "Content-Type": "application/json" },
+      });
+    }
     const wanted = r.class_name || "All classes";
 
     const alertErr = await sendEmail({
@@ -204,7 +258,7 @@ serve(async (req) => {
       subject: `Waitlist — ${r.name || r.email} wants ${wanted}`,
       html: alertHtml(r),
       text: alertText(r),
-    });
+    }, `waitlist-alert-${r.id}`);
 
     /* Her confirmation matters more than Erika's alert: Erika can read the
        table, the visitor can't. Send it even if the alert failed. */
@@ -215,7 +269,7 @@ serve(async (req) => {
       subject: `You're on the list for ${wanted}`,
       html: confirmHtml(r),
       text: confirmText(r),
-    });
+    }, `waitlist-confirm-${r.id}`);
 
     if (alertErr) console.error("alert to Erika failed:", alertErr);
     if (confirmErr) console.error("confirmation to signer failed:", confirmErr);

@@ -260,7 +260,7 @@ ${faqHtml}
 </footer>
 
 <script src="../config.js?v=8"></script>
-<script src="../classes.js?v=9"></script>
+<script src="../classes.js?v=10"></script>
 <script src="../icons.js?v=3"></script>
 <script src="../app.js?v=7" defer></script>
 </body>
