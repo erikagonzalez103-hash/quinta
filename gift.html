@@ -108,7 +108,7 @@
   </div>
 </footer>
 
-<script src="classes.js?v=10"></script>
+<script src="classes.js?v=11"></script>
 <script src="js/shop.js?v=1"></script>
 <script>
 (function () {
@@ -125,7 +125,7 @@
 
   /* Same list as choose.html: open, and with a $0 redeem twin in Cal.com to
      book it with afterwards. Only the ones with a future date are offered. */
-  var SELLABLE = ["bookkeeping-2", "module-1", "brand-101", "financial-planning",
+  var SELLABLE = ["bookkeeping-2", "module-1", "module-2", "brand-101", "financial-planning",
                   "certification", "legacy-planning", "trademarks"];
 
   var mine = document.getElementById("gfMine");
@@ -141,6 +141,18 @@
   }
   function cents(slug) { var c = bySlug(slug); return Math.round(Number((c && c.price) || 0) * 100); }
   function giftCents(slug) { return Math.round(cents(slug) * RATE); }
+
+  /* Show something at once. Cal.com answers in well under a second when
+     warm, but has taken six on a first visit - six seconds of "Checking..."
+     on a sales page, usually on a phone. The open flags in classes.js are
+     kept in step with the calendar, so list those straight away, then let
+     Cal.com's answer correct the list and add the real next dates. */
+  function fromFlags() {
+    var out = {};
+    SELLABLE.forEach(function (slug) { var c = bySlug(slug); if (c && c.open) out[slug] = "open"; });
+    return out;
+  }
+  function isDate(v) { return /^\d{4}-\d{2}-\d{2}$/.test(String(v || "")); }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -148,6 +160,7 @@
   }
 
   function render(dates) {
+    var keepA = mine.value, keepB = gift.value;
     var shown = SELLABLE.filter(function (slug) {
       return bySlug(slug) && (dates === null || dates[slug]);
     });
@@ -162,13 +175,16 @@
     }
     var opts = '<option value="">Choose a class…</option>' + shown.map(function (slug) {
       var c = bySlug(slug);
-      var next = dates && dates[slug] ? " (next: " + QuintaShop.prettyDay(dates[slug]) + ")" : "";
+      var next = dates && isDate(dates[slug]) ? " (next: " + QuintaShop.prettyDay(dates[slug]) + ")" : "";
       return '<option value="' + esc(slug) + '">' + esc(c.name) + " — " +
         QuintaShop.money(cents(slug)) + esc(next) + "</option>";
     }).join("");
     mine.innerHTML = opts;
     gift.innerHTML = opts;
     mine.disabled = gift.disabled = false;
+    /* keep what she already picked, if it is still on offer */
+    if (keepA && shown.indexOf(keepA) !== -1) mine.value = keepA;
+    if (keepB && shown.indexOf(keepB) !== -1) gift.value = keepB;
     update();
   }
 
@@ -252,9 +268,8 @@
     update();
   });
 
-  mine.innerHTML = gift.innerHTML = '<option value="">Checking which classes have dates…</option>';
-  mine.disabled = gift.disabled = true;
-  QuintaShop.dated(SELLABLE).then(render);
+  render(fromFlags());
+  QuintaShop.dated(SELLABLE).then(function (d) { if (d) render(d); });
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>

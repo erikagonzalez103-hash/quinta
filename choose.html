@@ -87,7 +87,7 @@
   </div>
 </footer>
 
-<script src="classes.js?v=10"></script>
+<script src="classes.js?v=11"></script>
 <script src="js/shop.js?v=1"></script>
 <script>
 (function () {
@@ -109,7 +109,7 @@
      with afterwards. Of these, only the ones with a future date are shown -
      QuintaShop.dated asks Cal.com. Keep in step with PRICES in the
      stripe-checkout function. */
-  var SELLABLE = ["bookkeeping-2", "module-1", "brand-101", "financial-planning",
+  var SELLABLE = ["bookkeeping-2", "module-1", "module-2", "brand-101", "financial-planning",
                   "certification", "legacy-planning", "trademarks"];
 
   var list = document.getElementById("chList");
@@ -131,7 +131,20 @@
   }
   function cents(slug) { var c = bySlug(slug); return Math.round(Number((c && c.price) || 0) * 100); }
 
+  /* Show something at once. Cal.com answers in well under a second when
+     warm, but has taken six on a first visit - six seconds of "Checking..."
+     on a sales page, usually on a phone. The open flags in classes.js are
+     kept in step with the calendar, so list those straight away, then let
+     Cal.com's answer correct the list and add the real next dates. */
+  function fromFlags() {
+    var out = {};
+    SELLABLE.forEach(function (slug) { var c = bySlug(slug); if (c && c.open) out[slug] = "open"; });
+    return out;
+  }
+  function isDate(v) { return /^\d{4}-\d{2}-\d{2}$/.test(String(v || "")); }
+
   function render(dates) {
+    var keep = picked();
     var shown = SELLABLE.filter(function (slug) {
       return bySlug(slug) && (dates === null || dates[slug]);
     });
@@ -148,10 +161,11 @@
 
     list.innerHTML = shown.map(function (slug) {
       var c = bySlug(slug);
-      var next = dates && dates[slug]
+      var next = dates && isDate(dates[slug])
         ? '<span class="ch-what">Next date: ' + esc(QuintaShop.prettyDay(dates[slug])) + '</span>' : "";
       return '<label class="ch-row">' +
-               '<input type="checkbox" value="' + esc(slug) + '">' +
+               '<input type="checkbox" value="' + esc(slug) + '"' +
+                 (keep.indexOf(slug) !== -1 ? " checked" : "") + '>' +
                '<span class="ch-body">' +
                  '<span class="ch-name">' + esc(c.name) + '</span>' +
                  '<span class="ch-what">' + esc(c.walkout || "") + '</span>' + next +
@@ -260,8 +274,8 @@
     update();
   });
 
-  list.innerHTML = '<p class="ch-note">Checking which classes have dates…</p>';
-  QuintaShop.dated(SELLABLE).then(render);
+  render(fromFlags());
+  QuintaShop.dated(SELLABLE).then(function (d) { if (d) render(d); });
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>

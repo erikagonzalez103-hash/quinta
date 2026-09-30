@@ -63,6 +63,7 @@ const ORIGINS = [SITE, "http://localhost:8137"];   // 8137 is the local preview
 const PRICES: Record<string, { cents: number; name: string }> = {
   "bookkeeping-2":      { cents:  9900, name: "Bookkeeping II — Prep for your bookkeeper" },
   "module-1":           { cents: 15000, name: "Module 1 — Claude for beginners" },
+  "module-2":           { cents: 20000, name: "Module 2 — Build your AI assistant" },
   "brand-101":          { cents: 17500, name: "Brand 101" },
   "financial-planning": { cents: 25000, name: "Investing — How to pay yourself first" },
   "certification":      { cents: 29900, name: "Get certified — WBE / MBE / DBE" },
@@ -112,6 +113,14 @@ async function hasDates(slug: string): Promise<boolean> {
     console.error(`Cal.com slots unreachable for ${slug} - allowing it through`, e);
     return true;
   }
+}
+
+/* All the checks at once. Asked one after another they cost about a second
+   per class, so "Continue to payment" on four classes sat for four seconds
+   before anything happened - long enough to click again. */
+async function undatedOf(slugs: string[]): Promise<string[]> {
+  const ok = await Promise.all(slugs.map((s) => hasDates(s)));
+  return slugs.filter((_, i) => !ok[i]);
 }
 
 /* The referral code, cleaned exactly the way app.js cleans it when she first
@@ -210,8 +219,7 @@ serve(async (req) => {
       if (!PRICES[mine] || !PRICES[gift]) {
         return json({ error: "unknown_class" }, 400);
       }
-      const undated = [];
-      for (const s of new Set([mine, gift])) if (!(await hasDates(s))) undated.push(s);
+      const undated = await undatedOf(Array.from(new Set([mine, gift])));
       if (undated.length) return json({ error: "no_dates", slugs: undated }, 409);
 
       lines = [
@@ -234,14 +242,13 @@ serve(async (req) => {
       const raw: unknown[] = Array.isArray(body?.slugs) ? body.slugs : [];
 
       /* Distinct, known, and at least two - one class at full price belongs
-         on its own Cal.com page, not here. Seven is every class there is. */
+         on its own Cal.com page, not here. The ceiling is every class in PRICES. */
       const slugs: string[] = Array.from(new Set<string>(raw.map((s) => String(s))))
         .filter((s) => Object.prototype.hasOwnProperty.call(PRICES, s));
       if (slugs.length < 2) return json({ error: "pick_at_least_two" }, 400);
-      if (slugs.length > 7) return json({ error: "too_many" }, 400);
+      if (slugs.length > Object.keys(PRICES).length) return json({ error: "too_many" }, 400);
 
-      const undated = [];
-      for (const s of slugs) if (!(await hasDates(s))) undated.push(s);
+      const undated = await undatedOf(slugs);
       if (undated.length) return json({ error: "no_dates", slugs: undated }, 409);
 
       lines = slugs.map((slug) => ({

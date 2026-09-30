@@ -99,8 +99,8 @@ const BUNDLES: Record<string, {
    takes its name from the Cal.com event title. */
 const CLASS_NAMES: Record<string, string> = {
   "module-1": "Module 1 — Claude for beginners",
-  "module-2": "Module 2 — Give Claude a memory",
-  "module-3": "Module 3 — Databases and automation",
+  "module-2": "Module 2 — Build your AI assistant",
+  "module-3": "Module 3 — Real databases & automation",
   "bookkeeping-1": "Bookkeeping I — Set up QuickBooks",
   "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
   "legacy-planning": "Legacy planning",
