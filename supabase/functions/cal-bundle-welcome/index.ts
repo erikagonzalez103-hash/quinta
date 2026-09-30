@@ -403,7 +403,9 @@ serve(async (req) => {
       <p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Keep this email — the same
         link brings you back any time. If a class you want doesn't have a date yet,
         that's us, not you: reply here and we'll tell you the moment it's on the
-        calendar. Your seat keeps until you take it.</p>
+        calendar. Your classes are good until June 30, 2027 — and if we haven't
+        given one a date by then, we refund it.
+        <a href="https://quintaand.co/policies.html#classes-paid-for-in-advance" style="color:#5A5E55">How it works</a>.</p>
       <p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p>
     </div>`;
 
@@ -413,7 +415,9 @@ serve(async (req) => {
       + `Book them whenever suits you:\n\n${link}\n\n`
       + `Keep this email — the same link brings you back any time. If a class you want `
       + `doesn't have a date yet, reply here and we'll tell you the moment it's on the `
-      + `calendar. Your seat keeps until you take it.\n\nQuinta & Co.\n`;
+      + `calendar. Your classes are good until June 30, 2027, and if we haven't given `
+      + `one a date by then, we refund it. How it works: `
+      + `https://quintaand.co/policies.html#classes-paid-for-in-advance\n\nQuinta & Co.\n`;
 
     const send = await fetch("https://api.resend.com/emails", {
       method: "POST",

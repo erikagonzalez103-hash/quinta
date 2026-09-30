@@ -163,9 +163,6 @@ serve(async (req) => {
     const className = found?.class_name || p?.eventType?.title || p?.title || slug;
 
     const verb = cancelled ? "cancelled her place in" : "booked";
-    const subject = cancelled
-      ? `Cancellation — ${className}, ${dallas(start)}`
-      : `New booking — ${className}, ${dallas(start)}`;
 
     /* Say the twin out loud when it isn't the plain class. An instructor
        seeing a $0 booking should know it was a bundle being redeemed and
@@ -174,22 +171,55 @@ serve(async (req) => {
       ? `<p style="margin:0 0 14px;color:#5A5E55;font-size:14px">She came through <strong>${esc(bookedSlug)}</strong> — a bundle or included class, so she has already paid.</p>`
       : "";
 
+    /* How she is joining. Every class is one Cal.com event with one seat
+       limit - ten seats in total, in the room and online together - and Cal.com
+       will not put two locations on an event with seats. So the booking form
+       asks "How are you joining?" instead, and the teacher is the one who
+       sends an online student her video link.
+
+       That only works if the answer is impossible to miss, so an online
+       booking says so first, in its own line, and this email's reply-to is
+       already the student - replying IS sending her the link.
+
+       responses.attending is either the string or { value } depending on the
+       field type; take either. Older bookings made before the question existed
+       have no answer, and say nothing rather than guess. */
+    const rawAttend = p?.responses?.attending?.value ?? p?.responses?.attending ?? "";
+    const attending = typeof rawAttend === "string" ? rawAttend : "";
+    const online = /online/i.test(attending);
+    const joinHtml = cancelled || !attending ? "" : online
+      ? `<p style="margin:0 0 16px;padding:12px 14px;background:#EEF2EC;border-left:3px solid #4F6B5C">
+           <strong>She's joining online.</strong> Reply to this email with your video link — the
+           reply goes straight to her. Before class is fine; the day before is kinder.</p>`
+      : `<p style="margin:0 0 16px"><strong>Joining:</strong> in person at kiln</p>`;
+    const joinText = cancelled || !attending ? "" : online
+      ? `SHE'S JOINING ONLINE - reply to this email with your video link; the reply goes straight to her.\n\n`
+      : `Joining: in person at kiln\n`;
+
+    /* "online" in the subject so the teacher sees it in her inbox list,
+       without opening the email. */
+    const subject = cancelled
+      ? `Cancellation — ${className}, ${dallas(start)}`
+      : `New booking${online ? " (online)" : ""} — ${className}, ${dallas(start)}`;
+
     const html = `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">
       <p style="margin:0 0 16px">Hi ${esc(teacher)},</p>
       <p style="margin:0 0 16px"><strong>${esc(student)}</strong> just ${verb} <strong>${esc(className)}</strong>.</p>
+      ${joinHtml}
       <p style="margin:0 0 6px"><strong>When:</strong> ${esc(dallas(start))} (Dallas time)</p>
       ${studentEmail ? `<p style="margin:0 0 16px"><strong>Her email:</strong> ${esc(studentEmail)}</p>` : ""}
       ${viaNote}
-      ${cancelled ? "" : `<p style="margin:0 0 16px">Nothing to do — this is just so you know. Your sign-in code for the day is in
+      ${cancelled || online ? "" : `<p style="margin:0 0 16px">Nothing to do — this is just so you know. Your sign-in code for the day is in
         <a href="https://quintaand.co/faculty/sign-in.html" style="color:#4F6B5C">your portal</a>.</p>`}
       <p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co.</p>
     </div>`;
 
     const text = `Hi ${teacher},\n\n${student} just ${verb} ${className}.\n\n`
+      + joinText
       + `When: ${dallas(start)} (Dallas time)\n`
       + (studentEmail ? `Her email: ${studentEmail}\n` : "")
       + (bookedSlug !== slug ? `Came through ${bookedSlug} — already paid.\n` : "")
-      + (cancelled ? "" : `\nNothing to do. Your sign-in code is at quintaand.co/faculty/sign-in.html\n`);
+      + (cancelled || online ? "" : `\nNothing to do. Your sign-in code is at quintaand.co/faculty/sign-in.html\n`);
 
     const send = await fetch("https://api.resend.com/emails", {
       method: "POST",

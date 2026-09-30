@@ -263,11 +263,14 @@ serve(async (req) => {
     }
     const KEEP_HTML = `<p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Keep this
       email — the links stay good. If a class you want doesn't have a date yet,
-      reply here and we'll tell you the moment it's on the calendar. Your seat
-      keeps until you take it.</p>`;
+      reply here and we'll tell you the moment it's on the calendar. Your classes
+      are good until June 30, 2027 — and if we haven't given one a date by then, we
+      refund it. <a href="https://quintaand.co/policies.html#classes-paid-for-in-advance" style="color:#5A5E55">How it works</a>.</p>`;
     const KEEP_TEXT = `Keep this email — the links stay good. If a class you want `
       + `doesn't have a date yet, reply here and we'll tell you the moment it's on `
-      + `the calendar. Your seat keeps until you take it.`;
+      + `the calendar. Your classes are good until June 30, 2027, and if we haven't `
+      + `given one a date by then, we refund it. How it works: `
+      + `https://quintaand.co/policies.html#classes-paid-for-in-advance`;
 
     async function send(to: string, subject: string, html: string, text: string) {
       const res = await fetch("https://api.resend.com/emails", {

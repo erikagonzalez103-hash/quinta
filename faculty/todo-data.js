@@ -28,7 +28,7 @@ const QUINTA_FACULTY_TASKS = [
       "advertises as bookable have no dates in Cal.com right now, so the sale " +
       "has almost nothing it can actually sell. Set your class schedule in the " +
       "portal and it reaches Cal.com within seconds. Dates through December are " +
-      "ideal — the bundles are redeemable across the semester, so the further " +
+      "ideal — the bundles are redeemable until June 30, 2027, so the further " +
       "ahead you go, the more of them are worth buying.",
     type: "both",
     due: "This week"

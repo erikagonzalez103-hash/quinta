@@ -11,7 +11,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Quinta &amp; Co.">
 <meta property="og:title" content="Choose your classes — two for 15% off, three for 25%">
-<meta property="og:description" content="Build your own set from the classes open for Fork, Femme &amp; Foundations. Pick your dates afterwards, any time this semester.">
+<meta property="og:description" content="Build your own set from the classes open for Fork, Femme &amp; Foundations. Pick your dates afterwards, any time up to June 30, 2027.">
 <meta property="og:url" content="https://quintaand.co/choose.html">
 <meta property="og:image" content="https://quintaand.co/images/og-default.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,6 +47,8 @@
 .ch-go:disabled{opacity:.45;cursor:default}
 .ch-msg{font-size:14.5px;margin:12px 0 0;min-height:1.3em;text-align:center}
 .ch-msg.bad{color:#9C3B2E}
+.ch-terms{font-size:13px;line-height:1.55;color:var(--sage-deep);margin:12px 0 0;text-align:center}
+.ch-terms a{color:var(--sage-deep)}
 </style>
 </head>
 <body>
@@ -64,8 +66,8 @@
     <p class="ch-lead">Any <strong>two</strong> classes are 15% off. Any
       <strong>three or more</strong> are 25% off. Nothing here is a fixed
       bundle — pick whatever you actually need.</p>
-    <p class="ch-note">You pay now and pick your dates afterwards, any time
-      this semester. We'll email you a booking link for each class.</p>
+    <p class="ch-note">You pay now and pick your dates afterwards, any time up to
+      June 30, 2027. We'll email you a booking link for each class.</p>
 
     <form id="chForm" novalidate>
       <div id="chList"><p class="ch-note">Loading classes…</p></div>
@@ -75,6 +77,8 @@
         <p class="ch-code" id="chCode"></p>
         <button class="ch-go" id="chGo" type="submit" disabled>Pick two to continue</button>
         <p class="ch-msg" id="chMsg" role="status" aria-live="polite"></p>
+        <p class="ch-terms">Use by June 30, 2027 &middot; full refund within 14 days if you haven't
+          taken a class &middot; <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
       </div>
     </form>
   </div>
