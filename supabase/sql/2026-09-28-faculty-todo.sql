@@ -63,12 +63,16 @@ create policy "faculty update own tasks"
 grant select, insert, update on public.faculty_tasks to authenticated;
 
 -- keep updated_at honest even if a future caller forgets to set it
+-- Named quote tag rather than a bare pair of dollar signs: the dashboard
+-- editor has mis-paired those before and reported "syntax error at end of
+-- input" on a file that was otherwise fine.
 create or replace function public.faculty_tasks_touch()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql as $touch$
 begin
   new.updated_at := now();
   return new;
-end $$;
+end
+$touch$;
 
 drop trigger if exists faculty_tasks_touch_trg on public.faculty_tasks;
 create trigger faculty_tasks_touch_trg

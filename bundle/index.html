@@ -55,6 +55,7 @@
 </footer>
 
 <script src="../classes.js?v=9"></script>
+<script src="../js/shop.js?v=1"></script>
 <script>
 (function () {
   "use strict";
@@ -170,13 +171,40 @@
   var rows = b.redeem.map(function (slug) {
     var c = bySlug(slug);
     if (!c) return "";
-    return '<div class="bd-row">' +
+    return '<div class="bd-row" data-slug="' + esc(slug) + '">' +
              '<div><p class="bd-name">' + esc(c.name) + '</p>' +
              '<p class="bd-what">' + esc(c.walkout || "") + '</p></div>' +
              '<a class="bd-book" href="' + CAL + esc(slug) + '-redeem" ' +
                'target="_blank" rel="noopener">Book this</a>' +
            '</div>';
   }).join("");
+
+  /* Swap "Book this" for the honest state once we know it. A button that
+     opens an empty Cal.com calendar reads as broken - and on 30 September
+     most of these did exactly that. Asked of Cal.com's public availability
+     for each redeem twin; if Cal.com cannot be reached at all the buttons
+     stay as they are, since the calendar itself will tell her the truth. */
+  function markDates() {
+    if (typeof QuintaShop === "undefined") return;
+    QuintaShop.dated(b.redeem).then(function (dates) {
+      if (!dates) return;
+      Array.prototype.forEach.call(el.querySelectorAll(".bd-row[data-slug]"), function (row) {
+        var slug = row.getAttribute("data-slug");
+        var btn = row.querySelector(".bd-book");
+        if (!btn) return;
+        if (dates[slug]) {
+          var what = row.querySelector(".bd-what");
+          if (what) what.textContent = (what.textContent ? what.textContent + " " : "") +
+            "Next date: " + QuintaShop.prettyDay(dates[slug]) + ".";
+          return;
+        }
+        var span = document.createElement("span");
+        span.className = "bd-taken";
+        span.textContent = "No date yet";
+        btn.parentNode.replaceChild(span, btn);
+      });
+    });
+  }
 
   el.innerHTML =
     '<p class="bd-kicker">' + esc(b.name) + ' · $' + b.price + '</p>' +
@@ -193,6 +221,7 @@
       'us, not you — email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> ' +
       'and we’ll tell you the moment it’s on the calendar. ' +
       '<strong>Your seat keeps until you take it.</strong></p>';
+  markDates();
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>

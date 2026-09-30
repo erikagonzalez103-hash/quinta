@@ -77,6 +77,49 @@ const CODE_FOR = (n: number) => (n >= 3 ? "FFF25" : n === 2 ? "FFF15" : null);
 
 const GIFT_RATE = 0.75;          // the gifted class is 25% off
 
+/* Does this class have a date she could actually book?
+
+   Asked of Cal.com's public availability endpoint, which needs no key and is
+   what the booking page itself uses - so it is the truth about bookable,
+   not the portal's idea of scheduled. It is asked about the $0 REDEEM twin,
+   because that is the door she walks through after paying; a class whose
+   twin has no dates cannot be taken, whatever the class page says.
+
+   On 30 September four of the seven classes this sold had no future date at
+   all, so a buyer could pay $299 for Trademarks with nowhere to book it.
+   The pages hide undated classes; this refuses them, so a hand-made request
+   cannot get around the pages.
+
+   If Cal.com itself is unreachable this lets the class through and says so
+   in the log. Refusing every sale because a third party blinked would cost
+   more than the rare undated sale it prevents, and "your seat keeps until you
+   take it" covers her either way. */
+async function hasDates(slug: string): Promise<boolean> {
+  const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const now = Date.now();
+  const url = "https://api.cal.com/v2/slots"
+    + `?eventTypeSlug=${encodeURIComponent(slug + "-redeem")}&username=quintaandco`
+    + `&start=${day(now)}&end=${day(now + 150 * 86400000)}`;
+  try {
+    const r = await fetch(url, { headers: { "cal-api-version": "2024-09-04" } });
+    if (!r.ok) {
+      console.error(`Cal.com slots ${r.status} for ${slug} - allowing it through`);
+      return true;
+    }
+    const d = await r.json();
+    return Object.keys(d?.data || {}).length > 0;
+  } catch (e) {
+    console.error(`Cal.com slots unreachable for ${slug} - allowing it through`, e);
+    return true;
+  }
+}
+
+/* The referral code, cleaned exactly the way app.js cleans it when she first
+   lands, so the ledger and the faculty leaderboard compare like with like. */
+function cleanRef(v: unknown): string {
+  return String(v || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+}
+
 async function stripe(path: string, body?: URLSearchParams) {
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method: body ? "POST" : "GET",
@@ -93,13 +136,11 @@ async function stripe(path: string, body?: URLSearchParams) {
 /* The promotion code, by the name a customer would type, with the minimum
    order amount Stripe holds against it.
 
-   The minimum is read back rather than written down here on purpose. Stripe
-   refuses a session outright if it carries a code the cart is too small for,
-   which would show the buyer "we couldn't open the payment page" and lose
-   the sale. Today every two-class cart clears $249 and every three-class
-   cart clears $424 exactly - but add one cheaper class to the catalogue and
-   that stops being true. Comparing against the live value means that day
-   costs a smaller discount, not a broken checkout.
+   The minimum is read back rather than written down here on purpose, so the
+   check below compares against whatever Stripe will actually enforce. If a
+   cart ever falls under it - add one cheaper class to the catalogue and a
+   two-class cart could - the sale is refused with a clear reason rather
+   than sent on to Stripe at a price the page never quoted.
 
    Returns null when the code does not exist or has been archived. */
 async function promo(code: string): Promise<{ id: string; min: number } | null> {
@@ -144,7 +185,16 @@ serve(async (req) => {
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
-    form.set("cancel_url", `${SITE}/fork-femme-foundations.html`);
+    /* Back to the page she came from, with her choices lost but her place
+       kept - not to the top of the landing page, three scrolls away from
+       where she was. */
+    form.set("cancel_url", `${SITE}/${isGift ? "gift" : "choose"}.html`);
+
+    /* Who sent her. The pages read it from the same localStorage key app.js
+       fills when she first lands on a ?ref= link, and hand it over here, so a
+       sale on Stripe credits the teacher exactly as a Cal.com booking does. */
+    const ref = cleanRef(body?.ref);
+    if (ref) form.set("metadata[ref]", ref);
 
     type Line = { slug: string; cents: number; label: string };
     let lines: Line[] = [];
@@ -160,6 +210,10 @@ serve(async (req) => {
       if (!PRICES[mine] || !PRICES[gift]) {
         return json({ error: "unknown_class" }, 400);
       }
+      const undated = [];
+      for (const s of new Set([mine, gift])) if (!(await hasDates(s))) undated.push(s);
+      if (undated.length) return json({ error: "no_dates", slugs: undated }, 409);
+
       lines = [
         { slug: mine, cents: PRICES[mine].cents, label: PRICES[mine].name },
         { slug: gift, cents: Math.round(PRICES[gift].cents * GIFT_RATE),
@@ -186,6 +240,10 @@ serve(async (req) => {
       if (slugs.length < 2) return json({ error: "pick_at_least_two" }, 400);
       if (slugs.length > 7) return json({ error: "too_many" }, 400);
 
+      const undated = [];
+      for (const s of slugs) if (!(await hasDates(s))) undated.push(s);
+      if (undated.length) return json({ error: "no_dates", slugs: undated }, 409);
+
       lines = slugs.map((slug) => ({
         slug, cents: PRICES[slug].cents, label: PRICES[slug].name,
       }));
@@ -205,19 +263,28 @@ serve(async (req) => {
         form.set("discounts[0][promotion_code]", p.id);
         appliedCode = want;
         form.set("metadata[code]", want as string);
-      } else if (want) {
-        /* Sell it rather than fail, but make it impossible to miss: she is
-           being charged full price for a cart that was promised a discount,
-           and only this log will say why. Leave the box on so she can still
-           type a code she has from somewhere else. */
+      } else {
+        /* The page she just left quoted her the discounted price. Sending her
+           on to a full-price Stripe page would charge more than we advertised
+           one screen earlier, so refuse instead and let the page tell her to
+           email. A lost sale is recoverable; an overcharge is a refund and a
+           woman who will not come back.
+
+           Happens only if the code has been archived, the lookup failed, or
+           the catalogue gained a class cheap enough to fall under a minimum. */
         console.error(
           p
-            ? `${want} NOT APPLIED — cart is ${total} and the code needs ${p.min}. Selling ${slugs.length} classes at full price.`
-            : `PROMOTION CODE ${want} NOT FOUND OR ARCHIVED — selling ${slugs.length} classes at full price.`,
+            ? `${want} NOT APPLIED — cart is ${total} and the code needs ${p.min}. Refused rather than overcharge.`
+            : `PROMOTION CODE ${want} NOT FOUND OR ARCHIVED. Refused rather than overcharge.`,
         );
-        form.set("allow_promotion_codes", "true");
+        return json({ error: "discount_unavailable", code: want }, 409);
       }
     }
+
+    /* What each line cost before any discount, in order. The webhook splits
+       the amount actually paid across the ledger rows in these proportions,
+       so a gift's two rows record $150 and $112.50 rather than two halves. */
+    form.set("metadata[cents]", lines.map((l) => l.cents).join(","));
 
     lines.forEach((l, i) => {
       form.set(`line_items[${i}][quantity]`, "1");

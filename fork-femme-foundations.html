@@ -231,9 +231,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       <div class="fff-code">
         <p style="margin:0 0 6px"><b>FFF15 &middot; FFF25</b></p>
         <p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:var(--ink)">Pick
-          your own classes and type the code at checkout — <b>FFF15</b> for two,
-          <b>FFF25</b> for three or more. Bundle prices above are already discounted,
-          so there's nothing to type for those. Individual classes start at $99.</p>
+          your own classes and the discount is applied for you — <b>FFF15</b> takes 15%
+          off two, <b>FFF25</b> takes 25% off three or more. Nothing to type; you'll see it
+          on the payment page. Bundle prices above are already discounted too.</p>
         <p style="margin:0 0 14px"><a class="btn btn-solid" href="choose.html">Choose your classes</a></p>
         <p style="margin:0;font-size:14px;line-height:1.55;color:var(--sage-deep)">Gifting
           a seat needs no code — the price is worked out for you.
@@ -327,6 +327,30 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
   var CAL_USER = "quintaandco";
 
+  /* Who sent her, so the bundle booking credits the teacher. Each bundle
+     event in Cal.com has a hidden "ref" field that Cal.com fills from ?ref=
+     on the booking URL - but the buttons below were built without it, so a
+     bundle sold off a faculty link credited nobody.
+
+     Reads the URL before localStorage on purpose. app.js is what stores the
+     code, and it loads with defer, so on her very first arrival it has not
+     run yet when these buttons are built. Same cleaning and 60-day window as
+     app.js, so both paths agree on who gets the credit. */
+  function currentRef() {
+    function clean(v) { return String(v || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); }
+    try {
+      var fromUrl = clean(new URLSearchParams(location.search).get("ref"));
+      if (fromUrl) return fromUrl;
+      var s = JSON.parse(localStorage.getItem("quinta_ref") || "null");
+      if (s && s.code && Date.now() - s.at < 60 * 24 * 60 * 60 * 1000) return clean(s.code);
+    } catch (e) { /* private browsing - attribution is best-effort */ }
+    return "";
+  }
+  function withRef(url) {
+    var r = currentRef();
+    return r ? url + (url.indexOf("?") === -1 ? "?" : "&") + "ref=" + encodeURIComponent(r) : url;
+  }
+
   /* `blurb` says plainly what she gets. Without it "The Practice" on a bundle
      card and "The Practice" in the nav are the same two words meaning two
      different things on one page - the track, and a price for part of it. */
@@ -395,7 +419,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     }).join(" · ");
     var ready = !!b.twin;
     var action = ready
-      ? '<a class="btn btn-solid" data-book="' + esc(b.key) + '" href="https://cal.com/' + CAL_USER + '/' + esc(b.twin) + '">Book the bundle</a>'
+      ? '<a class="btn btn-solid" data-book="' + esc(b.key) + '" href="' +
+          esc(withRef("https://cal.com/" + CAL_USER + "/" + b.twin)) + '">Book the bundle</a>'
       : '<form class="fff-mini" data-bundle="' + esc(b.key) + '" novalidate>' +
           '<label class="sr-only" for="e-' + esc(b.key) + '">Your email</label>' +
           '<input id="e-' + esc(b.key) + '" type="email" placeholder="you@yourbusiness.com" required>' +

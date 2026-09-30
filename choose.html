@@ -88,6 +88,7 @@
 </footer>
 
 <script src="classes.js?v=9"></script>
+<script src="js/shop.js?v=1"></script>
 <script>
 (function () {
   "use strict";
@@ -96,17 +97,17 @@
      It is a picker. It is NOT where the discount is decided - the prices
      below are for reading, and the real ones live in the stripe-checkout
      function, which never trusts anything this page sends except the list of
-     slugs. The percentage is a Stripe coupon with a minimum order amount, so
-     Stripe is what refuses a code on a cart too small to earn it.
+     slugs. The discount is a Stripe promotion code the function attaches
+     itself, so there is nothing for her to type and nothing to forget.
 
-     The buyer types the code herself on Stripe's page. That is the point of
-     the exercise - Cal.com has no box to type one into, which is why these
-     three offers moved off it. */
+     The function reports which code it actually attached. This page will not
+     send her on to Stripe unless that matches what it quoted her - see the
+     submit handler. */
   var FN = "https://pmpaslevwimofohirves.supabase.co/functions/v1/stripe-checkout";
 
-  /* Only classes that are open AND have a $0 redeem twin in Cal.com to book
-     them with afterwards. Selling a class with no door to walk through is
-     how you end up refunding someone. Keep in step with PRICES in the
+  /* Classes that are open AND have a $0 redeem twin in Cal.com to book them
+     with afterwards. Of these, only the ones with a future date are shown -
+     QuintaShop.dated asks Cal.com. Keep in step with PRICES in the
      stripe-checkout function. */
   var SELLABLE = ["bookkeeping-2", "module-1", "brand-101", "financial-planning",
                   "certification", "legacy-planning", "trademarks"];
@@ -128,32 +129,49 @@
     for (var i = 0; i < all.length; i++) { if (all[i].slug === slug) return all[i]; }
     return null;
   }
+  function cents(slug) { var c = bySlug(slug); return Math.round(Number((c && c.price) || 0) * 100); }
 
-  var rows = SELLABLE.map(function (slug) {
-    var c = bySlug(slug);
-    if (!c) return "";
-    return '<label class="ch-row">' +
-             '<input type="checkbox" value="' + esc(slug) + '">' +
-             '<span class="ch-body">' +
-               '<span class="ch-name">' + esc(c.name) + '</span>' +
-               '<span class="ch-what">' + esc(c.walkout || "") + '</span>' +
-             '</span>' +
-             '<span class="ch-price">$' + Number(c.price || 0) + '</span>' +
-           '</label>';
-  }).join("");
-  list.innerHTML = rows || '<p class="ch-note">Classes are being scheduled — ' +
-    'email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>';
+  function render(dates) {
+    var shown = SELLABLE.filter(function (slug) {
+      return bySlug(slug) && (dates === null || dates[slug]);
+    });
+
+    if (shown.length < 2) {
+      list.innerHTML = '<p class="ch-note">Not enough classes have dates on the calendar ' +
+        'yet to build your own set. Faculty are scheduling now — in the meantime the ' +
+        '<a href="fork-femme-foundations.html">bundles</a> are open, or email ' +
+        '<a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and we’ll tell you ' +
+        'the moment more dates go up.</p>';
+      update();
+      return;
+    }
+
+    list.innerHTML = shown.map(function (slug) {
+      var c = bySlug(slug);
+      var next = dates && dates[slug]
+        ? '<span class="ch-what">Next date: ' + esc(QuintaShop.prettyDay(dates[slug])) + '</span>' : "";
+      return '<label class="ch-row">' +
+               '<input type="checkbox" value="' + esc(slug) + '">' +
+               '<span class="ch-body">' +
+                 '<span class="ch-name">' + esc(c.name) + '</span>' +
+                 '<span class="ch-what">' + esc(c.walkout || "") + '</span>' + next +
+               '</span>' +
+               '<span class="ch-price">' + QuintaShop.money(cents(slug)) + '</span>' +
+             '</label>';
+    }).join("");
+    update();
+  }
 
   function picked() {
     return Array.prototype.slice.call(list.querySelectorAll("input:checked"))
       .map(function (i) { return i.value; });
   }
 
+  function wantCode(n) { return n >= 3 ? "FFF25" : (n === 2 ? "FFF15" : null); }
+
   function update() {
     var p = picked();
-    var total = p.reduce(function (t, s) {
-      var c = bySlug(s); return t + Number((c && c.price) || 0);
-    }, 0);
+    var total = p.reduce(function (t, s) { return t + cents(s); }, 0);
 
     if (!p.length) {
       sum.textContent = "Nothing picked yet.";
@@ -167,20 +185,27 @@
     var after = Math.round(total * (100 - pct) / 100);
 
     sum.innerHTML = p.length + (p.length === 1 ? " class" : " classes") +
-      " &middot; <b>$" + total + "</b>" +
-      (pct ? ' <span style="color:var(--sage-deep)">&rarr; about $' + after +
+      " &middot; <b>" + QuintaShop.money(total) + "</b>" +
+      (pct ? ' <span style="color:var(--sage-deep)">&rarr; ' + QuintaShop.money(after) +
              " with " + pct + "% off</span>" : "");
 
     if (pct) {
-      codeLine.innerHTML = "Type <strong>" + (pct === 25 ? "FFF25" : "FFF15") +
-        "</strong> in the promo code box on the payment page.";
+      codeLine.innerHTML = "<strong>" + wantCode(p.length) + "</strong> is applied for you " +
+        "— you’ll see it on the payment page. Nothing to type.";
       go.disabled = false;
       go.textContent = "Continue to payment";
     } else {
-      codeLine.textContent = "Add one more and it's 15% off.";
+      codeLine.textContent = "Add one more and it’s 15% off.";
       go.disabled = true;
       go.textContent = "Pick two to continue";
     }
+  }
+
+  function fail(text) {
+    go.disabled = false;
+    go.textContent = "Continue to payment";
+    msg.className = "ch-msg bad";
+    msg.textContent = text;
   }
 
   list.addEventListener("change", function () { msg.textContent = ""; update(); });
@@ -188,7 +213,8 @@
   document.getElementById("chForm").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var p = picked();
-    if (p.length < 2) return;
+    if (p.length < 2 || go.disabled) return;
+    var want = wantCode(p.length);
 
     go.disabled = true;
     go.textContent = "Taking you to payment…";
@@ -198,21 +224,44 @@
     fetch(FN, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slugs: p })
+      body: JSON.stringify({ slugs: p, ref: QuintaShop.ref() })
     }).then(function (r) { return r.json(); }).then(function (d) {
-      if (d && d.url) { window.location.href = d.url; return; }
+      /* Only go on to Stripe if the code she was quoted is the code that was
+         attached. Anything else would put her in front of a price higher
+         than the one on this page. */
+      if (d && d.url && d.code === want) { window.location.href = d.url; return; }
+
+      if (d && d.error === "no_dates") {
+        fail("One of those classes has just lost its last date, so we can’t sell it " +
+          "right now. We’ve refreshed the list — pick again.");
+        QuintaShop.dated(SELLABLE).then(render);
+        return;
+      }
+      if (d && (d.error === "discount_unavailable" || d.url)) {
+        fail("The " + want + " discount isn’t applying right now, so we haven’t sent you " +
+          "to payment at full price. Email hello@quintaand.co and we’ll send you a link " +
+          "at the price shown above.");
+        return;
+      }
       throw new Error((d && d.error) || "no url");
     }).catch(function (err) {
       console.error(err);
-      go.disabled = false;
-      go.textContent = "Continue to payment";
-      msg.className = "ch-msg bad";
-      msg.textContent = "We couldn't open the payment page. Try again, or email " +
-        "hello@quintaand.co and we'll send you a link.";
+      fail("We couldn’t open the payment page. Try again, or email " +
+        "hello@quintaand.co and we’ll send you a link.");
     });
   });
 
-  update();
+  /* Coming back from Stripe with the browser's Back button restores this page
+     from memory exactly as she left it - button disabled, "Taking you to
+     payment..." - and nothing re-enables it. Reset it whenever the page is
+     shown, not only when it first loads. */
+  window.addEventListener("pageshow", function () {
+    msg.textContent = "";
+    update();
+  });
+
+  list.innerHTML = '<p class="ch-note">Checking which classes have dates…</p>';
+  QuintaShop.dated(SELLABLE).then(render);
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>

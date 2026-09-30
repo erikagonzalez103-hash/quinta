@@ -250,13 +250,37 @@ async function recordBooking(
   return { ledger: bundle ? "bundle recorded" : "class recorded", rows: rows.length };
 }
 
-/* A cancellation. A bundle or class she cancelled was never owed to her, so
-   those rows go. A cancelled REDEEM is different - she still owns that class,
-   she just gave back the date, so it returns to 'owed'. A class already taken
-   is left alone; she attended it whatever the booking now says. */
+/* A cancellation.
+
+   A Cal.com cancellation means "not on that date". It does NOT mean "refund
+   me" - Cal.com cannot tell the two apart, and Erika refunds by hand. So:
+
+   - A cancelled REDEEM: she still owns the class, she gave back the date.
+     It returns to 'owed'.
+   - A cancelled BUNDLE: same thing for its first class only. That row goes
+     back to 'owed'; every other class in the bundle is untouched. This used
+     to delete every row on the order that was not yet taken - including
+     classes she had already booked through her redeem links - so cancelling
+     one date quietly wiped out the rest of a $990 purchase.
+   - A cancelled SINGLE class: that one row goes. It was one class, paid for
+     on that booking, and it is gone with it.
+
+   A class already taken is never touched; she attended it whatever the
+   booking now says. */
 async function undoBooking(bookedSlug: string, buyer: Buyer) {
   if (!SUPABASE_URL || !SERVICE_KEY) return { ledger: "skipped, no credentials" };
   const slug = realSlug(bookedSlug);
+
+  const bundle = BUNDLES[bookedSlug];
+  if (bundle) {
+    const q = `enrollments?order_ref=eq.${encodeURIComponent(buyer.uid)}`
+      + `&class_slug=eq.${encodeURIComponent(bundle.anchor)}&status=eq.booked`;
+    const res = await db(q, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "owed", session_on: null }),
+    });
+    return { ledger: res.ok ? "bundle date returned to owed" : "bundle undo failed" };
+  }
 
   if (/-redeem$/i.test(bookedSlug)) {
     const q = `enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
@@ -310,12 +334,16 @@ serve(async (req) => {
     const start = String(p?.startTime || p?.start || "");
     const booked = p?.eventType?.title || p?.title || "your first class";
 
-    /* A referral code, if the booking carried one. Cal.com puts anything
-       passed on the booking URL into metadata or the tracking fields; take
-       whichever turned up and do not mind if neither did. */
-    const ref = String(
-      p?.metadata?.ref || p?.metadata?.utm_source || p?.tracking?.utm_source || "",
-    ).trim() || null;
+    /* A referral code, if the booking carried one. Each class event has a
+       hidden "ref" booking field that Cal.com fills from ?ref= on the booking
+       URL, and a booking field's answer arrives in `responses`, not in
+       `metadata` - which is where this used to look, so it found nothing.
+       responses.ref is either the string or { value } depending on the field
+       type; take either, then fall back to the tracking params. */
+    const rawRef = p?.responses?.ref?.value ?? p?.responses?.ref
+      ?? p?.metadata?.ref ?? p?.tracking?.utm_source ?? "";
+    const ref = String(typeof rawRef === "string" ? rawRef : "")
+      .toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24) || null;
 
     const buyer: Buyer = {
       name: String(who?.name || "").trim(),

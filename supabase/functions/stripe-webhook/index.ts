@@ -144,44 +144,87 @@ serve(async (req) => {
     const first = name.split(/\s+/)[0] || "there";
     const paid = typeof s?.amount_total === "number" ? s.amount_total : null;
 
+    const ref = String(s?.metadata?.ref || "").trim() || null;
+    const orderId = String(s?.id || "");
+
+    /* What she actually paid, split across the rows in proportion to what
+       each line cost before any discount. The checkout function writes those
+       list prices into metadata.cents in line order - her classes first, the
+       gift last. An even split would record a gift's $150 and $112.50 as two
+       halves of $262.50, which is right in total and wrong on both rows.
+       Falls back to an even split for a session made before this existed. */
+    const list = String(s?.metadata?.cents || "").split(",").map(Number)
+      .filter((n: number) => Number.isFinite(n) && n > 0);
+    const lineCount = slugs.length + (giftSlug ? 1 : 0);
+    const listTotal = list.reduce((t: number, n: number) => t + n, 0);
+    function share(i: number): number | null {
+      if (paid === null) return null;
+      if (list.length === lineCount && listTotal > 0) {
+        return Math.round(paid * list[i] / listTotal);
+      }
+      return Math.round(paid / lineCount);
+    }
+
+    /* EVERY ROW MUST CARRY THE SAME KEYS. PostgREST inserts an array as one
+       statement and rejects the whole batch if one object has a field the
+       others lack. The gift row used to be the only one with `notes`, so
+       every gift purchase wrote nothing at all - money taken, emails sent,
+       ledger empty. `row()` is the single place a row is shaped. */
+    function row(fields: {
+      student_name: string | null; student_email: string; class_slug: string;
+      source: string; order_ref: string; amount_cents: number | null;
+      notes: string | null;
+    }) {
+      return {
+        student_name: fields.student_name,
+        student_email: fields.student_email,
+        class_slug: fields.class_slug,
+        class_name: CLASS_NAMES[fields.class_slug] || fields.class_slug,
+        source: fields.source,
+        bundle_key: null,
+        order_ref: fields.order_ref,
+        amount_cents: fields.amount_cents,
+        ref_code: ref,
+        status: "owed",
+        session_on: null,
+        notes: fields.notes,
+      };
+    }
+
     /* One row per class, all 'owed' - unlike a Cal.com bundle, paying here
-       books nothing, so there is no anchor with a date on it yet. Split the
-       amount evenly so the rows sum to what she actually paid after the
-       discount rather than to the list price. */
-    const each = paid === null ? null : Math.round(paid / (slugs.length + (giftSlug ? 1 : 0)));
-    const rows: Record<string, unknown>[] = slugs.map((slug) => ({
+       books nothing, so there is no class with a date on it yet. */
+    const rows = slugs.map((slug, i) => row({
       student_name: name || null,
       student_email: email,
       class_slug: slug,
-      class_name: CLASS_NAMES[slug] || slug,
       source: giftSlug ? "gift" : "multi-discount",
-      bundle_key: null,
-      order_ref: String(s?.id || ""),
-      amount_cents: each,
-      status: "owed",
-      session_on: null,
+      order_ref: orderId,
+      amount_cents: share(i),
+      notes: null,
     }));
 
     /* The gifted class belongs to the recipient, not the payer - it is her
        entitlement, and the QR check-in has to find it under her name on the
        day. When no recipient email was given the row goes to the buyer, who
-       is passing the voucher on herself. */
+       is passing the voucher on herself.
+
+       Its order_ref carries a ":gift" suffix. The ledger allows one row per
+       (order_ref, class_slug) so a retried webhook cannot double-grant - and
+       without the suffix a gift of the SAME class as her own would collide
+       with her row and sink the whole insert. The suffix keeps both rows
+       distinct while a retry of the same session still collides, as it should. */
     if (giftSlug) {
-      rows.push({
+      rows.push(row({
         student_name: giftName || null,
         student_email: giftEmail || email,
         class_slug: giftSlug,
-        class_name: CLASS_NAMES[giftSlug] || giftSlug,
         source: "gift",
-        bundle_key: null,
-        order_ref: String(s?.id || ""),
-        amount_cents: each,
-        status: "owed",
-        session_on: null,
+        order_ref: `${orderId}:gift`,
+        amount_cents: share(slugs.length),
         notes: giftEmail
           ? `Gift from ${name || email}`
-          : `Gift bought by ${name || email} — voucher not yet handed over`,
-      });
+          : `Gift bought by ${name || email}, voucher to be handed over`,
+      }));
     }
 
     let ledger = "written";
@@ -198,9 +241,11 @@ serve(async (req) => {
       console.error("ledger write threw", e);
     }
 
+    /* She has paid and has no links. A 500 makes Stripe retry for up to three
+       days, which is the only way she ever gets them without a human. */
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY is not set - she has paid and has no links");
-      return json({ ok: true, ledger, emailed: false }, 200);
+      return json({ error: "no email service", ledger }, 500);
     }
 
     function bookLine(slug: string) {
@@ -231,17 +276,42 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: SEND_FROM, to: [to], bcc: [BCC], reply_to: BCC, subject, html, text,
+          from: SEND_FROM, to: [to],
+          // copying Erika on a message already addressed to her sends it twice
+          bcc: to === BCC ? undefined : [BCC],
+          reply_to: BCC, subject, html, text,
         }),
       });
       if (!res.ok) console.error("Resend failed", to, res.status, await res.text());
       return res.ok;
     }
 
+    /* A ledger write that failed for any reason other than "already there"
+       is invisible otherwise: the buyer still gets her links, Erika is copied
+       on the email, and nothing says the rows are missing until class day
+       when the check-in matches nobody. So say it, to the one person who can
+       put it right, in plain words. */
+    if (ledger !== "written" && ledger !== "already recorded") {
+      await send(BCC, `Ledger write failed — Stripe order ${orderId}`,
+        wrap(`<p style="margin:0 0 12px">A Stripe purchase went through but its
+          enrollment rows were not written (<code>${esc(ledger)}</code>).</p>
+          <p style="margin:0 0 12px"><strong>Buyer:</strong> ${esc(name || "(no name)")},
+          ${esc(email)}<br><strong>Classes:</strong> ${esc(slugs.join(", "))}${
+            giftSlug ? `<br><strong>Gift:</strong> ${esc(giftSlug)} for ${esc(giftEmail || "the buyer to hand over")}` : ""}
+          <br><strong>Order:</strong> ${esc(orderId)}</p>
+          <p style="margin:0">She has been emailed her booking links as normal.
+          Add the rows by hand, or ask Claude to — the function log has the detail.</p>`),
+        `Ledger write failed (${ledger}) for Stripe order ${orderId}.\n`
+          + `Buyer: ${name || "(no name)"}, ${email}\nClasses: ${slugs.join(", ")}\n`
+          + (giftSlug ? `Gift: ${giftSlug} for ${giftEmail || "the buyer to hand over"}\n` : "")
+          + `She has been emailed her links as normal. Add the rows by hand.\n`);
+    }
+
     /* Two shapes of email. A gift to a named recipient sends her her own,
        and tells the buyer it has gone. Everything else is one email with a
        link per class. */
     const sentTo: string[] = [];
+    const failed: string[] = [];
 
     if (giftSlug && giftEmail) {
       const who = giftName ? esc(giftName.split(/\s+/)[0]) : "there";
@@ -257,20 +327,31 @@ serve(async (req) => {
         `Hi ${who},\n\n${name || "A friend"} has given you a place in `
           + `${CLASS_NAMES[giftSlug] || giftSlug} at Quinta & Co. It's paid for — `
           + `all that's left is picking a date:\n\n${bookText(giftSlug)}\n\n${KEEP_TEXT}\n`);
-      if (ok1) sentTo.push(giftEmail);
+      (ok1 ? sentTo : failed).push(giftEmail);
     }
 
     /* The buyer's own list. When she kept the voucher to hand over herself,
-       the gifted class is on it too, marked so she does not book it by
-       mistake. */
-    const mine = giftSlug && !giftEmail ? slugs.concat([giftSlug]) : slugs;
-    const giftNote = giftSlug && !giftEmail
-      ? `<p style="margin:0 0 16px">The second one is the gift — pass that link on
-         to whoever you're giving it to, and she picks her own date.</p>`
-      : "";
-    const giftNoteText = giftSlug && !giftEmail
-      ? `\nThe second one is the gift — pass that link on and she picks her own date.\n`
-      : "";
+       the gifted class is on it too - named, so she knows which to pass on.
+
+       If the gift is the SAME class as her own, both seats are booked through
+       one and the same link, so listing it twice and saying "pass on the
+       second one" pointed at two identical links. List it once and say what
+       is actually true: she books hers, then sends her friend the same link. */
+    const keptGift = !!giftSlug && !giftEmail;
+    const sameClass = keptGift && slugs.includes(giftSlug);
+    const mine = keptGift && !sameClass ? slugs.concat([giftSlug]) : slugs;
+    const giftLabel = esc(CLASS_NAMES[giftSlug] || giftSlug);
+    const giftNote = !keptGift ? "" : sameClass
+      ? `<p style="margin:0 0 16px">You're both on the same class, so there's one link
+         for the two of you. Book your place, then send her the same link and she
+         books hers — there are two seats paid for.</p>`
+      : `<p style="margin:0 0 16px"><strong>${giftLabel}</strong> is the gift — pass
+         that link on to whoever you're giving it to, and she picks her own date.</p>`;
+    const giftNoteText = !keptGift ? "" : sameClass
+      ? `\nYou're both on the same class, so there's one link for the two of you. `
+        + `Book your place, then send her the same link — two seats are paid for.\n`
+      : `\n${CLASS_NAMES[giftSlug] || giftSlug} is the gift — pass that link on and `
+        + `she picks her own date.\n`;
     const sentNote = giftSlug && giftEmail
       ? `<p style="margin:0 0 16px">We've emailed ${esc(giftName || giftEmail)} her own
          link for ${esc(CLASS_NAMES[giftSlug] || giftSlug)} — nothing for you to forward.</p>`
@@ -292,7 +373,16 @@ serve(async (req) => {
       `Hi ${first},\n\nThank you — genuinely. Now pick your ${many ? "dates" : "date"}. `
         + `Each link books one class, nothing more to pay:\n\n`
         + `${mine.map(bookText).join("\n")}\n${giftNoteText}${sentNoteText}\n${KEEP_TEXT}\n`);
-    if (ok2) sentTo.push(email);
+    (ok2 ? sentTo : failed).push(email);
+
+    /* Any email that did not go out means someone has paid and has no links.
+       Answer 500 so Stripe retries - the ledger write is safe to repeat (a
+       retry lands on the unique index and is recorded as already there), and
+       a duplicate email is a far smaller problem than none. */
+    if (failed.length) {
+      console.error(`Email failed for ${failed.join(", ")} on order ${orderId} - asking Stripe to retry`);
+      return json({ error: "email failed", failed, ledger }, 500);
+    }
 
     return json({
       ok: true, ledger, emailed: sentTo.length, rows: rows.length,
