@@ -25,6 +25,12 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+// CACHE VERSIONS: the ?v= on config.js and classes.js in the page template
+// below must match every other page on the site. Bump them HERE whenever you
+// bump them anywhere else - a version bumped only on the built pages is
+// silently rolled back by the next rebuild, and browsers then serve a stale
+// copy. (On 30 Sep a rebuild took every class page from v8/v9 back to v7/v8.)
+
 // classes.js / config.js are written for the browser — give them the globals they expect.
 globalThis.window = globalThis;
 const load = (f) => new Function(readFileSync(join(root, f), "utf-8") + "; return typeof QUINTA_CLASSES !== 'undefined' ? QUINTA_CLASSES : undefined;")();
@@ -53,10 +59,14 @@ function page(c) {
   const covers = (c.covers || []).map((i) => `        <li>${esc(i)}</li>`).join("\n");
   const requires = (c.requires || []).map((i) => `        <li>${esc(i)}</li>`).join("\n");
 
+  /* No month, no named event, no claim that anything else is open. This line
+     sat on every undated class saying other classes were "open for September"
+     long after September had no dates left, because a date written into a
+     template goes stale the day it passes. Keep it timeless. */
   const booking = soon
     ? `      <p class="soon-note">${c.track === "foundations"
-        ? `Dates for this class aren't set yet. Other classes are open for September — be first to hear about this one, and grab a free hour in the meantime, at <a href="../coffee.html">Coffee with Quinta</a>.`
-        : `Not open just yet. Be first to hear at <a href="../coffee.html">Coffee with Quinta</a>.`}</p>
+        ? `Dates for this class aren't set yet. Join the waitlist and you'll hear the day it opens.`
+        : `Not open just yet. Join the waitlist and you'll hear the day it opens.`}</p>
       <div class="book">
         <a class="btn btn-solid" href="../waitlist.html?c=${encodeURIComponent(c.slug)}">Join the waitlist</a>
         <a class="btn btn-ghost" href="../coffee.html">Start free: Coffee with Quinta</a>
@@ -85,7 +95,7 @@ function page(c) {
       : [{ q: "Do I need any experience?", a: c.prereq ? c.prereq : "None — every Quinta & Co. class is plain language and hands-on." }]),
     ...(c.walkout ? [{ q: "What will I walk out with?", a: `${c.walkout} Every Quinta & Co. class ends with something real you keep.` }] : []),
     soon
-      ? { q: "When can I take this class?", a: "This one doesn't have dates yet. Other Quinta & Co. classes are open for September and bookable now — join the waitlist at quintaand.co/waitlist.html to hear the moment this one opens, and the free monthly Coffee with Quinta is open in the meantime." }
+      ? { q: "When can I take this class?", a: "This one doesn't have dates yet. Join the waitlist at quintaand.co/waitlist.html and you'll hear the day it opens." }
       : { q: "When can I take this class?", a: `It's open now — ${c.format || "live, small group"}. Dates and booking are right on this page.` },
   ];
   const faqHtml = faqs.map((f, i) => `      <div class="faq-item">
@@ -249,8 +259,8 @@ ${faqHtml}
   </div>
 </footer>
 
-<script src="../config.js?v=7"></script>
-<script src="../classes.js?v=8"></script>
+<script src="../config.js?v=8"></script>
+<script src="../classes.js?v=9"></script>
 <script src="../icons.js?v=3"></script>
 <script src="../app.js?v=7" defer></script>
 </body>
