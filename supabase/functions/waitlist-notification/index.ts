@@ -1,5 +1,17 @@
 // Edge Function: waitlist-notification
 //
+// ============================================================================
+// SUPERSEDED - DO NOT DEPLOY, AND DO NOT ADD A DATABASE WEBHOOK FOR IT.
+// Waitlist alerts and confirmations are sent by the GitHub Actions job
+// .github/workflows/waitlist-alerts.yml (tools/waitlist-alerts.mjs), every 15
+// minutes, which stamps notified_at so each signup is emailed once. That job
+// replaced this function in August because the webhook here never fired.
+//
+// This was deployed again by mistake on 30 Sep 2026 and deleted on 1 Oct.
+// Running both would send every signup two confirmations and Erika two
+// alerts. Kept only as a record; safe to delete from the repo.
+// ============================================================================
+//
 // Fires when someone joins the waitlist (insert into public.waitlist) and does
 // two things:
 //   1. tells Erika, with the referral code so credit is visible immediately

@@ -61,6 +61,8 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
+    hold: true,   // HOLD (2 Oct): no confirmed instructor. Cal.com has an Oct 27 date; the date sync
+                  // will not open this while hold is set. Remove the line once someone is teaching it.
     // NO INSTRUCTOR (Erika, 9/17). Erika stepped off this class - choosing an
     // entity is a tax question and it should be taught by a tax professional.
     // Her tax strategist is being asked to take it (meeting week of 9/22).
@@ -104,6 +106,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "insurance", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
+    hold: true,   // HOLD (2 Oct): no instructor since Nery left. The date sync will not open this.
     name: "Insurance",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
@@ -123,6 +126,7 @@ const QUINTA_CLASSES = [
   // Phase 02 — Keep the books
   {
     slug: "bookkeeping-1", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping I — Set up QuickBooks",
     price: 99,
     venue: "Zoom",

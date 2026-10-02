@@ -37,6 +37,7 @@ const BCC = "erika@quintaand.co";
 const CAL = "https://cal.com/quintaandco/";
 
 const CLASS_NAMES: Record<string, string> = {
+  "bookkeeping-1": "Bookkeeping I — Set up QuickBooks",
   "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
   "module-1": "Module 1 — Claude for beginners",
   "module-2": "Module 2 — Build your AI assistant",

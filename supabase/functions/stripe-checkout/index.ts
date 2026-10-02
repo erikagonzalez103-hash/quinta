@@ -61,6 +61,7 @@ const ORIGINS = [SITE, "http://localhost:8137"];   // 8137 is the local preview
    site currently shows as open, and every one of them has a $0 redeem twin in
    Cal.com to book it with afterwards. */
 const PRICES: Record<string, { cents: number; name: string }> = {
+  "bookkeeping-1":      { cents:  9900, name: "Bookkeeping I — Set up QuickBooks" },
   "bookkeeping-2":      { cents:  9900, name: "Bookkeeping II — Prep for your bookkeeper" },
   "module-1":           { cents: 15000, name: "Module 1 — Claude for beginners" },
   "module-2":           { cents: 20000, name: "Module 2 — Build your AI assistant" },

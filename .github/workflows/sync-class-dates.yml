@@ -1,0 +1,91 @@
+# Keep the site's "bookable" / "join the waitlist" in step with Cal.com.
+#
+# WHY THIS EXISTS
+# Faculty add dates in the portal and they reach Cal.com within a couple of
+# minutes - but whether the SITE shows a class as bookable lived in hand-set
+# flags in classes.js. So a teacher could add dates and her class would go on
+# saying "join the waitlist" until somebody remembered to flip a flag, and a
+# class whose dates had all passed went on saying "See dates & book" over an
+# empty calendar. Cal.com is the truth about what can be booked; this makes
+# the site follow it, every 30 minutes, with nobody in the loop.
+#
+# WHAT IT CHANGES, AND WHAT IT LEAVES ALONE
+# tools/sync-class-dates.mjs flips the open/soon flag on any class whose
+# Cal.com dates disagree with the site, bumps the classes.js cache version,
+# and rebuilds the class pages. It never touches a class marked `hold: true`
+# (no instructor), never touches a class it could not look up, and refuses
+# to close every class at once - that fails the run instead, and GitHub
+# emails about failed runs.
+#
+# NEEDS NO SECRETS. Cal.com's availability endpoint is public.
+#
+# RUN IT NOW: Actions tab -> "Sync class dates" -> Run workflow. Tick
+# "dry run" to see what it would change without changing anything.
+
+name: Sync class dates
+
+on:
+  schedule:
+    # Every 30 minutes, off the hour - GitHub's busiest moment is :00, and
+    # scheduled runs there are the ones that get delayed or dropped.
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only report what would change"
+        type: boolean
+        default: false
+
+# One at a time. Two runs racing would both bump the cache version.
+concurrency:
+  group: sync-class-dates
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # to commit the flipped flags and rebuilt pages
+  pages: write      # to ask GitHub Pages to rebuild after that commit
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Check the logic still holds
+        run: node tools/sync-class-dates.test.mjs
+
+      - name: Compare the site with Cal.com
+        id: sync
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            node tools/sync-class-dates.mjs --dry-run
+          else
+            node tools/sync-class-dates.mjs
+          fi
+
+      - name: Publish what changed
+        if: steps.sync.outputs.summary != ''
+        env:
+          SUMMARY: ${{ steps.sync.outputs.summary }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "Quinta class-date sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Only files the repo already tracks: classes.js, the class pages,
+          # and the pages whose cache version was bumped. Nothing new.
+          git add -u
+          git commit -m "Class dates: $SUMMARY" -m "Set automatically from Cal.com by tools/sync-class-dates.mjs."
+          # Someone may have pushed while this ran; put this on top of it.
+          git pull --rebase --autostash
+          git push
+          # A push made with the job's own token can skip the Pages rebuild,
+          # so ask for one explicitly. Harmless if it was going to happen.
+          curl -sf -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" \
+            && echo "Pages rebuild requested" || echo "Pages rebuild request not accepted - the push may still deploy on its own"
