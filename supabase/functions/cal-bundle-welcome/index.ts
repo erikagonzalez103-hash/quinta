@@ -80,8 +80,8 @@ const BUNDLES: Record<string, {
     classes: ["module-1", "bookkeeping-1"],
   },
   "keep-the-books-fff": {
-    key: "keep-the-books", name: "Keep the books", anchor: "bookkeeping-2",
-    classes: ["bookkeeping-2", "bookkeeping-1"],
+    key: "keep-the-books", name: "Keep the books", anchor: "bookkeeping-1",
+    classes: ["bookkeeping-1", "bookkeeping-2"],
   },
   "build-to-last-fff": {
     key: "build-to-last", name: "Build to last", anchor: "legacy-planning",

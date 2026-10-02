@@ -52,7 +52,7 @@ const FALLBACK_TO = "erika@quintaand.co";   // used when no instructor is found
 const BUNDLE_STARTS_WITH: Record<string, string> = {
   "the-practice-fff": "module-1",
   "build-to-last-fff": "legacy-planning",   // re-anchored; Certification had no dates
-  "keep-the-books-fff": "bookkeeping-2",    // re-anchored; Bookkeeping I has no dates
+  "keep-the-books-fff": "bookkeeping-1",    // back on Bookkeeping I once Tara scheduled it (2 Oct)
   "get-started-fff": "module-1",            // Entity setup has no instructor
 };
 
