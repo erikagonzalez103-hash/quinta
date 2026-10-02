@@ -61,8 +61,9 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
-    hold: true,   // HOLD (2 Oct): no confirmed instructor. Cal.com has an Oct 27 date; the date sync
-                  // will not open this while hold is set. Remove the line once someone is teaching it.
+    hold: true,   // HOLD (2 Oct): no instructor. Its leftover Oct 27 date was deleted in Cal.com the
+                  // same day. The date sync will not open this while hold is set - remove the line
+                  // once someone is teaching it and has put real dates in.
     // NO INSTRUCTOR (Erika, 9/17). Erika stepped off this class - choosing an
     // entity is a tax question and it should be taught by a tax professional.
     // Her tax strategist is being asked to take it (meeting week of 9/22).
