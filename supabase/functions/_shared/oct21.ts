@@ -107,11 +107,19 @@ export async function confirmStudent(resendKey: string, to: string, name: string
     <p style="margin:0 0 16px">You're booked for <strong>Wednesday, October 21</strong>:</p>
     <ul style="margin:0 0 18px;padding-left:20px">${list}</ul>
     <p style="margin:0 0 16px">${esc(how)}</p>
+    <p style="margin:0 0 16px;padding:12px 14px;background:#EEF2EC;border-left:3px solid #4F6B5C">
+      <strong>Every class needs at least two people to run.</strong> If one of yours doesn't
+      reach two, we'll tell you by <strong>Monday, October 19</strong>, and you choose: a full
+      refund or a seat in the next round. Bringing a friend is the surest way to make sure yours
+      goes ahead.</p>
     <p style="margin:0 0 16px;font-size:14px;color:#5A5E55">On the day there's a QR code on the first
       slide of each class. Scan it and type your name — that's how we know you were there. Can't come
       after all? Reply to this email at least 24 hours ahead and the class stays yours to take another
       time.</p>`);
   const text = `Hi ${first},\n\nYou're booked for Wednesday, October 21:\n\n${listText}\n\n${how}\n\n`
+    + `Every class needs at least two people to run. If one of yours doesn't reach two, we'll tell you `
+    + `by Monday, October 19, and you choose: a full refund or a seat in the next round. Bringing a `
+    + `friend is the surest way to make sure yours goes ahead.\n\n`
     + `On the day, scan the QR code on the first slide of each class and type your name.\n`
     + `Can't come after all? Reply at least 24 hours ahead and the class stays yours.\n\nQuinta & Co.\n`;
   return await send(resendKey, {
