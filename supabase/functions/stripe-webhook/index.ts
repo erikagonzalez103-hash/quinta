@@ -26,6 +26,7 @@
 // signature check below is what authenticates the caller.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { metaPurchase } from "../_shared/meta.ts";
 import { OCT21, SEATS, sessions as oct21Sessions, confirmStudent, tellTeacher, attendingFor, salesClosed, type Session } from "../_shared/oct21.ts";
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
@@ -174,6 +175,28 @@ serve(async (req) => {
 
     const ref = String(s?.metadata?.ref || "").trim() || null;
     const orderId = String(s?.id || "");
+
+    /* Tell Meta about the purchase - the real amount paid, keyed on the
+       session id so the browser's Purchase on the return page (same id)
+       and any Stripe retry are counted once. See _shared/meta.ts. Sent here,
+       before the emails, so a failed email (which asks Stripe to retry)
+       never stops it; a retry resends the same id and Meta drops it. */
+    {
+      const offer = String(s?.metadata?.offer || "");
+      const ids = giftSlug ? slugs.concat([giftSlug]) : slugs;
+      await metaPurchase({
+        eventId: orderId,
+        value: paid !== null ? paid / 100 : 0,
+        contentIds: ids,
+        contentName: offer === "oct21" ? "October 21 classes" : offer === "gift" ? "Buy one, gift one" : "Choose your own classes",
+        sourceUrl: offer === "oct21" ? "https://quintaand.co/oct21.html" : "https://quintaand.co/bundle/",
+        email, name,
+        fbp: String(s?.metadata?.fbp || "") || undefined,
+        fbc: String(s?.metadata?.fbc || "") || undefined,
+        userAgent: String(s?.metadata?.ua || "") || undefined,
+        eventTime: typeof s?.created === "number" ? s.created : undefined,
+      });
+    }
 
     /* What she actually paid, split across the rows in proportion to what
        each line cost before any discount. The checkout function writes those

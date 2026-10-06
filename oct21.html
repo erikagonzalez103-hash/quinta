@@ -64,6 +64,23 @@
 .od-ghost{width:100%;padding:14px;font-size:16px;font-family:inherit;font-weight:600;border:1px solid var(--sage-deep);border-radius:10px;background:#fff;color:var(--sage-deep);cursor:pointer}
 .od-ghost:disabled{opacity:.45;cursor:default}
 </style>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1179541285251913');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
 </head>
 <body>
 
@@ -149,6 +166,7 @@
 
 <script src="classes.js?v=16"></script>
 <script src="js/shop.js?v=1"></script>
+<script src="js/meta.js?v=1"></script>
 <script>
 (function () {
   "use strict";
@@ -200,7 +218,11 @@
   var blocksEl = el("odBlocks"), sum = el("odSum"), codeLine = el("odCode"), go = el("odGo"), msg = el("odMsg");
   var day = [];
 
-  if (/[?&]booked=1/.test(location.search)) el("odDone").hidden = false;
+  if (/[?&]booked=1/.test(location.search)) {
+    el("odDone").hidden = false;
+    // Back from Stripe: Meta's Purchase, once, under Stripe's session id.
+    if (window.QuintaMeta) QuintaMeta.purchased(new URLSearchParams(location.search).get("s"));
+  }
 
   /* Sales stop at midnight going into the day - the same moment the
      stripe-checkout and oct21-redeem functions start refusing (SALES_CLOSE in
@@ -300,9 +322,19 @@
 
     fetch(CHECKOUT, {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ offer: "oct21", sessions: p, attending: how, ref: QuintaShop.ref() })
+      body: JSON.stringify({ offer: "oct21", sessions: p, attending: how, ref: QuintaShop.ref(),
+                             meta: window.QuintaMeta ? QuintaMeta.ids() : null })
     }).then(function (r) { return r.json(); }).then(function (d) {
-      if (d && d.url && (d.code || null) === want) { window.location.href = d.url; return; }
+      if (d && d.url && (d.code || null) === want) {
+        // Meta's checkout event, at the total this page quoted (js/meta.js).
+        var chosen = day.filter(function (s) { return p.indexOf(s.session_id) !== -1; });
+        var total = chosen.reduce(function (t, s) { return t + cents(s.class_slug); }, 0);
+        var pct = chosen.length >= 3 ? 25 : chosen.length === 2 ? 15 : 0;
+        if (window.QuintaMeta) QuintaMeta.checkout(chosen.map(function (s) { return s.class_slug; }),
+          Math.round(total * (100 - pct) / 100) / 100, "October 21 classes");
+        window.setTimeout(function () { window.location.href = d.url; }, 150);
+        return;
+      }
       if (d && d.error === "full") { fail("One of those classes has just filled up. We've refreshed the list — pick again."); load(); return; }
       if (d && d.error === "same_block") { fail("Those two run at the same time — pick one per block."); return; }
       if (d && d.error === "closed") { fail("Booking for October 21 has closed."); return; }

@@ -50,6 +50,7 @@
 // ledger as still owed, and the seat is never released.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { metaPurchase, CAL_PRICES } from "../_shared/meta.ts";
 
 const CAL_WEBHOOK_SECRET = Deno.env.get("CAL_WEBHOOK_SECRET");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -374,6 +375,23 @@ serve(async (req) => {
       day: start ? start.slice(0, 10) : null,
       ref,
     };
+
+    /* Tell Meta about a paid Cal.com booking. Cal.com takes the payment and
+       cannot send her back to our site on this plan, so this is the only way
+       Meta learns of it. Valued at list price (CAL_PRICES): a bundle at its
+       bundle price. Skipped for anything free - the $0 redeem twins, Coffee,
+       anything not in the price list. Keyed on the booking uid, so a resent
+       webhook is counted once. See _shared/meta.ts. */
+    if (created && to && CAL_PRICES[bookedSlug] && buyer.uid) {
+      await metaPurchase({
+        eventId: buyer.uid,
+        value: CAL_PRICES[bookedSlug].value,
+        contentIds: [bookedSlug],
+        contentName: CAL_PRICES[bookedSlug].name,
+        sourceUrl: `https://cal.com/quintaandco/${bookedSlug}`,
+        email: buyer.email, name: buyer.name,
+      });
+    }
 
     /* The ledger first, and inside its own try. A write that fails must not
        stop the buyer being emailed - she has paid, and a missing row is a

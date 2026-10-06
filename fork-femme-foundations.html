@@ -148,9 +148,43 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 .fff-code b{font-family:var(--label);letter-spacing:.14em;font-size:1.2rem;color:var(--moss)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* first screen (Oct 2026): one button, price and date in view on a phone */
+.fff-goal{font-family:var(--display);font-size:clamp(19px,2.4vw,24px);line-height:1.4;color:var(--ink);
+  max-width:34ch;margin:0 0 14px;text-wrap:balance}
+.fff-priceline{font-size:16px;color:var(--moss);margin:0 0 22px;text-wrap:balance}
+.fff-priceline strong{font-weight:600}
+.fff-find{font-size:16px;padding:15px 30px}
+.fff-textlink{color:var(--sage-deep);font-size:15.5px;text-underline-offset:3px}
+.fff-scarce{font-size:14px;color:var(--sage-deep);margin:12px 0 0}
+.fff-h2{text-wrap:balance}
+/* faculty row */
+.fff-facsec{padding-top:clamp(28px,4vw,48px)}
+.fff-fac{display:grid;grid-template-columns:repeat(6,1fr);gap:22px 18px}
+.fff-person{display:flex;flex-direction:column;align-items:center;text-align:center;text-decoration:none;color:inherit}
+.fff-person img{width:112px;height:112px;border-radius:50%;object-fit:cover;display:block;
+  border:3px solid #fff;box-shadow:0 0 0 1px var(--line);margin:0 0 10px;background:#DFE7E0}
+.fff-pname{font-family:var(--display);font-weight:500;font-size:1.08rem;color:var(--moss);line-height:1.2}
+.fff-pclass{font-size:13px;color:var(--sage-deep);line-height:1.35;margin:3px 0 5px}
+.fff-pline{font-size:13.5px;line-height:1.4;color:var(--ink);text-wrap:balance}
+.fff-person:hover .fff-pname{color:var(--sage-deep)}
+.fff-after{background:#EEF2EC;border:1px solid var(--line);border-radius:12px;padding:20px 22px;
+  max-width:640px;font-size:15.5px;line-height:1.6;color:var(--ink)}
+/* The ad's visitors get one button on this page. Coffee stays in the
+   header, as a plain link that doesn't compete with "Find your class". */
+.btn-coffee{background:transparent !important;border-color:transparent !important;color:var(--sage-deep) !important;
+  text-decoration:underline;text-underline-offset:3px;padding-left:6px;padding-right:6px;box-shadow:none !important}
+@media(max-width:900px){ .fff-fac{grid-template-columns:repeat(3,1fr)} }
 @media(max-width:560px){
   .fff-slot{grid-template-columns:70px 1fr;gap:12px}
   .fff-bundle{min-height:0}
+  .fff-hero{padding:22px 0 26px}
+  .fff-kicker{margin-bottom:14px}
+  .fff-h1{font-size:2.6rem;margin-bottom:14px}
+  .fff-goal{font-size:19px;margin-bottom:10px}
+  .fff-priceline{font-size:15px;margin-bottom:16px}
+  .fff-cta .fff-find{width:100%;text-align:center}
+  .fff-fac{grid-template-columns:repeat(2,1fr);gap:26px 14px}
+  .fff-person img{width:104px;height:104px}
 }
 </style>
 </head>
@@ -173,13 +207,40 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
 <main>
 
+  <!-- FIRST SCREEN (Oct 2026 paid social). The ad ends on "Help us get
+       there. Buy a class. Count toward the goal." - this is meant to read as
+       its next frame, all of it visible on an iPhone without scrolling, with
+       ONE button. The $250,000 is HER Texas's goal for October, not ours,
+       and it is "this October", never "in one day": every Quinta sale this
+       month counts toward it. -->
   <section class="fff-hero">
     <div class="wrap">
-      <p class="fff-kicker"><span>October 21 is Fork and Femme</span><span id="fffSaleWindow">The sale · September 29 – October 21</span></p>
+      <p class="fff-kicker"><span>HER Texas · Fork and Femme</span></p>
       <h1 class="fff-h1">Fork, Femme &amp; <em>Foundations</em></h1>
+      <p class="fff-goal">The goal this October: $250,000 spent with women-owned businesses. Quinta&nbsp;&amp;&nbsp;Co. is here to help.</p>
+      <p class="fff-priceline"><strong>Classes from $99</strong> · Oct 21 at kiln Dallas&nbsp;&amp;&nbsp;online</p>
+      <div class="fff-cta">
+        <a class="btn btn-solid fff-find" id="fffFind" href="where-you-are.html">Find your class</a>
+        <a class="fff-textlink" href="#bundles">See the bundles ↓</a>
+      </div>
+      <p class="fff-scarce">Seats are capped at ten per class.</p>
+    </div>
+  </section>
+
+  <!-- Faculty row: filled from FACULTY in the script below, so each face
+       links to her class page when it has dates, or its waitlist when not. -->
+  <section class="fff-sec fff-facsec" aria-label="Who's teaching">
+    <div class="wrap">
+      <p class="fff-kicker" style="margin-bottom:18px"><span>Who's teaching</span></p>
+      <div class="fff-fac" id="fffFaculty"></div>
+    </div>
+  </section>
+
+  <section class="fff-sec">
+    <div class="wrap">
       <p class="fff-lede"><strong>Buy from her. Learn from her.</strong> Fork and Femme has always been about spending your money with women. This year, we're teaching.</p>
       <p class="fff-lede">One day at kiln — every faculty member who can teach, teaches, live in the room and online at the same time. Breakfast and lunch come from women-owned food businesses, open to the whole building.</p>
-      <p class="fff-lede"><em>Ask the woman who's done it.</em> A class costs $99. The mistake it saves you costs thousands. These are the things you can't Google.</p>
+      <p class="fff-lede"><em>Ask the woman who's done it.</em> A class costs $99. The mistake it saves you costs thousands. These are the things you can't&nbsp;Google.</p>
       <div class="fff-facts">
         <span><b>Wednesday, October 21, 2026</b></span>
         <span>kiln, Dallas</span>
@@ -190,7 +251,6 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
            app.js stores ?ref= on arrival here and oct21.html reads it back. -->
       <div class="fff-cta">
         <a class="btn btn-solid" href="oct21.html">Book October 21</a>
-        <a class="btn" href="#bundles">See the bundles</a>
         <a class="btn" href="#classes">Just one class</a>
       </div>
       <p class="fff-sub" style="margin-top:26px;margin-bottom:0"><em>You can come for a single class.</em> A full Wednesday is a big ask — a 10am class is not.</p>
@@ -199,15 +259,16 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
   <section class="fff-sec" id="bundles">
     <div class="wrap">
-      <h2 class="fff-h2">Four bundles.<br>Different moments in business.</h2>
+      <h2 class="fff-h2">Four bundles.<br>Different moments in&nbsp;business.</h2>
       <p class="fff-sub">Book what you want on October 21 and take the rest whenever they run — redemption is open across the semester. We'd love to see you use at least one on the day itself.</p>
       <div class="fff-bundles" id="fffBundles"></div>
+      <p class="fff-scarce">Seats are capped at ten per class.</p>
     </div>
   </section>
 
   <section class="fff-sec">
     <div class="wrap">
-      <h2 class="fff-h2">More ways<br>to take the first step.</h2>
+      <h2 class="fff-h2">More ways<br>to take the first&nbsp;step.</h2>
       <div class="fff-offers">
         <div class="fff-offer">
           <p class="fff-pct">25%</p>
@@ -272,6 +333,14 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     </div>
   </section>
 
+  <section class="fff-sec">
+    <div class="wrap">
+      <div class="fff-after">
+        <p style="margin:0"><strong>After you book.</strong> You'll get a confirmation email right away with your class and time. Joining online? Your teacher sends your link before class. Classes in a bundle are good until June 30, 2027 — we'd love to see you use one on October 21. Questions? <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -302,6 +371,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <script src="config.js?v=8"></script>
 <script src="classes.js?v=16"></script>
 <script src="app.js?v=7" defer></script>
+<script src="js/meta.js?v=1" defer></script>
 
 <script>
 /* ============================================================
@@ -445,7 +515,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   Array.prototype.forEach.call(wrap.querySelectorAll("[data-book]"), function (a) {
     a.addEventListener("click", function () {
       track("fff_bundle_click", { bundle: a.getAttribute("data-book") });
-      try { if (typeof fbq === "function") fbq("track", "InitiateCheckout", { content_name: a.getAttribute("data-book") }); } catch (e) {}
+      // Meta's InitiateCheckout (with the bundle price) is sent by js/meta.js
+      // for every Cal.com link - firing it here too would count it twice.
     });
   });
 
@@ -492,6 +563,56 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       });
     });
   });
+
+  /* ---------- "Find your class" keeps the ad's tags ----------
+     The quiz page reads utm_* from its own address, and ?ref= is how a
+     teacher is credited - so both travel with the button rather than
+     being lost on the way to the quiz. Nothing else is passed. */
+  (function () {
+    var find = document.getElementById("fffFind");
+    if (!find) return;
+    var here = new URLSearchParams(location.search), keep = new URLSearchParams();
+    ["ref", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      var v = here.get(k); if (v) keep.set(k, v.slice(0, 200));
+    });
+    var q = keep.toString();
+    if (q) find.href = "where-you-are.html?" + q;
+    find.addEventListener("click", function () { track("fff_find_class", {}); });
+  })();
+
+  /* ---------- faculty row ----------
+     The one-liners are drafts awaiting Erika's OK (Oct 2026 brief). Each
+     face goes to her class page when it has dates, or its waitlist when it
+     doesn't - read from classes.js, so it flips by itself when dates land. */
+  var FACULTY = [
+    { key: "tara",      name: "Tara",      slug: "bookkeeping-1",      cls: "Bookkeeping I: Set Up QuickBooks",
+      line: "Close out 2026 with books you trust." },
+    { key: "erika",     name: "Erika",     slug: "module-1",           cls: "Module 1: Your First AI Workflow",
+      line: "Take back your hours before 2027." },
+    { key: "nik",       name: "Nik",       slug: "legacy-planning",    cls: "Legacy Planning",
+      line: "Protect everything you built in 2026." },
+    { key: "stephanie", name: "Stephanie", slug: "brand-101",          cls: "Brand 101",
+      line: "End 2026 with a brand that works for you." },
+    { key: "robin",     name: "Robin",     slug: "landlord",           cls: "So You Want to Be a Landlord",
+      line: "Know your numbers before you buy your first rental." },
+    { key: "joshlyn",   name: "Joshlyn",   slug: "financial-planning", cls: "Investing",
+      line: "Make 2026's profit work for you." }
+  ];
+  var fac = document.getElementById("fffFaculty");
+  if (fac) {
+    fac.innerHTML = FACULTY.map(function (f) {
+      var c = bySlug(f.slug);
+      var open = !!(c && c.open);
+      var href = open ? "classes/" + f.slug + ".html"
+                      : "waitlist.html?c=" + encodeURIComponent(f.slug) + "&src=fff";
+      return '<a class="fff-person" href="' + href + '">' +
+          '<img src="images/faculty/' + f.key + '.jpg" alt="' + esc(f.name) + '" width="112" height="112">' +
+          '<span class="fff-pname">' + esc(f.name) + '</span>' +
+          '<span class="fff-pclass">' + esc(f.cls) + (open ? "" : " · waitlist open") + '</span>' +
+          '<span class="fff-pline">' + esc(f.line) + '</span>' +
+        '</a>';
+    }).join("");
+  }
 
   /* ---------- the classes, straight from classes.js ---------- */
   var list = document.getElementById("fffClasses");

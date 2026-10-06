@@ -50,6 +50,23 @@
 .ch-terms{font-size:13px;line-height:1.55;color:var(--sage-deep);margin:12px 0 0;text-align:center}
 .ch-terms a{color:var(--sage-deep)}
 </style>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1179541285251913');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
 </head>
 <body>
 
@@ -93,6 +110,7 @@
 
 <script src="classes.js?v=16"></script>
 <script src="js/shop.js?v=1"></script>
+<script src="js/meta.js?v=1"></script>
 <script>
 (function () {
   "use strict";
@@ -242,12 +260,19 @@
     fetch(FN, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slugs: p, ref: QuintaShop.ref() })
+      body: JSON.stringify({ slugs: p, ref: QuintaShop.ref(), meta: window.QuintaMeta ? QuintaMeta.ids() : null })
     }).then(function (r) { return r.json(); }).then(function (d) {
       /* Only go on to Stripe if the code she was quoted is the code that was
          attached. Anything else would put her in front of a price higher
          than the one on this page. */
-      if (d && d.url && d.code === want) { window.location.href = d.url; return; }
+      if (d && d.url && d.code === want) {
+        // Meta's checkout event, at the total this page quoted (js/meta.js).
+        var total = p.reduce(function (t, s) { return t + cents(s); }, 0);
+        var pct = p.length >= 3 ? 25 : p.length === 2 ? 15 : 0;
+        if (window.QuintaMeta) QuintaMeta.checkout(p, Math.round(total * (100 - pct) / 100) / 100, "Choose your own classes");
+        window.setTimeout(function () { window.location.href = d.url; }, 150);
+        return;
+      }
 
       if (d && d.error === "no_dates") {
         fail("One of those classes has just lost its last date, so we can’t sell it " +

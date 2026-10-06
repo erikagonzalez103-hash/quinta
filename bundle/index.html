@@ -35,6 +35,23 @@
   background:#EEF2EC;border-left:3px solid var(--sage-deep);border-radius:4px}
 .bd-oct21 a{color:var(--sage-deep);font-weight:600}
 </style>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1179541285251913');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel -->
 </head>
 <body>
 
@@ -59,6 +76,7 @@
 
 <script src="../classes.js?v=16"></script>
 <script src="../js/shop.js?v=1"></script>
+<script src="../js/meta.js?v=1"></script>
 <script>
 (function () {
   "use strict";
@@ -171,6 +189,8 @@
      her and the email carries the links. Saying "check your email" is the
      honest thing when the page genuinely cannot know. */
   if (key === "custom" || key === "gift") {
+    // Back from Stripe: Meta's Purchase, once, under Stripe's session id (js/meta.js).
+    if (window.QuintaMeta) QuintaMeta.purchased(new URLSearchParams(location.search).get("s"));
     var isGift = key === "gift";
     el.innerHTML =
       '<p class="bd-kicker">Quinta &amp; Co.</p>' +

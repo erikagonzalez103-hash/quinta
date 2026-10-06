@@ -244,6 +244,20 @@ serve(async (req) => {
     const ref = cleanRef(body?.ref);
     if (ref) form.set("metadata[ref]", ref);
 
+    /* Meta's browser ids (_fbp, _fbc cookies) and the browser itself, carried
+       through payment so stripe-webhook can tell Meta about the purchase and
+       Meta can match it to the ad click. Only the shapes Meta issues are kept;
+       anything else is dropped. See _shared/meta.ts. */
+    const fbId = (v: unknown) => {
+      const s = String(v || "");
+      return /^fb\.\d\.\d{10,13}\.[A-Za-z0-9_.-]{1,200}$/.test(s) ? s : "";
+    };
+    const fbp = fbId(body?.meta?.fbp), fbc = fbId(body?.meta?.fbc);
+    if (fbp) form.set("metadata[fbp]", fbp);
+    if (fbc) form.set("metadata[fbc]", fbc);
+    const ua = String(req.headers.get("user-agent") || "").slice(0, 400);
+    if (ua) form.set("metadata[ua]", ua);
+
     type Line = { slug: string; cents: number; label: string };
     let lines: Line[] = [];
     let appliedCode: string | null = null;
@@ -320,7 +334,9 @@ serve(async (req) => {
       form.set("metadata[sessions]", chosen.map((s) => s.session_id).join(","));
       form.set("metadata[slugs]", chosen.map((s) => s.class_slug).join(","));
       form.set("metadata[attending]", attending);
-      form.set("success_url", `${SITE}/oct21.html?booked=1`);
+      // The session id lets the page fire Meta's Purchase under the same id
+      // the server uses, so the two count once (js/meta.js, _shared/meta.ts).
+      form.set("success_url", `${SITE}/oct21.html?booked=1&s={CHECKOUT_SESSION_ID}`);
       /* Seats are not held while she pays, so an open cart is a claim on a
          seat nobody can see. Stripe's default keeps it payable for 24 hours;
          30 minutes (Stripe's minimum) keeps a sold-out class from collecting
