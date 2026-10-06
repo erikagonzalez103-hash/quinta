@@ -74,8 +74,40 @@ const row = (left, right) => `
     <span>${left}</span><span style="color:#5A5E55;white-space:nowrap;">${right}</span>
   </div>`;
 
+/* Who has used this week's kit - from kit_events, all-time for the kit, so
+   the card answers "who still hasn't opened it?" rather than "who opened it
+   today". Each teacher: opened / downloaded her Story / copied her poll
+   answers or captions, and when she was last in. null = table not set up or
+   unreadable, and the card is left out rather than reading as "nobody". */
+export function kitCard(kitRows, faculty, label) {
+  if (!kitRows) return "";
+  const when = (iso) => new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  const by = {};
+  for (const r of kitRows) {
+    const e = String(r.faculty_email || "").toLowerCase();
+    const s = by[e] || (by[e] = { open: false, story: false, copies: 0, last: null });
+    if (r.action === "open") s.open = true;
+    if (r.action === "download") s.story = true;
+    if (r.action === "copy") s.copies++;
+    s.last = r.created_at;
+  }
+  const lines = faculty.map((f) => ({ f, s: by[f.email] }))
+    .sort((a, b) => (b.s ? 1 : 0) - (a.s ? 1 : 0) || a.f.name.localeCompare(b.f.name))
+    .map(({ f, s }) => {
+      if (!s) return row(`○ ${esc(f.name)}`, `<span style="color:#B4503C;">not opened yet</span>`);
+      const did = [s.story ? "downloaded her Story" : "no Story download",
+                   s.copies ? `${s.copies} ${s.copies === 1 ? "copy" : "copies"}` : "nothing copied"].join(" · ");
+      return row(`${s.story ? "✓" : "◐"} ${esc(f.name)} <span style="color:#5A5E55;">— ${did}</span>`, `last in ${esc(when(s.last))}`);
+    }).join("");
+  const missing = faculty.filter((f) => !by[f.email]).length;
+  const note = quiet(missing
+    ? `${missing} ${missing === 1 ? "teacher hasn't" : "teachers haven't"} opened it yet. A press-and-hold save of the picture doesn't show here, and none of this proves she posted — her screenshots do.`
+    : "Everyone has opened it. A press-and-hold save doesn't show here, and none of this proves she posted — her screenshots do.") + '<div style="height:12px"></div>';
+  return card(label, faculty.length ? note + lines : quiet("No faculty records to report on."));
+}
+
 export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
-                              waitlistUnreadable = false }) {
+                              waitlistUnreadable = false, kitRows = null }) {
   const parts = [];
 
   // --- The Swarm ---
@@ -97,6 +129,10 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   parts.push(card("The Swarm today",
     faculty.length ? swarmNote + roster
                    : quiet("No faculty records to report on.")));
+
+  // --- This week's kit (only once kit_events exists) ---
+  const kit = kitCard(kitRows, faculty, "Week 2 kit — who has it");
+  if (kit) parts.push(kit);
 
   // --- Signups ---
   parts.push(card("Signups today",
@@ -200,13 +236,17 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
     return r.json();
   };
 
-  const [faculty, activity, signups, referrals, sessions] = await Promise.all([
+  const [faculty, activity, signups, referrals, sessions, kitRaw] = await Promise.all([
     get("faculty?select=email,display_name,full_name"),
     get(`campaign_activity?select=faculty_email&day_key=eq.${today}`),
     get(`waitlist?select=name,email,class_name,ref,created_at&created_at=gte.${since}${until ? `&created_at=lt.${until}` : ""}&order=created_at.asc`),
     get("referral_counts?select=ref,signups&order=signups.desc"),
     get("class_sessions?select=*&status=neq.canceled"),
+    // Who has used the Week 2 kit, all-time (supabase/sql/2026-10-06-kit-events.sql).
+    get(`kit_events?select=faculty_email,action,item,created_at&kit=eq.week2&created_at=lt.${until || ranAt.toISOString()}&order=created_at.asc`),
   ]);
+  // Table not created yet (or refused) = leave the card out, not "nobody opened it".
+  const kitRows = refused.has("kit_events") ? null : kitRaw;
 
   /* Every table failing is not "a quiet day", it is a broken key — and a
      report that cheerfully says "No signups today" when the database was
@@ -256,6 +296,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const { html, subject } = buildReport({
     now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
     waitlistUnreadable: refused.has("waitlist"),
+    kitRows,
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }

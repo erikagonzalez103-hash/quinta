@@ -1,4 +1,4 @@
-import { run, startOfDallasDay, dallasDay, buildReport } from './daily-report.mjs';
+import { run, startOfDallasDay, dallasDay, buildReport, kitCard } from './daily-report.mjs';
 
 let pass = 0, fail = 0;
 const check = (n, c, d = '') => { if (c) { pass++; console.log(`  ✓ ${n}`); } else { fail++; console.log(`  ✗ ${n} ${d}`); } };
@@ -134,6 +134,26 @@ console.log('\n9. A genuinely quiet day still reads as one');
   check('says no signups', r.html.includes('No signups today'));
   check('and does not cry wolf', !/could not be read/.test(r.html));
   check('subject counts zero', /0 signups/.test(r.subject), r.subject);
+}
+
+console.log('\n10. Week 2 kit card');
+{
+  const F = [{ email: 'erika@quintaand.co', name: 'Erika G' }, { email: 'tara@example.com', name: 'Tara J' }, { email: 'nik@example.com', name: 'Nik S' }];
+  const rows = [
+    { faculty_email: 'tara@example.com', action: 'open', item: 'tara', created_at: '2026-10-07T15:00:00Z' },
+    { faculty_email: 'tara@example.com', action: 'download', item: 'tara', created_at: '2026-10-07T15:01:00Z' },
+    { faculty_email: 'tara@example.com', action: 'copy', item: 'tara:answers', created_at: '2026-10-07T15:02:00Z' },
+    { faculty_email: 'erika@quintaand.co', action: 'open', item: 'erika', created_at: '2026-10-07T16:00:00Z' },
+  ];
+  const html = kitCard(rows, F, 'Week 2 kit');
+  check('names who downloaded her Story', /Tara J.*downloaded her Story · 1 copy/.test(html));
+  check('opened without downloading is marked', /Erika G.*no Story download · nothing copied/.test(html));
+  check('names who has not opened it', /Nik S.*not opened yet/.test(html));
+  check('counts the ones not in yet', html.includes("1 teacher hasn&#39;t opened it yet"));
+  check('no table means no card (not "nobody")', kitCard(null, F, 'Week 2 kit') === '');
+  const base = { now: new Date('2026-10-07T23:00:00Z'), posts: {}, faculty: F, signups: [], referrals: [], sessionsToday: [], unbookable: [] };
+  check('appears in the report', buildReport({ ...base, kitRows: rows }).html.includes('Week 2 kit'));
+  check('left out when the table is missing', !buildReport(base).html.includes('Week 2 kit'));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

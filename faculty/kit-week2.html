@@ -105,7 +105,7 @@
       <p>Everyone asks the same question (except Joshlyn, below). Your four answers are about your class. Your class name goes wherever a caption says <strong>[your class]</strong>.</p>
       <div class="ask">
         <p class="q">What should I cover on 10.21?</p>
-        <button class="btn-sm solid" type="button" data-copy-text="What should I cover on 10.21?">Copy the question</button>
+        <button class="btn-sm solid" type="button" data-copy-text="What should I cover on 10.21?" data-log="question">Copy the question</button>
       </div>
       <div id="people"></div>
 
@@ -174,8 +174,8 @@ I'm teaching [your class] that day at Fork, Femme &amp; Foundations, in Dallas a
 Save your seat, or buy one and gift one at 25% off: [your link]</pre>
         <p class="tags"><strong>Hashtags (keep it to three):</strong> <span id="li-tags">#ForkAndFemme #WomenOwnedBusiness #HERTexas</span></p>
         <div class="acts">
-          <button class="btn-sm solid" type="button" data-copy-from="li-text">Copy the post text</button>
-          <button class="btn-sm" type="button" data-copy-from="li-tags">Copy the hashtags</button>
+          <button class="btn-sm solid" type="button" data-copy-from="li-text" data-log="linkedin-post">Copy the post text</button>
+          <button class="btn-sm" type="button" data-copy-from="li-tags" data-log="linkedin-hashtags">Copy the hashtags</button>
         </div>
       </div>
 
@@ -199,8 +199,8 @@ Help me plan: what's the one [your class] question you'd want answered that day?
 A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pre>
         <p class="tags"><strong>Hashtags (keep it to three):</strong> <span id="fb-tags">#ForkAndFemme #BuyFromHer #WomenOwnedBusiness</span></p>
         <div class="acts">
-          <button class="btn-sm solid" type="button" data-copy-from="fb-text">Copy the caption</button>
-          <button class="btn-sm" type="button" data-copy-from="fb-tags">Copy the hashtags</button>
+          <button class="btn-sm solid" type="button" data-copy-from="fb-text" data-log="facebook-caption">Copy the caption</button>
+          <button class="btn-sm" type="button" data-copy-from="fb-tags" data-log="facebook-hashtags">Copy the hashtags</button>
         </div>
       </div>
 
@@ -213,7 +213,7 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
            type a code into anywhere. PENDING ERIKA'S OK on this wording. -->
       <p>No code needed. Bundle and buy-one-gift-one prices apply automatically.</p>
 
-      <p class="kit-note">Want a version without a photo? <a href="kit/week2/week2-story-generic.png" download="Fork-Femme-Foundations-countdown-story.png">Download the general Story</a>. If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+      <p class="kit-note">Want a version without a photo? <a href="kit/week2/week2-story-generic.png" download="Fork-Femme-Foundations-countdown-story.png" data-log="generic">Download the general Story</a>. If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
     </div>
   </section>
 </main>
@@ -283,8 +283,27 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
       } catch (e) { reject(e); }
     });
   }
+  /* WHO USED THE KIT. One row per open, Download tap and Copy tap, in
+     kit_events (supabase/sql/2026-10-06-kit-events.sql). Her email comes
+     from her sign-in on the server, not from this page, and only Erika can
+     read the rows - they feed the daily report. Never in her way: a failed
+     write is ignored. A press-and-hold save of the picture is not seen. */
+  var KIT = "week2", signedIn = false;
+  function logKit(action, item) {
+    if (!sb || !signedIn) return;
+    try {
+      sb.from("kit_events").insert({ kit: KIT, action: action, item: item || null })
+        .then(function (r) { if (r && r.error) console.warn("kit_events", r.error.message); });
+    } catch (e) { /* never block the kit */ }
+  }
+  document.addEventListener("click", function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest("a[download]") : null;
+    if (a) logKit("download", a.getAttribute("data-log") || a.getAttribute("href"));
+  });
+
   function wireCopy(btn, getText) {
     btn.addEventListener("click", function () {
+      logKit("copy", btn.getAttribute("data-log") || btn.textContent.trim().slice(0, 60));
       copyText(getText()).then(function () {
         var was = btn.textContent;
         btn.textContent = "Copied ✓";
@@ -308,17 +327,17 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
             '<p class="wclass">Your class: <em>' + esc(p.cls) + '</em></p>' +
             '<p class="lnk">Your link: <strong>' + esc(linkOf(p)) + '</strong></p>' +
             '<div class="acts">' +
-              '<a class="btn-sm solid" href="' + file + '" download="Fork-Femme-Foundations-' + p.key + '-story.png">Download ' + esc(p.name) + '’s Story</a>' +
-              '<button class="btn-sm" type="button" data-copy-text="https://' + esc(linkOf(p)) + '">Copy the link</button>' +
+              '<a class="btn-sm solid" href="' + file + '" download="Fork-Femme-Foundations-' + p.key + '-story.png" data-log="' + p.key + '">Download ' + esc(p.name) + '’s Story</a>' +
+              '<button class="btn-sm" type="button" data-copy-text="https://' + esc(linkOf(p)) + '" data-log="' + p.key + ':link">Copy the link</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
         (p.note ? '<p class="note">' + p.note + '</p>' : "") +
-        (p.question ? '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.question) + '">Copy the question: ' + esc(p.question) + '</button></div>' : "") +
+        (p.question ? '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.question) + '" data-log="' + p.key + ':question">Copy the question: ' + esc(p.question) + '</button></div>' : "") +
         '<ul class="answers">' + p.answers.map(function (a) {
-          return '<li><span>' + esc(a) + '</span><button class="btn-sm tiny" type="button" data-copy-text="' + esc(a) + '">Copy</button></li>';
+          return '<li><span>' + esc(a) + '</span><button class="btn-sm tiny" type="button" data-copy-text="' + esc(a) + '" data-log="' + p.key + ':answer">Copy</button></li>';
         }).join("") + '</ul>' +
-        '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.answers.join("\n")) + '">Copy all four answers</button></div>' +
+        '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.answers.join("\n")) + '" data-log="' + p.key + ':answers">Copy all four answers</button></div>' +
       '</div>';
     }).join("");
 
@@ -346,6 +365,8 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
       document.getElementById("gate").style.display = "none";
       document.getElementById("kit").style.display = "block";
       render(first);
+      signedIn = true;
+      logKit("open", first);
     });
   });
 })();
