@@ -107,10 +107,10 @@
 
       <div class="ecard">
         <h2>Social profiles</h2>
-        <p class="hint">Social is our main marketing avenue — we tag and feature faculty when promoting classes. We need at least LinkedIn plus one of Instagram/Facebook, and the profiles we promote must be set to public. Check the box only if you've confirmed the profile is public.</p>
+        <p class="hint">Social is our main marketing avenue — we tag and feature faculty when promoting classes. Add every profile you have (LinkedIn first if you're on it), and at least one is needed. The profiles we promote must be set to public. Check the box only if you've confirmed the profile is public.</p>
 
         <div class="soc-row"><div class="frow">
-          <label for="f-li">Personal LinkedIn (required)</label>
+          <label for="f-li">Personal LinkedIn</label>
           <input type="url" id="f-li" placeholder="https://www.linkedin.com/in/yourname">
         </div><label class="pub-check"><input type="checkbox" id="f-li-pub"> It's public</label></div>
 
@@ -349,7 +349,8 @@
 
   document.getElementById("pform").addEventListener("submit", function (ev) {
     ev.preventDefault();
-    if (!val("f-li")) { show("err", "LinkedIn is the one we can't skip — add your profile URL before saving."); return; }
+    /* At least one profile, any network (6 Oct: Robin isn't on LinkedIn, which used to be required). */
+    if (!["f-li", "f-ig", "f-fb", "f-bli", "f-big", "f-bfb"].some(val)) { show("err", "Add at least one social profile before saving. We need somewhere to tag you."); return; }
 
     saveBtn.disabled = true;
     saveBtn.textContent = "Saving…";

@@ -123,6 +123,26 @@ const QUINTA_CLASSES = [
     booking: "https://cal.com/quintaandco/insurance",
     disclaimer: "Educational only — not insurance or legal advice. Confirm coverage with a licensed broker."
   },
+  {
+    slug: "landlord", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    // Robin Frazier (joined 6 Oct 2026). Class 1 of her three, one per stage.
+    name: "So you want to be a landlord",
+    price: 175,
+    venue: "Kiln, Preston Hollow (Dallas)",
+    desc: "Before you spend a dollar on a rental, let someone who looks after more than 200 rental doors across DFW honestly try to talk you out of it. Then run the numbers on a real property and decide.",
+    format: "90 minutes · live, small group",
+    covers: [
+      "What owning a rental actually asks of you, and why it's never as passive as it sounds",
+      "Running the numbers on a real property, step by step",
+      "Buy or don't: when a REIT, the stock market, or waiting is the better fit"
+    ],
+    walkout: "A completed deal analysis and a clear decision. Buying and not buying both count as a win.",
+    prereq: "Nothing. Bring a listing you've been eyeing if you have one.",
+    price: 175,
+    booking: "https://cal.com/quintaandco/landlord",
+    disclaimer: "Educational only — not investment, legal, or tax advice. Confirm any purchase with your own lender, CPA, and attorney."
+  },
 
   // Phase 02 — Keep the books
   {
@@ -198,6 +218,26 @@ const QUINTA_CLASSES = [
     prereq: "Comes alive once your books and numbers are roughly in order.",
     price: 250,
     booking: "https://cal.com/quintaandco/pricing"
+  },
+  {
+    slug: "rental-management", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    // Robin Frazier. Class 2 of 3.
+    name: "Owning it without doing it all",
+    price: 250,
+    venue: "Kiln, Preston Hollow (Dallas)",
+    desc: "Be the rental owner who knows what good management looks like, without screening tenants at 9pm or chasing down an AC repair in August.",
+    format: "90 minutes · live, small group",
+    covers: [
+      "Solid tenant standards, and why they matter",
+      "Why routine visits and early repairs save real money",
+      "What a property manager does, what one costs, and how to choose one you can trust"
+    ],
+    walkout: "The right questions to ask, and how to tell when your property is being cared for well.",
+    prereq: "Most useful once you own a rental, or are close to buying one.",
+    price: 250,
+    booking: "https://cal.com/quintaandco/rental-management",
+    disclaimer: "Educational only — not legal advice. Confirm tenant screening and lease terms with a real estate attorney."
   },
 
   // Phase 03 — Build to last
@@ -360,6 +400,26 @@ const QUINTA_CLASSES = [
     walkout: "A one-page brand foundation.",
     price: 175,
     booking: "https://cal.com/quintaandco/brand-101"
+  },
+  {
+    slug: "rental-growth", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    // Robin Frazier. Class 3 of 3. Guest panel: a lender, an investment tax specialist, an insurance agent.
+    name: "Grow it and build your team",
+    price: 299,
+    venue: "Kiln, Preston Hollow (Dallas)",
+    desc: "Decide when to hold, sell, or use your equity to buy again. Then bring a real deal to the team every investor needs: a property manager, a lender, an investment tax specialist, and an insurance agent.",
+    format: "90 minutes · live, small group",
+    covers: [
+      "When to hold, when to sell, and when to use your equity to buy another property",
+      "Why planning your exit early makes every decision easier",
+      "A live review of the property you're considering, with the full team at the table"
+    ],
+    walkout: "A reviewed deal, a clear answer (go, renegotiate, or walk away), and the start of your own professional team.",
+    prereq: "Own at least one rental, and bring a property you're seriously considering.",
+    price: 299,
+    booking: "https://cal.com/quintaandco/rental-growth",
+    disclaimer: "Educational only — not investment, lending, tax, or insurance advice. Confirm any purchase with your own professionals."
   },
 
   /* ---------- THE PRACTICE ---------- */
