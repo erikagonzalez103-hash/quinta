@@ -126,7 +126,7 @@ const QUINTA_CLASSES = [
   {
     slug: "landlord", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
-    name: "So you want to be a landlord",
+    name: "Intro to Real Estate Management: So You Want to Be a Landlord",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Before you spend a dollar on a rental, let someone who looks after more than 200 rental doors across DFW honestly try to talk you out of it. Then run the numbers on a real property and decide.",

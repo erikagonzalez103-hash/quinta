@@ -50,7 +50,7 @@ export const CAL_PRICES: Record<string, { value: number; name: string }> = {
   "module-1":           { value: 150, name: "Module 1: Your First AI Workflow" },
   "module-2":           { value: 200, name: "Module 2 — Build your AI assistant" },
   "module-3":           { value: 299, name: "Module 3 — Real databases & automation" },
-  "landlord":           { value: 175, name: "So you want to be a landlord" },
+  "landlord":           { value: 175, name: "Intro to Real Estate Management: So You Want to Be a Landlord" },
   "rental-management":  { value: 250, name: "Owning it without doing it all" },
   "rental-growth":      { value: 299, name: "Grow it and build your team" },
   "get-started-fff":    { value: 212, name: "Get started (bundle)" },
