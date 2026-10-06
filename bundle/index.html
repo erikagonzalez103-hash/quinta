@@ -31,6 +31,9 @@
   letter-spacing:.12em;font-size:11px;color:var(--sage-deep)}
 .bd-after{margin-top:34px;font-size:15px;line-height:1.6;color:var(--ink)}
 .bd-after strong{color:var(--moss)}
+.bd-oct21{font-size:15px;line-height:1.6;color:var(--ink);margin:0 0 30px;padding:14px 16px;
+  background:#EEF2EC;border-left:3px solid var(--sage-deep);border-radius:4px}
+.bd-oct21 a{color:var(--sage-deep);font-weight:600}
 </style>
 </head>
 <body>
@@ -109,6 +112,35 @@
   var CAL = "https://cal.com/quintaandco/";
   var el = document.getElementById("bd");
 
+  /* WEDNESDAY 21 OCTOBER is booked on oct21.html, not in Cal.com, so none of
+     the Cal.com links on this page can reach it. Without this note a buyer
+     who wanted the big day had no way to find it (hardening review, 6 Oct).
+     Hidden once sales for the day close - the same moment as SALES_CLOSE in
+     supabase/functions/_shared/oct21.ts. */
+  var OCT21_OPEN = Date.now() < Date.parse("2026-10-21T00:00:00-05:00");
+  var OCT21_LINK = "../oct21.html#already-paid";
+  var OCT21_NOTE = OCT21_OPEN
+    ? '<p class="bd-oct21"><strong>Want Wednesday, October 21?</strong> That day isn’t in ' +
+      'the calendar links — <a href="' + OCT21_LINK + '">book your class on October 21 here</a> ' +
+      'with the email you bought with. Nothing more to pay.</p>'
+    : "";
+
+  /* Which classes run on the 21st with a seat left - so a class with no
+     Cal.com date can point there instead of saying "No date yet". */
+  function onOct21() {
+    if (!OCT21_OPEN) return Promise.resolve({});
+    var KEY = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf";
+    return fetch("https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/oct21_sessions", {
+      method: "POST",
+      headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" },
+      body: "{}"
+    }).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+      var m = {};
+      (rows || []).forEach(function (s) { if (s.seats_left > 0) m[s.class_slug] = true; });
+      return m;
+    }).catch(function () { return {}; });
+  }
+
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -156,6 +188,7 @@
         'in ten, check spam and then email ' +
         '<a href="mailto:hello@quintaand.co">hello@quintaand.co</a> — ' +
         'we can see your order and will resend it.</p>' +
+      OCT21_NOTE +
       '<p class="bd-after">If a class you picked doesn’t have a date yet, ' +
         'that’s us, not you. <strong>Your classes are good until June 30, 2027</strong> — and if we haven’t given one a date by then, we refund it. <a href="../policies.html#classes-paid-for-in-advance">How it works</a>.</p>';
     return;
@@ -186,16 +219,24 @@
      stay as they are, since the calendar itself will tell her the truth. */
   function markDates() {
     if (typeof QuintaShop === "undefined") return;
-    QuintaShop.dated(b.redeem).then(function (dates) {
+    Promise.all([QuintaShop.dated(b.redeem), onOct21()]).then(function (got) {
+      var dates = got[0], on21 = got[1];
       if (!dates) return;
       Array.prototype.forEach.call(el.querySelectorAll(".bd-row[data-slug]"), function (row) {
         var slug = row.getAttribute("data-slug");
         var btn = row.querySelector(".bd-book");
         if (!btn) return;
+        var what = row.querySelector(".bd-what");
         if (dates[slug]) {
-          var what = row.querySelector(".bd-what");
           if (what) what.textContent = (what.textContent ? what.textContent + " " : "") +
-            "Next date: " + QuintaShop.prettyDay(dates[slug]) + ".";
+            "Next date: " + QuintaShop.prettyDay(dates[slug]) + "." +
+            (on21[slug] ? " Also on October 21." : "");
+          return;
+        }
+        if (on21[slug]) {
+          btn.href = OCT21_LINK;
+          btn.removeAttribute("target");
+          btn.textContent = "Book October 21";
           return;
         }
         var span = document.createElement("span");
@@ -216,6 +257,14 @@
     '<p class="bd-note">There’s no card and nothing more to pay. ' +
       'Bookmark this page, or keep the email — the same link brings you ' +
       'back here any time.</p>' +
+    OCT21_NOTE +
+    /* Module 1 bundles book their first class in Cal.com at checkout, and
+       Cal.com has no October 21 - so moving it to the day is done by hand
+       (Erika's call, 6 Oct). */
+    (OCT21_OPEN && b.anchor === "module-1"
+      ? '<p class="bd-note" style="margin-top:-18px">Want <strong>Module 1</strong> on October 21 ' +
+        'instead of the date you just picked? Reply to your confirmation email and we’ll move it for you.</p>'
+      : "") +
     rows +
     '<p class="bd-after">If a class you want doesn’t have a date yet, that’s ' +
       'us, not you — email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> ' +

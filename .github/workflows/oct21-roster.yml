@@ -1,0 +1,82 @@
+# October 21 class lists to each teacher (tools/oct21-roster.mjs).
+#
+# Two sends, each exactly once:
+#   first - Tuesday 20 Oct, morning: booked so far, online emails to paste
+#   final - Wednesday 21 Oct, after booking closes at midnight: the full list
+#
+# GitHub drops and delays scheduled runs (the class-date sync, set for every
+# 30 minutes, has run about every 6 hours), so each send gets several tries.
+# The first try that works commits tools/state/oct21-roster-<phase>.sent and
+# every later try sees it and does nothing. Cron has no year - the script
+# checks the Dallas date itself, so nothing fires in 2027.
+#
+# SEND IT BY HAND: Actions tab -> "October 21 class lists" -> Run workflow,
+# pick first or final. Tick "dry run" to see who would get what.
+#
+# SECRETS: SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY (same as the daily report).
+#
+# Delete this and the script after 21 October 2026.
+
+name: October 21 class lists
+
+on:
+  schedule:
+    # Oct 20, about 8:23am / 10:23am / 12:23pm / 3:23pm Dallas (CDT is UTC-5)
+    - cron: "23 13,15,17,20 20 10 *"
+    # Oct 21, about 12:41am / 2:41am / 4:41am / 6:41am / 8:11am Dallas
+    - cron: "41 5,7,9,11 21 10 *"
+    - cron: "11 13 21 10 *"
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Which list"
+        type: choice
+        options: [first, final]
+        default: first
+      dry_run:
+        description: "Only show who would get what"
+        type: boolean
+        default: false
+
+concurrency:
+  group: oct21-roster
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # to commit the "already sent" marker
+
+jobs:
+  roster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Check the logic still holds
+        run: node tools/oct21-roster.test.mjs
+
+      - name: Send the lists
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ARGS="--phase ${{ inputs.phase }}"
+            if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          fi
+          node tools/oct21-roster.mjs $ARGS
+
+      - name: Remember it was sent
+        run: |
+          if [ -n "$(git status --porcelain tools/state)" ]; then
+            git config user.name "Quinta class lists"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add tools/state
+            git commit -m "October 21 class lists sent"
+            git pull --rebase --autostash
+            git push
+          fi

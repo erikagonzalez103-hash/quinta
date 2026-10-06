@@ -2,9 +2,9 @@
 -- Mark which waitlist signups have already been emailed about
 --
 -- WHY
--- The alert never reached Erika. Robin Frazier signed up twice on August 19,
+-- The alert never reached Erika. A student signed up twice on August 19,
 -- twelve days after the notifier shipped, and the only reason anyone knew was
--- that Robin said so. Whatever is wrong lives in the Supabase dashboard —
+-- that she said so. Whatever is wrong lives in the Supabase dashboard —
 -- either the function isn't deployed or no webhook calls it — and neither is
 -- visible from the repo, so neither can be checked or fixed from here.
 --
@@ -25,9 +25,9 @@ comment on column public.waitlist.notified_at is
 -- Everyone already on the list is marked as done.
 --
 -- This is deliberate, and it is the whole reason for a backfill: without it
--- the first run would email Robin a cheerful "you're on the list" eight days
+-- the first run would email her a cheerful "you're on the list" eight days
 -- late, and send Erika alerts for a test row from July. Erika is writing to
--- Robin herself — a real note beats an automated one that arrives a week
+-- her directly — a real note beats an automated one that arrives a week
 -- after the moment has passed.
 update public.waitlist
    set notified_at = coalesce(notified_at, created_at)

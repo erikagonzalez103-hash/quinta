@@ -25,8 +25,8 @@ function harness({ rows, failAlert = false, failConfirm = false, failPatch = fal
   return { fetch, calls };
 }
 
-const fresh = { id: 'r1', created_at: '2026-08-26T14:30:00Z', name: 'Robin Frazier',
-  email: 'robin@enjoyyourhaven.com', class_name: 'Bookkeeping II', source: 'site', ref: 'tara26' };
+const fresh = { id: 'r1', created_at: '2026-08-26T14:30:00Z', name: 'Dana Example',
+  email: 'dana@example.com', class_name: 'Bookkeeping II', source: 'site', ref: 'tara26' };
 const old   = { id: 'r2', created_at: '2026-08-19T01:25:00Z', name: 'Old Signup',
   email: 'old@example.com', class_name: 'Taxes', source: 'site', ref: null };
 
@@ -51,7 +51,7 @@ console.log('\n2. A fresh signup (30 min old)');
   const h = harness({ rows: [fresh] });
   const r = await run({ fetch: h.fetch, env, log, now: () => NOW });
   check('alerts Erika', h.calls.emails.some(e => e.kind === 'alert' && e.to === 'erika@quintaand.co'));
-  check('confirms to her', h.calls.emails.some(e => e.kind === 'confirm' && e.to === 'robin@enjoyyourhaven.com'));
+  check('confirms to her', h.calls.emails.some(e => e.kind === 'confirm' && e.to === 'dana@example.com'));
   check('subject names the class', h.calls.emails[0].subject.includes('Bookkeeping II'));
   check('stamps the row', h.calls.patches[0] === 'r1');
   check('reports 1', r.sent === 1);
@@ -83,7 +83,7 @@ console.log('\n5. Confirmation fails but alert worked');
   let threw = null;
   try { await run({ fetch: h.fetch, env, log, now: () => NOW }); } catch (e) { threw = e; }
   check('still stamps (no alert loop)', h.calls.patches[0] === 'r1');
-  check('but still reports the failure', /confirmation to robin/.test(threw?.message || ''));
+  check('but still reports the failure', /confirmation to dana/.test(threw?.message || ''));
 }
 
 console.log('\n6. Cannot stamp the row');

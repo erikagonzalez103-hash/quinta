@@ -14,11 +14,13 @@ name: Daily report
 
 on:
   schedule:
-    # 8pm Dallas. Cron here is UTC and has no idea about daylight saving, so
-    # both are listed and the job itself decides which one is really 8pm
-    # locally — otherwise it silently drifts to 7pm every November.
-    - cron: "0 1 * * *"    # 8pm CDT (Mar-Nov)
-    - cron: "0 2 * * *"    # 8pm CST (Nov-Mar)
+    # Once a day, aimed at about 8pm Dallas. GitHub starts scheduled jobs
+    # hours late (in Aug-Oct 2026, between midnight and 8am Dallas), and the
+    # old "only send if it is exactly 8pm" check skipped every single run
+    # while showing green - the report never once arrived. Now it always
+    # sends, and the script reports on yesterday when it runs before noon.
+    # Off the hour on purpose: GitHub's top-of-the-hour queue is the slowest.
+    - cron: "17 1 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -30,24 +32,10 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Is it actually 8pm in Dallas?
-        id: hour
-        run: |
-          HOUR=$(TZ=America/Chicago date +%H)
-          echo "dallas_hour=$HOUR" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$HOUR" = "20" ]; then
-            echo "send=yes" >> "$GITHUB_OUTPUT"
-          else
-            echo "send=no" >> "$GITHUB_OUTPUT"
-            echo "It is ${HOUR}:00 in Dallas — the other cron line covers tonight. Skipping."
-          fi
-
       - name: Check the logic still holds
-        if: steps.hour.outputs.send == 'yes'
         run: node tools/daily-report.test.mjs
 
       - name: Send it
-        if: steps.hour.outputs.send == 'yes'
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}

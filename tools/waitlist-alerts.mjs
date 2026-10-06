@@ -7,9 +7,9 @@
  * leaves it alone.
  *
  * WHY IT EXISTS RATHER THAN THE EDGE FUNCTION
- * The edge function is fine code that never ran. Robin Frazier signed up twice
+ * The edge function is fine code that never ran. A student signed up twice
  * on 19 August, twelve days after it shipped, and no email was sent either
- * time — the only reason anyone knew was that Robin mentioned it. The missing
+ * time — the only reason anyone knew was that she mentioned it. The missing
  * piece was in the Supabase dashboard, where nothing is visible from the repo
  * and nothing announces itself when it breaks.
  *

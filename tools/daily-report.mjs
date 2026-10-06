@@ -51,6 +51,16 @@ export function startOfDallasDay(now) {
   return new Date(`${day}T00:00:00-06:00`);
 }
 
+/* Which day the report is about. GitHub runs scheduled jobs hours late - in
+   Aug-Oct 2026 the 8pm run started between midnight and 8am Dallas time, and
+   the old "is it exactly 8pm?" gate skipped every one, so the report never
+   sent. A run before noon now reports on yesterday, whole; a run after noon
+   reports on today so far. Returns an instant inside the day to report. */
+export function reportMoment(now) {
+  const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }).format(now));
+  return hour < 12 ? new Date(startOfDallasDay(now).getTime() - 60 * 1000) : now;
+}
+
 const card = (title, inner) => `
   <div style="background:#FFFFFF;border:1px solid #DCD7CB;border-radius:4px;padding:24px 26px;margin-bottom:18px;">
     <div style="font-size:11px;letter-spacing:.28em;color:#4F6B5C;text-transform:uppercase;margin-bottom:14px;">${esc(title)}</div>
@@ -165,7 +175,12 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const missing = ["SUPABASE_SERVICE_ROLE_KEY", "RESEND_API_KEY"].filter((k) => !env[k]);
   if (missing.length && !dryRun) throw new Error(`Missing secret(s): ${missing.join(", ")}`);
 
+  // The day being reported, which is yesterday for a morning run - and if
+  // so, nothing from this morning counts towards it.
+  const ranAt = now;
+  now = reportMoment(ranAt);
   const since = startOfDallasDay(now).toISOString();
+  const until = now === ranAt ? null : startOfDallasDay(ranAt).toISOString();
   const today = dallasDay(now);
 
   /* Which reads were refused, as opposed to genuinely empty. The two look
@@ -188,7 +203,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const [faculty, activity, signups, referrals, sessions] = await Promise.all([
     get("faculty?select=email,display_name,full_name"),
     get(`campaign_activity?select=faculty_email&day_key=eq.${today}`),
-    get(`waitlist?select=name,email,class_name,ref,created_at&created_at=gte.${since}&order=created_at.asc`),
+    get(`waitlist?select=name,email,class_name,ref,created_at&created_at=gte.${since}${until ? `&created_at=lt.${until}` : ""}&order=created_at.asc`),
     get("referral_counts?select=ref,signups&order=signups.desc"),
     get("class_sessions?select=*&status=neq.canceled"),
   ]);
@@ -220,7 +235,8 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
     name: f.display_name || f.full_name || f.email,
   }));
 
-  const sessionsToday = sessions.filter((s) => String(s.created_at || "") >= since);
+  const sessionsToday = sessions.filter((s) => String(s.created_at || "") >= since
+    && (!until || String(s.created_at || "") < until));
 
   /* Whichever column the Worker writes its verdict into — it lives in the
      database, not this repo, so try the names it might use and settle for

@@ -26,7 +26,7 @@
 // signature check below is what authenticates the caller.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { OCT21, SEATS, sessions as oct21Sessions, confirmStudent, tellTeacher, attendingFor, type Session } from "../_shared/oct21.ts";
+import { OCT21, SEATS, sessions as oct21Sessions, confirmStudent, tellTeacher, attendingFor, salesClosed, type Session } from "../_shared/oct21.ts";
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -123,7 +123,30 @@ serve(async (req) => {
     }
 
     const s = event?.data?.object ?? {};
-    const slugs = String(s?.metadata?.slugs || "")
+
+    /* Only a payment that has actually cleared books anything. Checkout is
+       cards-only, so this is always "paid" - but if a delayed method (bank
+       debit, pay-later) is ever switched back on, "completed" arrives before
+       the money does, and a seat and a confirmation would go out for a
+       payment that can still fail. 200, so Stripe does not retry it. */
+    if (s?.payment_status !== "paid" && s?.payment_status !== "no_payment_required") {
+      console.error(`Session ${s?.id} completed but payment_status is ${s?.payment_status} - nothing booked.`);
+      if (RESEND_API_KEY) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: SEND_FROM, to: [BCC],
+            subject: `Payment not cleared yet — nothing booked (${s?.customer_details?.email || "no email"})`,
+            text: `Stripe checkout ${s?.id} finished with payment_status "${s?.payment_status}", so no seat or class was recorded and no confirmation sent.\n`
+              + `Check the payment in Stripe. If it clears, book her by hand or ask Claude. Checkout should be cards-only, so this means a delayed payment method got through.\n`,
+          }),
+        }).catch((e) => console.error("alert to Erika failed", e));
+      }
+      return json({ skipped: `payment_status ${s?.payment_status}` });
+    }
+
+    const slugs =String(s?.metadata?.slugs || "")
       .split(",").map((x: string) => x.trim()).filter(Boolean);
     if (!slugs.length) {
       console.error(`Session ${s?.id} completed with no slugs in metadata - nothing to grant.`);
@@ -135,10 +158,12 @@ serve(async (req) => {
        over herself, and in that case both links go to the payer with the
        gifted one clearly marked. */
     const giftSlug = String(s?.metadata?.gift_slug || "").trim();
-    const giftEmail = String(s?.metadata?.gift_email || "").trim();
+    // Emails are stored lower-case everywhere: the Cal.com redeem matches them
+    // exactly, and "Jane@Gmail.com" must find the row "jane@gmail.com" booked.
+    const giftEmail = String(s?.metadata?.gift_email || "").trim().toLowerCase();
     const giftName = String(s?.metadata?.gift_name || "").trim();
 
-    const email = String(s?.customer_details?.email || "");
+    const email = String(s?.customer_details?.email || "").trim().toLowerCase();
     const name = String(s?.customer_details?.name || "").trim();
     if (!email) {
       console.error(`Session ${s?.id} completed with no email - cannot record or send.`);
@@ -245,7 +270,7 @@ serve(async (req) => {
             text: `Order ${orderId}, ${name || "(no name)"} <${email}>\n`
               + `Classes: ${seats.map((x) => x.class_name).join(", ")}\n`
               + (oversold.length ? `\nOVER THE ${SEATS}-SEAT LIMIT: ${oversold.join("; ")}\n`
-                + `She has paid and been confirmed. Decide: an extra chair, or a refund and an apology.\n` : "")
+                + `She has paid and been confirmed as normal - you said an extra chair is fine. Just make sure the room has one.\n` : "")
               + (ledger21 !== "written" && ledger21 !== "already recorded" ? `\nThe ledger write failed (${ledger21}). Add the rows by hand or ask Claude.\n` : ""),
           }),
         }).catch((e) => console.error("alert to Erika failed", e));
@@ -357,12 +382,21 @@ serve(async (req) => {
         + inner
         + `<p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p></div>`;
     }
-    const KEEP_HTML = `<p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Keep this
+    /* These links all go to Cal.com, and 21 October is not in Cal.com - it is
+       booked on oct21.html. Without this line a buyer who wanted the big day
+       has no way to find it. Drops out once sales for the day have closed. */
+    const OCT21_HTML = salesClosed() ? "" : `<p style="margin:0 0 16px;padding:12px 14px;background:#EEF2EC;border-left:3px solid #4F6B5C">
+      <strong>Want Wednesday, October 21?</strong> Those dates aren't in the links above.
+      <a href="https://quintaand.co/oct21.html#already-paid" style="color:#4F6B5C;font-weight:bold">Book your class on October 21 here</a>
+      with this email address — nothing more to pay.</p>`;
+    const OCT21_TEXT = salesClosed() ? "" : `Want Wednesday, October 21? Those dates aren't in the links above. `
+      + `Book your class on October 21 at https://quintaand.co/oct21.html#already-paid with this email address - nothing more to pay.\n\n`;
+    const KEEP_HTML = OCT21_HTML + `<p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Keep this
       email — the links stay good. If a class you want doesn't have a date yet,
       reply here and we'll tell you the moment it's on the calendar. Your classes
       are good until June 30, 2027 — and if we haven't given one a date by then, we
       refund it. <a href="https://quintaand.co/policies.html#classes-paid-for-in-advance" style="color:#5A5E55">How it works</a>.</p>`;
-    const KEEP_TEXT = `Keep this email — the links stay good. If a class you want `
+    const KEEP_TEXT = OCT21_TEXT + `Keep this email — the links stay good. If a class you want `
       + `doesn't have a date yet, reply here and we'll tell you the moment it's on `
       + `the calendar. Your classes are good until June 30, 2027, and if we haven't `
       + `given one a date by then, we refund it. How it works: `

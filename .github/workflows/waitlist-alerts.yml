@@ -1,9 +1,9 @@
 # Tell Erika when someone joins the waitlist.
 #
 # WHY THIS EXISTS RATHER THAN THE SUPABASE WEBHOOK
-# The edge function is fine code that never ran. Robin Frazier signed up twice
+# The edge function is fine code that never ran. A student signed up twice
 # on 19 August — twelve days after it shipped — and no email went out either
-# time; the only reason anyone knew was that Robin mentioned it. Whatever was
+# time; the only reason anyone knew was that she mentioned it. Whatever was
 # missing lived in the Supabase dashboard, where nothing is visible from the
 # repo and nothing says a word when it stops working.
 #

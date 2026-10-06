@@ -89,6 +89,13 @@
       Two classes are 15% off, three are 25% off, applied for you.</p>
     <p class="od-note">Ten seats per class, in the room and online together.</p>
 
+    <div id="odClosed" hidden class="od-done">
+      <h2>Booking for October 21 has closed.</h2>
+      <p>Already booked? You're all set — your confirmation email has your classes and times.
+        Want one of these classes on another date? <a href="foundations.html">See what's coming up</a>,
+        or email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>
+    </div>
+
     <form id="odForm" novalidate>
       <div id="odBlocks"><p class="od-note">Loading the day&hellip;</p></div>
 
@@ -109,7 +116,7 @@
       </div>
     </form>
 
-    <section class="od-redeem" aria-labelledby="odRTitle">
+    <section class="od-redeem" id="already-paid" aria-labelledby="odRTitle">
       <h2 id="odRTitle">Already paid for a class?</h2>
       <p class="od-note">From a bundle, a gift, or classes you chose together. Use the email you bought
         with, pick the session, and your seat is booked — nothing more to pay.</p>
@@ -194,6 +201,16 @@
   var day = [];
 
   if (/[?&]booked=1/.test(location.search)) el("odDone").hidden = false;
+
+  /* Sales stop at midnight going into the day - the same moment the
+     stripe-checkout and oct21-redeem functions start refusing (SALES_CLOSE in
+     supabase/functions/_shared/oct21.ts). Dallas is on CDT, UTC-5. */
+  var CLOSED = Date.now() >= Date.parse("2026-10-21T00:00:00-05:00");
+  if (CLOSED) {
+    el("odClosed").hidden = false;
+    el("odForm").hidden = true;
+    el("already-paid").hidden = true;
+  }
 
   function render() {
     var keep = picked();
@@ -288,6 +305,7 @@
       if (d && d.url && (d.code || null) === want) { window.location.href = d.url; return; }
       if (d && d.error === "full") { fail("One of those classes has just filled up. We've refreshed the list — pick again."); load(); return; }
       if (d && d.error === "same_block") { fail("Those two run at the same time — pick one per block."); return; }
+      if (d && d.error === "closed") { fail("Booking for October 21 has closed."); return; }
       if (d && (d.error === "discount_unavailable" || d.url)) {
         fail("The discount isn't applying right now, so we haven't sent you to payment at full price. Email hello@quintaand.co and we'll send you a link at the price shown.");
         return;
@@ -304,7 +322,8 @@
   function renderRedeem() {
     var open = day.filter(function (s) { return s.seats_left > 0; });
     rSel.innerHTML = '<option value="">Choose a class…</option>' + open.map(function (s) {
-      return '<option value="' + esc(s.session_id) + '">' + esc(clock(s.start_time)) + " — " + esc(s.class_name) + "</option>";
+      return '<option value="' + esc(s.session_id) + '">' + esc(clock(s.start_time)) + " — " + esc(s.class_name) +
+        (s.format === "online" ? " (online only)" : "") + "</option>";
     }).join("");
   }
   el("odRForm").addEventListener("submit", function (ev) {
@@ -322,7 +341,9 @@
       rGo.disabled = false; rGo.textContent = "Book my seat";
       if (d && d.ok) {
         rMsg.className = "od-msg good";
-        rMsg.textContent = "Booked — " + d.class_name + ". Your confirmation is on its way to that email.";
+        rMsg.textContent = "Booked — " + d.class_name + ". " + (d.emailed === false
+          ? "Your seat is saved, but the confirmation email didn't send — we'll follow up, or write to hello@quintaand.co."
+          : "Your confirmation is on its way to that email.");
         load(); return;
       }
       rMsg.className = "od-msg bad";
@@ -330,6 +351,7 @@
         d && d.error === "nothing_owed" ? "We can't find a " + (d.class_name || "class") + " you've already paid for under that email. Check it's the one you bought with, or email hello@quintaand.co." :
         d && d.error === "full" ? "That class has just filled up — pick another." :
         d && d.error === "already_used" ? "That class has already been booked." :
+        d && d.error === "closed" ? "Booking for October 21 has closed." :
         "That didn't go through. Try again, or email hello@quintaand.co.";
     }).catch(function () {
       rGo.disabled = false; rGo.textContent = "Book my seat";
@@ -337,6 +359,7 @@
     });
   });
 
+  var scrolled = false;
   function load() {
     fetch(SB + "/rest/v1/rpc/oct21_sessions", {
       method: "POST",
@@ -345,6 +368,13 @@
     }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (rows) {
       day = Array.isArray(rows) ? rows : [];
       render(); renderRedeem();
+      /* Buyer emails and the bundle page link to #already-paid. The classes
+         above it load after the browser has already jumped, which pushes
+         the form back down out of sight - so jump again once they're in. */
+      if (location.hash === "#already-paid" && !scrolled) {
+        scrolled = true;
+        el("already-paid").scrollIntoView({ behavior: "instant" });
+      }
     }).catch(function (e) {
       console.error(e);
       blocksEl.innerHTML = '<p class="od-note">We couldn’t load the day just now. Refresh, or email ' +

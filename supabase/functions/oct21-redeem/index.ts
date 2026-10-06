@@ -22,7 +22,7 @@
 // Deploy with --no-verify-jwt - the public page calls it with no session.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { OCT21, sessions, confirmStudent, tellTeacher, attendingFor } from "../_shared/oct21.ts";
+import { OCT21, SEATS, sessions, confirmStudent, tellTeacher, attendingFor, salesClosed } from "../_shared/oct21.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -68,6 +68,7 @@ serve(async (req) => {
     const sessionId = String(body?.session || "");
     const chosen = body?.attending === "online" ? "online" : "in-person";
     if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return json({ error: "bad_email" }, 400);
+    if (salesClosed()) return json({ error: "closed" }, 409);
 
     const day = await sessions(SUPABASE_URL, SERVICE_KEY);
     const s = day.find((x) => x.session_id === sessionId);
@@ -88,7 +89,7 @@ serve(async (req) => {
       return json({ error: "lookup_failed" }, 502);
     }
     const owed = (await r.json() as Array<{ id: string; student_email: string; student_name: string | null }>)
-      .find((x) => String(x.student_email || "").toLowerCase() === email);
+      .find((x) => String(x.student_email || "").trim().toLowerCase() === email);
     if (!owed) return json({ error: "nothing_owed", class_name: s.class_name }, 404);
 
     /* Claim it - and only if it is STILL owed, so two taps on the button
@@ -100,6 +101,26 @@ serve(async (req) => {
     });
     const claimed = claim.ok ? await claim.json() : [];
     if (!claimed.length) return json({ error: "already_used" }, 409);
+
+    /* The seat check after booking, as stripe-webhook does: two women can
+       claim the last seat at the same moment. Both keep it - Erika is fine
+       with an extra chair - but she needs to know to put one out. */
+    const cnt = await db(
+      `enrollments?session_id=eq.${encodeURIComponent(s.session_id)}&status=in.(booked,taken)&select=id`,
+      { headers: { Prefer: "count=exact" } });
+    const total = Number((cnt.headers.get("content-range") || "").split("/")[1] || 0);
+    if (total > SEATS) {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "Quinta & Co. <hello@quintaand.co>", to: ["erika@quintaand.co"],
+          subject: `October 21 oversold — ${s.class_name} at ${String(s.start_time).slice(0, 5)} (${total} of ${SEATS})`,
+          text: `${owed.student_name || "(no name)"} <${owed.student_email}> used a class she'd already paid for and took a seat in ${s.class_name}, which now has ${total} of ${SEATS}.\n`
+            + `She has been confirmed as normal - you said an extra chair is fine. Just make sure the room has one.\n`,
+        }),
+      }).catch((e) => console.error("alert to Erika failed", e));
+    }
 
     const seat = { session_id: s.session_id, class_name: s.class_name, start_time: String(s.start_time),
                    online: attending === "online" };

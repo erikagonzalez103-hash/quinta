@@ -192,16 +192,31 @@ async function recordBooking(
     /* Close the oldest matching owed row. Matching on email and class, not on
        order_ref, because the redeem booking is a different Cal.com order from
        the bundle that paid for it. */
-    const q = `enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
+    /* Find it first, then close it by id. A PATCH with order+limit relies on
+       PostgREST's limited-update support, which is not something to discover
+       on a live booking; this is the same find-then-claim oct21-redeem uses,
+       with status=owed kept on the PATCH so a row is never spent twice. */
+    const find = await db(`enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
       + `&class_slug=eq.${encodeURIComponent(slug)}&status=eq.owed`
-      + `&order=created_at.asc&limit=1`;
-    const res = await db(q, {
-      method: "PATCH",
-      headers: { Prefer: "return=representation" },
-      body: JSON.stringify({ status: "booked", session_on: buyer.day }),
-    });
-    const rows = res.ok ? await res.json() : [];
-    if (!res.ok) console.error("redeem patch failed", res.status, await res.text());
+      + `&select=id&order=created_at.asc&limit=1`);
+    if (!find.ok) {
+      console.error("redeem lookup failed", find.status, await find.text());
+      return { ledger: "insert failed", class_slug: slug };
+    }
+    const found = await find.json() as Array<{ id: string }>;
+    let rows: unknown[] = [];
+    if (found.length) {
+      const res = await db(`enrollments?id=eq.${found[0].id}&status=eq.owed`, {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ status: "booked", session_on: buyer.day }),
+      });
+      rows = res.ok ? await res.json() : [];
+      if (!res.ok) {
+        console.error("redeem patch failed", res.status, await res.text());
+        return { ledger: "insert failed", class_slug: slug };
+      }
+    }
     if (!rows.length) {
       /* She booked a redeem link with nothing owed against it. Record it so
          it is visible rather than silently free. */
@@ -284,7 +299,12 @@ async function undoBooking(bookedSlug: string, buyer: Buyer) {
 
   if (/-redeem$/i.test(bookedSlug)) {
     const q = `enrollments?student_email=eq.${encodeURIComponent(buyer.email)}`
-      + `&class_slug=eq.${encodeURIComponent(slug)}&status=eq.booked`;
+      + `&class_slug=eq.${encodeURIComponent(slug)}&status=eq.booked`
+      /* Only the row for the date she cancelled. Without this, cancelling a
+         Cal.com date also reopened an October 21 seat in the same class, which
+         then dropped out of the seat count and could be sold again. */
+      + (buyer.day ? `&session_on=eq.${encodeURIComponent(buyer.day)}` : "")
+      + `&session_id=is.null`;
     const res = await db(q, {
       method: "PATCH",
       body: JSON.stringify({ status: "owed", session_on: null }),
@@ -347,7 +367,8 @@ serve(async (req) => {
 
     const buyer: Buyer = {
       name: String(who?.name || "").trim(),
-      email: to,
+      // Lower-case, as stripe-webhook stores it - the ledger lookups match exactly.
+      email: to.trim().toLowerCase(),
       uid: String(p?.uid || p?.bookingUid || ""),
       start,
       day: start ? start.slice(0, 10) : null,
@@ -371,6 +392,32 @@ serve(async (req) => {
         console.error("ledger write threw", e);
         ledger = { ledger: "threw", detail: String(e) };
       }
+    }
+
+    /* Tell Erika the same day when the ledger did not take the booking - a
+       failed write means a bundle buyer later hears "nothing owed" and check-in
+       cannot find her, and a $0 redeem with nothing owed is either a gift
+       voucher booked under the friend's own email (reassign the row by hand)
+       or someone who found the free link. Both used to reach only the log. */
+    const BAD = ["redeem with no owed row", "insert failed", "threw",
+                 "redeem undo failed", "bundle undo failed", "removal failed"];
+    if (BAD.includes(String(ledger.ledger))) {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: SEND_FROM, to: [BCC],
+          subject: ledger.ledger === "redeem with no owed row"
+            ? `Free class booked with nothing paid for it — ${realSlug(bookedSlug)}, ${buyer.name || to}`
+            : `Booking not recorded — ${bookedSlug}, ${buyer.name || to}`,
+          text: `Cal.com ${cancelled ? "cancellation" : "booking"}: ${bookedSlug}\n`
+            + `Who: ${buyer.name || "(no name)"} <${to}>\nDate: ${buyer.day || "?"}\nResult: ${ledger.ledger}\n\n`
+            + (ledger.ledger === "redeem with no owed row"
+              ? `Nothing owed under this email. If she's a gift recipient whose friend kept the voucher, `
+                + `move the friend's owed row to her email. If nobody paid for it, cancel the booking in Cal.com.\n`
+              : `The ledger didn't take it. Add or fix the row by hand, or ask Claude.\n`),
+        }),
+      }).catch((e) => console.error("alert to Erika failed", e));
     }
 
     /* Email only a new bundle sale. A reschedule keeps the same bundle and she

@@ -9,6 +9,14 @@
 
 export const OCT21 = "2026-10-21";
 export const SEATS = 10;                       // per class, room and online together
+
+/* Sales stop at midnight going into the day (Dallas is on CDT, UTC-5, in
+   October). Erika's call on 6 Oct: nothing sells on the 21st itself, so
+   every teacher has her full list - online students included - the night
+   before. Checked by stripe-checkout and oct21-redeem; oct21.html shows the
+   closed note from the same moment. */
+export const SALES_CLOSE = Date.parse("2026-10-21T00:00:00-05:00");
+export const salesClosed = () => Date.now() >= SALES_CLOSE;
 const SEND_FROM = "Quinta & Co. <hello@quintaand.co>";
 const ERIKA = "erika@quintaand.co";
 const WHERE = "kiln coworking, Preston Hollow, Dallas";

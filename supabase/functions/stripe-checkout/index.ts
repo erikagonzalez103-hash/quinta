@@ -49,7 +49,7 @@
 // Deploy with --no-verify-jwt - the page calls it with no session.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { sessions as oct21Sessions, clock } from "../_shared/oct21.ts";
+import { sessions as oct21Sessions, clock, salesClosed } from "../_shared/oct21.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -225,6 +225,11 @@ serve(async (req) => {
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
+    /* Cards only - Apple Pay and Google Pay ride on "card". Bank debits and
+       pay-later methods report "completed" before the money has cleared, and
+       the seat and her confirmation would go out for a payment that can
+       still fail days later. */
+    form.set("payment_method_types[0]", "card");
     /* Back to the page she came from, with her choices lost but her place
        kept - not to the top of the landing page, three scrolls away from
        where she was. */
@@ -272,6 +277,7 @@ serve(async (req) => {
          The seat count is checked again after payment, in stripe-webhook,
          because two women can be at checkout for the last seat at once. */
       if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "not configured" }, 500);
+      if (salesClosed()) return json({ error: "closed" }, 409);
       const ids: string[] = Array.from(new Set<string>(
         (Array.isArray(body?.sessions) ? body.sessions : []).map((s: unknown) => String(s))));
       if (!ids.length) return json({ error: "pick_a_class" }, 400);
@@ -312,6 +318,12 @@ serve(async (req) => {
       form.set("metadata[slugs]", chosen.map((s) => s.class_slug).join(","));
       form.set("metadata[attending]", attending);
       form.set("success_url", `${SITE}/oct21.html?booked=1`);
+      /* Seats are not held while she pays, so an open cart is a claim on a
+         seat nobody can see. Stripe's default keeps it payable for 24 hours;
+         30 minutes (Stripe's minimum) keeps a sold-out class from collecting
+         a stack of late payments. Erika is fine with an eleventh chair - not
+         with a fifteenth. */
+      form.set("expires_at", String(Math.floor(Date.now() / 1000) + 31 * 60));
 
       const refused = await discountFor(chosen.length);
       if (refused) return refused;

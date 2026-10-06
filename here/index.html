@@ -187,6 +187,8 @@
             m.className = "ci-msg bad";
             m.textContent = d.reason === "need_both_names"
               ? "We need both names, so we can find your class."
+              : d.reason === "not_today"
+              ? "Check-in opens on the day of the class — scan again when you’re there."
               : "That code didn’t work — ask your instructor.";
             return;
           }
