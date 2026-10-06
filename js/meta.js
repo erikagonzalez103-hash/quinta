@@ -40,6 +40,45 @@
   };
   var PENDING = "quinta_meta_pending";     // sessionStorage: what she was about to pay for
   var FIRED = "quinta_meta_purchased";     // localStorage: Purchase ids already sent
+  var UTM = "quinta_utm";                  // localStorage: the ad tags she last arrived with
+
+  /* WHICH AD SENT HER. The utm_* tags on the link she arrived by (the Meta
+     campaign uses ?utm_source=meta&utm_medium=paid&utm_campaign=fff-250k)
+     are kept for 30 days - the most recent tagged arrival wins - and travel
+     with her purchase: into Stripe's checkout metadata (QuintaMeta.utm(), sent
+     by oct21 / choose / gift) and onto Cal.com booking links (added on click
+     below, and Cal.com records them on the booking). The booking functions
+     write them to the enrollments ledger (utm_source ... utm_content).
+     Separate from ?ref=, which credits a teacher and is untouched here. */
+  var UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content"];
+  function cleanTag(v) { return String(v || "").replace(/[^A-Za-z0-9 ._\-+:/]/g, "").slice(0, 100); }
+  (function remember() {
+    try {
+      var q = new URLSearchParams(location.search);
+      if (!q.get("utm_source")) return;
+      var t = { at: Date.now() };
+      UTM_KEYS.forEach(function (k) { var v = cleanTag(q.get(k)); if (v) t[k] = v; });
+      localStorage.setItem(UTM, JSON.stringify(t));
+    } catch (e) { /* private browsing - best effort */ }
+  })();
+  function utm() {
+    try {
+      var t = JSON.parse(localStorage.getItem(UTM) || "null");
+      if (!t || !t.at || Date.now() - t.at > 30 * 24 * 60 * 60 * 1000) return {};
+      var out = {}; UTM_KEYS.forEach(function (k) { if (t[k]) out[k] = t[k]; });
+      return out;
+    } catch (e) { return {}; }
+  }
+  function withUtm(href) {
+    var tags = utm(), keys = Object.keys(tags);
+    if (!keys.length) return href;
+    try {
+      var u = new URL(href);
+      if (u.searchParams.get("utm_source")) return href;   // the link already says where it came from
+      keys.forEach(function (k) { u.searchParams.set(k, tags[k]); });
+      return u.href;
+    } catch (e) { return href; }
+  }
 
   function fire(name, data, opts) {
     try { if (typeof fbq === "function") fbq("track", name, data, opts || {}); } catch (e) {}
@@ -75,6 +114,8 @@
     fire("InitiateCheckout", { content_name: p.name, content_ids: [slug], content_type: "product", value: p.value, currency: "USD" });
     /* Give the pixel a moment to send before the page is gone - unless the
        link opens a new tab, or another script already handled the click. */
+    // The ad tags ride along to Cal.com, which records them on the booking.
+    a.href = withUtm(a.href);
     if (ev.defaultPrevented || a.target === "_blank" || ev.button !== 0 ||
         ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
     ev.preventDefault();
@@ -114,6 +155,9 @@
     /* For the server's Purchase: Meta's own browser ids, to match the sale
        to the ad click. Sent with the checkout request. */
     ids: function () { return { fbp: cookie("_fbp"), fbc: cookie("_fbc") }; },
+
+    /* The ad tags she arrived with (30 days), for the checkout request. */
+    utm: utm,
 
     priceOf: priceOf
   };

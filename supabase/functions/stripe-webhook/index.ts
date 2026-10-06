@@ -175,6 +175,14 @@ serve(async (req) => {
 
     const ref = String(s?.metadata?.ref || "").trim() || null;
     const orderId = String(s?.id || "");
+    /* Which ad sent her (stripe-checkout copies the utm tags into metadata).
+       Spread onto every row, so all rows carry the same keys either way. */
+    const adTags = {
+      utm_source:   String(s?.metadata?.utm_source || "") || null,
+      utm_medium:   String(s?.metadata?.utm_medium || "") || null,
+      utm_campaign: String(s?.metadata?.utm_campaign || "") || null,
+      utm_content:  String(s?.metadata?.utm_content || "") || null,
+    };
 
     /* Tell Meta about the purchase - the real amount paid, keyed on the
        session id so the browser's Purchase on the return page (same id)
@@ -259,6 +267,7 @@ serve(async (req) => {
         session_id: id,
         attending: seats[i].online ? "online" : "in-person",
         notes: "Booked on oct21.html",
+        ...adTags,
       }));
 
       let ledger21 = "written";
@@ -333,6 +342,7 @@ serve(async (req) => {
         status: "owed",
         session_on: null,
         notes: fields.notes,
+        ...adTags,
       };
     }
 

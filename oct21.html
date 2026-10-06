@@ -179,7 +179,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=17"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=1"></script>
+<script src="js/meta.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -336,7 +336,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     fetch(CHECKOUT, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ offer: "oct21", sessions: p, attending: how, ref: QuintaShop.ref(),
-                             meta: window.QuintaMeta ? QuintaMeta.ids() : null })
+                             meta: window.QuintaMeta ? QuintaMeta.ids() : null, utm: window.QuintaMeta ? QuintaMeta.utm() : null })
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d && d.url && (d.code || null) === want) {
         // Meta's checkout event, at the total this page quoted (js/meta.js).

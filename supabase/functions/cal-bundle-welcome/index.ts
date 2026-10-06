@@ -163,6 +163,9 @@ function db(path: string, init: RequestInit = {}) {
 type Buyer = {
   name: string; email: string; uid: string;
   start: string; day: string | null; ref: string | null;
+  // Which ad sent her: the utm tags js/meta.js adds to the Cal.com link,
+  // which Cal.com records on the booking. All null when there were none.
+  ad: { utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; utm_content: string | null };
 };
 
 /* Every booking writes to the ledger, but there are three shapes of it.
@@ -240,6 +243,7 @@ async function recordBooking(
         ref_code: buyer.ref,
         status: cs === bundle.anchor ? "booked" : "owed",
         session_on: cs === bundle.anchor ? buyer.day : null,
+        ...buyer.ad,
       }))
     : [{
         student_name: buyer.name,
@@ -253,6 +257,7 @@ async function recordBooking(
         ref_code: buyer.ref,
         status: "booked",
         session_on: buyer.day,
+        ...buyer.ad,
       }];
 
   const res = await db("enrollments", { method: "POST", body: JSON.stringify(rows) });
@@ -360,11 +365,20 @@ serve(async (req) => {
        URL, and a booking field's answer arrives in `responses`, not in
        `metadata` - which is where this used to look, so it found nothing.
        responses.ref is either the string or { value } depending on the field
-       type; take either, then fall back to the tracking params. */
+       type; take either.
+
+       NOT utm_source. It used to be the last fallback, which was harmless
+       while no Cal.com link carried ad tags - but from 6 Oct js/meta.js adds
+       them, and every Meta ad sale would have been credited to a "teacher"
+       called "meta". Ad tags go in their own columns (buyer.ad) instead. */
     const rawRef = p?.responses?.ref?.value ?? p?.responses?.ref
-      ?? p?.metadata?.ref ?? p?.tracking?.utm_source ?? "";
+      ?? p?.metadata?.ref ?? "";
     const ref = String(typeof rawRef === "string" ? rawRef : "")
       .toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24) || null;
+    const tag = (k: string) => {
+      const v = String(p?.tracking?.[k] ?? p?.metadata?.[k] ?? "").replace(/[^A-Za-z0-9 ._\-+:/]/g, "").slice(0, 100);
+      return v || null;
+    };
 
     const buyer: Buyer = {
       name: String(who?.name || "").trim(),
@@ -374,6 +388,8 @@ serve(async (req) => {
       start,
       day: start ? start.slice(0, 10) : null,
       ref,
+      ad: { utm_source: tag("utm_source"), utm_medium: tag("utm_medium"),
+            utm_campaign: tag("utm_campaign"), utm_content: tag("utm_content") },
     };
 
     /* Tell Meta about a paid Cal.com booking. Cal.com takes the payment and

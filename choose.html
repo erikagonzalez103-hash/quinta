@@ -110,7 +110,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=17"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=1"></script>
+<script src="js/meta.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -260,7 +260,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     fetch(FN, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slugs: p, ref: QuintaShop.ref(), meta: window.QuintaMeta ? QuintaMeta.ids() : null })
+      body: JSON.stringify({ slugs: p, ref: QuintaShop.ref(), meta: window.QuintaMeta ? QuintaMeta.ids() : null, utm: window.QuintaMeta ? QuintaMeta.utm() : null })
     }).then(function (r) { return r.json(); }).then(function (d) {
       /* Only go on to Stripe if the code she was quoted is the code that was
          attached. Anything else would put her in front of a price higher

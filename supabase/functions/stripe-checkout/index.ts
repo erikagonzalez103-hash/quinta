@@ -258,6 +258,13 @@ serve(async (req) => {
     const ua = String(req.headers.get("user-agent") || "").slice(0, 400);
     if (ua) form.set("metadata[ua]", ua);
 
+    /* Which ad sent her (utm tags kept by js/meta.js), so stripe-webhook can
+       write it on the ledger rows. Plain text only, short. */
+    for (const k of ["utm_source", "utm_medium", "utm_campaign", "utm_content"]) {
+      const v = String(body?.utm?.[k] || "").replace(/[^A-Za-z0-9 ._\-+:/]/g, "").slice(0, 100);
+      if (v) form.set(`metadata[${k}]`, v);
+    }
+
     type Line = { slug: string; cents: number; label: string };
     let lines: Line[] = [];
     let appliedCode: string | null = null;
