@@ -55,7 +55,7 @@
       <nav class="top">
         <a href="todo.html">My to-do</a>
         <a href="schedule.html">My classes</a>
-        <a href="kit.html">This week's kit</a>
+        <a href="kit-week2.html">This week's kit</a>
         <a href="sign-in.html">Sign-in codes</a>
         <a href="gusto-guide.html">Gusto guide</a>
         <!-- Erika only: lists students across every class, so it is revealed
@@ -85,10 +85,23 @@
 
     <div class="card-grid">
 
+      <!-- Shown only to a teacher with no 21 October session yet, and gone by
+           itself once she adds one (see oct21Reminder below). Until 6 Oct the
+           portal's 15-day lead-time rule had started to block the date, and
+           before that the one-room-per-hour rule did - so some tried and were
+           refused. The copy says so, so nobody assumes it's still broken. -->
+      <div class="pcard full" id="oct21-card" style="display:none;border-color:var(--sage-deep);background:#EEF2EC">
+        <h2>Add your October 21 class</h2>
+        <p class="hint">You're teaching at Fork, Femme &amp; Foundations on Wednesday, October 21, but your class isn't on the schedule yet — so nobody can book it, and your poll link can't send people to it. Pick 10am, 1pm or 3pm, in person at kiln or online.</p>
+        <p class="hint"><strong>If you tried before and it wouldn't let you, that's fixed now.</strong> Two of our rules were blocking the 21st, and both have been changed. It takes about a minute.</p>
+        <a class="btn-sm solid" href="schedule.html">Add my October 21 class</a>
+      </div>
+
       <div class="pcard full">
         <h2>This week's kit</h2>
-        <p class="hint">The Week 1 reel for Fork, Femme &amp; Foundations, plus captions for Instagram, Facebook and LinkedIn with your own link already in them. Post the reel any time Monday.</p>
-        <a class="btn-sm solid" href="kit.html">Open this week's kit</a>
+        <p class="hint">Week 2, the countdown to 10.21: your Story picture to download, your poll question and answers, and a LinkedIn poll — with a Copy button for everything. Post any time this week, through Sunday, October 11.</p>
+        <a class="btn-sm solid" href="kit-week2.html">Open this week's kit</a>
+        <p class="hint" style="margin:12px 0 0;font-size:.85rem">Looking for the Week 1 reel? <a href="kit.html">It's here.</a></p>
       </div>
 
       <div class="pcard full">
@@ -178,10 +191,10 @@
 
       <div class="pcard full">
         <h2>My social profiles</h2>
-        <p class="hint">Social is Quinta &amp; Co.'s main marketing avenue — we tag and feature faculty when promoting classes. We need at least your LinkedIn plus either Facebook or Instagram, set to <strong>public</strong> so students can find you. Business pages count too (and help even more).</p>
+        <p class="hint">Social is Quinta &amp; Co.'s main marketing avenue — we tag and feature faculty when promoting classes. Add every profile you have (at least one), set to <strong>public</strong> so students can find you. Business pages count too (and help even more).</p>
         <div class="doc-row">
           <div>
-            <div class="doc-name">LinkedIn <span style="font-weight:400;color:#8A8E83">(required)</span></div>
+            <div class="doc-name">LinkedIn</div>
             <div class="doc-status" id="soc-linkedin">—</div>
           </div>
           <span class="doc-status" id="soc-linkedin-vis"></span>
@@ -243,7 +256,7 @@
 </footer>
 
 <script src="../config.js?v=8"></script>
-<script src="../classes.js?v=14"></script>
+<script src="../classes.js?v=15"></script>
 <script src="../js/supabase-2.110.1.min.js"></script>
 <script>
 (function () {
@@ -365,7 +378,7 @@
     function setSocial(key) {
       var url = row && row[key + "_url"];
       var isPublic = row ? row[key + "_is_public"] : null;
-      setStatus("soc-" + key, !!url, "On file", "Needed");
+      setStatus("soc-" + key, !!url, "On file", "Not added");
       var vis = document.getElementById("soc-" + key + "-vis");
       if (!url) { vis.textContent = ""; return; }
       if (isPublic === true) { vis.textContent = "Public"; vis.className = "doc-status st-done"; }
@@ -398,6 +411,28 @@
     });
     setStatus("doc-headshot", !!(row && row.headshot_on_file), "On file", "Needed");
     setStatus("doc-bio", !!(row && row.bio_short), "On file", "Needed");
+
+    oct21Reminder(session);
+  }
+
+  /* Has she got a class on 21 October? Asked of class_sessions directly, so
+     the reminder is never out of date: it shows until her session exists and
+     not a moment after. Quiet on any error - a reminder must never be the
+     thing that breaks the portal. Off once the day arrives. */
+  function oct21Reminder(session) {
+    try {
+      var today = new Date();
+      var stamp = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+      if (stamp >= "2026-10-21") return;
+      var email = String(session.user.email || "").toLowerCase();
+      sb.from("class_sessions").select("id,status")
+        .eq("session_date", "2026-10-21").ilike("instructor_email", email)
+        .then(function (res) {
+          if (res.error) { console.error(res.error); return; }
+          var live = (res.data || []).filter(function (s) { return s.status !== "canceled"; });
+          if (!live.length) document.getElementById("oct21-card").style.display = "block";
+        });
+    } catch (e) { console.error(e); }
   }
 
   if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }

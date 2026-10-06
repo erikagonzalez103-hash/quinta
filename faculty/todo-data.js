@@ -21,6 +21,18 @@
 
 const QUINTA_FACULTY_TASKS = [
   {
+    key: "oct21-session",
+    title: "Add your October 21 class to the schedule",
+    detail:
+      "Open My classes, pick Wednesday, October 21, choose 10am, 1pm or 3pm, " +
+      "and say whether you're in the room at kiln or online. Until it's there, " +
+      "nobody can book your class that day and your poll link can't send people " +
+      "to it. If you tried before and the portal wouldn't take the date, that " +
+      "was our rule, not you, and it's fixed now.",
+    type: "check",
+    due: "This week"
+  },
+  {
     key: "oct-nov-dates",
     title: "Put your October and November dates in",
     detail:
