@@ -27,6 +27,10 @@
 .od-h1{font-family:var(--display);font-weight:500;font-size:clamp(2rem,6vw,2.7rem);line-height:1.12;letter-spacing:-.02em;color:var(--moss);margin:0 0 14px}
 .od-lead{font-size:17px;line-height:1.6;color:var(--ink);margin:0 0 8px}
 .od-note{font-size:15px;line-height:1.6;color:var(--sage-deep);margin:0 0 26px}
+.od-min{background:#EEF2EC;border:1px solid var(--line);border-left:4px solid var(--sage-deep);border-radius:10px;
+  padding:16px 18px;margin:-8px 0 28px}
+.od-min p{font-size:15px;line-height:1.55;color:var(--ink);margin:0}
+.od-min .od-min-title{font-family:var(--display);font-weight:500;font-size:18px;line-height:1.3;color:var(--moss);margin:0 0 6px}
 .od-block{margin:0 0 22px}
 .od-bhead{font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:600;color:var(--sage-deep);margin:0 0 8px;padding-top:14px;border-top:1px solid var(--line)}
 .od-row{display:flex;gap:14px;align-items:flex-start;padding:13px 2px;cursor:pointer}
@@ -105,6 +109,15 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     <p class="od-lead">Pick a class in each block you can come to — at kiln in Dallas or online.
       Two classes are 15% off, three are 25% off, applied for you.</p>
     <p class="od-note">Ten seats per class, in the room and online together.</p>
+
+    <!-- The two-person minimum, said where she decides, not only in the
+         policies. Same promise as policies.html#... "If a class doesn't fill"
+         and terms.html: at least 48 hours' notice, then her choice of a full
+         refund or a seat in the next round. 48 hours before the 21st = Mon 19th. -->
+    <div class="od-min" role="note">
+      <p class="od-min-title">Every class needs at least two people to run.</p>
+      <p>If a class you book doesn't reach two, we'll tell you by <strong>Monday, October 19</strong>, and you choose: a full refund or a seat in the next round. Bringing a friend is the surest way to make sure yours goes ahead.</p>
+    </div>
 
     <div id="odClosed" hidden class="od-done">
       <h2>Booking for October 21 has closed.</h2>
