@@ -42,10 +42,60 @@ export function clock(t) {
 export function dallasDay(d) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
 }
-/* Which send is due today, from the Dallas date. null means not today. */
+/* Which send is due today, from the Dallas date. null means not today.
+   headcount - Monday 19 Oct, to Erika only: the two-person minimum check.
+   oct21.html and every confirmation email promise that a class under two is
+   told "by Monday, October 19", so this is the morning she needs the count. */
 export function phaseFor(now) {
   const d = dallasDay(now);
-  return d === "2026-10-20" ? "first" : d === DAY ? "final" : null;
+  return d === "2026-10-19" ? "headcount" : d === "2026-10-20" ? "first" : d === DAY ? "final" : null;
+}
+
+/* Erika's Monday headcount: every session, how many are booked, and - for
+   any under two - who to write to. One email, to her only. */
+export function buildHeadcount(sessions, seats) {
+  const MIN = 2;
+  const rows = sessions.map((s) => {
+    const mine = seats.filter((x) => x.session_id === s.id);
+    const online = mine.filter((x) => x.attending === "online").length;
+    return { s, mine, n: mine.length, online, short: mine.length < MIN };
+  });
+  const short = rows.filter((r) => r.short);
+  const who = (r) => String(r.s.instructor_name || "").split(/\s+/)[0] || "no teacher";
+  const label = (r) => `${clock(r.s.start_time)} · ${r.s.class_name} (${who(r)})`;
+  const status = (r) => r.n >= MIN ? "Running" : r.n === 1 ? "Needs one more" : "No one yet";
+
+  const table = rows.map((r) =>
+    `<tr><td style="padding:7px 14px 7px 0">${esc(label(r))}</td>` +
+    `<td style="padding:7px 14px 7px 0;text-align:right"><strong>${r.n}</strong>${r.online ? ` <span style="color:#5A5E55">(${r.online} online)</span>` : ""}</td>` +
+    `<td style="padding:7px 0;${r.short ? "color:#9C3B2E;font-weight:bold" : "color:#4F6B5C"}">${status(r)}</td></tr>`).join("");
+  const shortHtml = short.filter((r) => r.n > 0).map((r) =>
+    `<p style="margin:16px 0 4px"><strong>${esc(label(r))}</strong></p>` +
+    `<p style="margin:0 0 8px">${r.mine.map((x) => `${esc(x.student_name || "(no name)")} &lt;${esc(x.student_email)}&gt;`).join("<br>")}</p>`).join("");
+
+  const lead = short.length
+    ? `${short.length} ${short.length === 1 ? "class is" : "classes are"} under the two-person minimum. The booking page and every confirmation email promise those students a heads-up <strong>today</strong>, with their choice of a full refund or a seat in the next round.`
+    : "Every class has at least two people. Nothing to send anyone today.";
+  const html = `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:600px">
+    <p style="margin:0 0 16px">${lead}</p>
+    <table style="border-collapse:collapse;font-size:15px;margin:0 0 18px">${table}</table>
+    ${shortHtml ? `<p style="margin:22px 0 0;font-family:Georgia,serif;font-size:17px">Who to write to</p>${shortHtml}` : ""}
+    <p style="margin:22px 0 0;font-size:14px;color:#5A5E55">Booking is still open until midnight on Tuesday, so a
+      class can still reach two after this. Classes with no one booked have no one to tell - decide whether
+      to keep them on the page. Teachers get their own lists tomorrow morning.</p>
+    <p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · October 21 headcount</p></div>`;
+  const text = lead.replace(/<[^>]+>/g, "") + "\n\n"
+    + rows.map((r) => `- ${label(r)}: ${r.n}${r.online ? ` (${r.online} online)` : ""} - ${status(r)}`).join("\n")
+    + (short.some((r) => r.n > 0) ? "\n\nWHO TO WRITE TO\n" + short.filter((r) => r.n > 0).map((r) =>
+        `${label(r)}\n` + r.mine.map((x) => `  ${x.student_name || "(no name)"} <${x.student_email}>`).join("\n")).join("\n") : "")
+    + "\n\nBooking stays open until midnight Tuesday, so a class can still reach two.\n";
+  return {
+    to: ERIKA,
+    subject: short.length
+      ? `October 21 headcount: ${short.length} ${short.length === 1 ? "class" : "classes"} under two - tell them today`
+      : "October 21 headcount: every class is running",
+    html, text,
+  };
 }
 
 /* One email per session. `students` are that session's ledger rows. */
@@ -115,6 +165,20 @@ export async function run({ fetch, env, now = new Date(), phase, dryRun = false,
     + `&select=session_id,student_name,student_email,attending`);
 
   let sent = 0;
+  if (phase === "headcount") {
+    const mail = buildHeadcount(sessions, seats);
+    if (dryRun) { log(`[dry run] to ${mail.to}: ${mail.subject}`); return { sent: 0, phase }; }
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: SEND_FROM, to: [mail.to], subject: mail.subject, html: mail.html, text: mail.text }),
+    });
+    if (!r.ok) throw new Error(`Resend refused the headcount: ${r.status} ${await r.text()}`);
+    log(`Sent - ${mail.subject}`);
+    mkdirSync(markerDir, { recursive: true });
+    writeFileSync(marker, `Sent the headcount at ${now.toISOString()}\n`);
+    return { sent: 1, phase };
+  }
   for (const s of sessions) {
     const mail = buildRoster(s, seats.filter((x) => x.session_id === s.id), phase);
     if (dryRun) { log(`[dry run] to ${mail.to}: ${mail.subject}`); continue; }

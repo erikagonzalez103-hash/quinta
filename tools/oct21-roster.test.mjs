@@ -2,7 +2,7 @@
 import { mkdtempSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildRoster, phaseFor, run } from "./oct21-roster.mjs";
+import { buildRoster, buildHeadcount, phaseFor, run } from "./oct21-roster.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, ok) => { ok ? pass++ : fail++; console.log(`  ${ok ? "✓" : "✗"} ${name}`); };
@@ -31,6 +31,21 @@ check("final list says it is complete", buildRoster(session, students, "final").
 check("an empty class still gets a note", buildRoster(session, [], "first").text.includes("Nobody has booked"));
 check("a session with no teacher goes to Erika", buildRoster({ ...session, instructor_email: null }, [], "first").to === "erika@quintaand.co");
 check("names are escaped", buildRoster(session, [{ ...students[0], student_name: "<b>x</b>" }], "first").html.includes("&lt;b&gt;"));
+
+console.log("Monday headcount");
+check("the 19th is the headcount", phaseFor(new Date("2026-10-19T12:23:00Z")) === "headcount");
+const s2 = { id: "s2", class_name: "Brand 101", start_time: "13:00:00", instructor_name: "Sam Teacher" };
+const s3 = { id: "s3", class_name: "Module 2", start_time: "13:00:00", instructor_name: "Erika G" };
+const one = [{ session_id: "s2", student_name: "Lone Booker", student_email: "lone@example.com", attending: "online" }];
+const hc = buildHeadcount([session, s2, s3], students.concat(one));
+check("goes to Erika only", hc.to === "erika@quintaand.co");
+check("counts the classes under two", hc.subject.includes("2 classes under two"));
+check("a full class is marked running", hc.text.includes("Module 1 (Pat): 2 (1 online) - Running"));
+check("one booked says needs one more", /Brand 101.*1 \(1 online\) - Needs one more/.test(hc.text));
+check("nobody booked says so", /Module 2.*0 - No one yet/.test(hc.text));
+check("lists who to write to", hc.text.includes("Lone Booker <lone@example.com>"));
+check("does not list the running class's students", !/WHO TO WRITE TO[\s\S]*zoe@example.com/.test(hc.text));
+check("all running says so", buildHeadcount([session], students).subject.includes("every class is running"));
 
 console.log("sending once");
 const dir = mkdtempSync(join(tmpdir(), "roster-"));

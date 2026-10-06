@@ -1,6 +1,8 @@
 # October 21 class lists to each teacher (tools/oct21-roster.mjs).
 #
-# Two sends, each exactly once:
+# Three sends, each exactly once:
+#   headcount - Monday 19 Oct, morning, to Erika only: who is booked in each
+#               class, and who to tell if a class is under the two-person minimum
 #   first - Tuesday 20 Oct, morning: booked so far, online emails to paste
 #   final - Wednesday 21 Oct, after booking closes at midnight: the full list
 #
@@ -11,7 +13,7 @@
 # checks the Dallas date itself, so nothing fires in 2027.
 #
 # SEND IT BY HAND: Actions tab -> "October 21 class lists" -> Run workflow,
-# pick first or final. Tick "dry run" to see who would get what.
+# pick headcount, first or final. Tick "dry run" to see who would get what.
 #
 # SECRETS: SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY (same as the daily report).
 #
@@ -21,7 +23,9 @@ name: October 21 class lists
 
 on:
   schedule:
-    # Oct 20, about 8:23am / 10:23am / 12:23pm / 3:23pm Dallas (CDT is UTC-5)
+    # Oct 19 (headcount), about 7:23am / 9:23am / 11:23am / 1:23pm Dallas (CDT is UTC-5)
+    - cron: "23 12,14,16,18 19 10 *"
+    # Oct 20, about 8:23am / 10:23am / 12:23pm / 3:23pm Dallas
     - cron: "23 13,15,17,20 20 10 *"
     # Oct 21, about 12:41am / 2:41am / 4:41am / 6:41am / 8:11am Dallas
     - cron: "41 5,7,9,11 21 10 *"
@@ -31,7 +35,7 @@ on:
       phase:
         description: "Which list"
         type: choice
-        options: [first, final]
+        options: [headcount, first, final]
         default: first
       dry_run:
         description: "Only show who would get what"
