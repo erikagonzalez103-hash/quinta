@@ -15,7 +15,10 @@
 <meta name="twitter:title" content="What is costing you the most right now?">
 <meta name="twitter:image" content="https://quintaand.co/images/og-default.jpg">
 <meta http-equiv="refresh" content="0; url=https://quintaand.co/where-you-are.html">
-<script>location.replace("https://quintaand.co/where-you-are.html");</script>
+<!-- Keep ?ref= and the utm tags: teachers' poll links are /go/whereyouare?ref=tara,
+     and dropping the query would lose both the teacher's class and her credit.
+     The meta refresh above is only the no-JavaScript fallback. -->
+<script>location.replace("https://quintaand.co/where-you-are.html" + location.search);</script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>

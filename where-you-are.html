@@ -105,9 +105,10 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   background:var(--cream);color:var(--ink);border-radius:8px;padding:13px 15px;min-height:52px;
   line-height:1.35;font-size:15px;font-family:inherit;cursor:pointer;transition:border-color .12s,background .12s}
 .wya-opt:hover,.wya-opt:focus-visible{border-color:var(--sage-deep);background:#fff;outline:2px solid transparent}
-.wya-opt[aria-pressed="true"]{background:var(--sage-deep);color:var(--cream);border-color:var(--sage-deep)}
+.wya-opt[aria-checked="true"]{background:var(--sage-deep);color:var(--cream);border-color:var(--sage-deep)}
 .wya-dot{border:1.5px solid currentColor;width:16px;height:16px;border-radius:50%;flex:none}
-.wya-opt[aria-pressed="true"] .wya-dot{background:var(--cream);box-shadow:inset 0 0 0 4px var(--sage-deep)}
+.wya-opt[aria-checked="true"] .wya-dot{background:var(--cream);box-shadow:inset 0 0 0 4px var(--sage-deep)}
+.wya-card h2:focus{outline:2px solid var(--sage-deep);outline-offset:6px}
 .wya-actions{display:flex;align-items:center;gap:14px;margin-top:auto;padding-top:24px;flex-wrap:wrap}
 .wya-back{border:0;background:none;color:var(--sage-deep);padding:10px 0;font-weight:600;
   font-family:inherit;font-size:15px;cursor:pointer;text-decoration:underline}
@@ -253,6 +254,51 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     referrer:     document.referrer || null
   };
 
+  /* ---------- teacher polls ----------
+     Each teacher's poll links here with her referral code, e.g.
+     quintaand.co/where-you-are.html?ref=tara (or /go/whereyouare?ref=tara).
+     Someone arriving that way skips the quiz and sees that teacher's class
+     straight away, with "Take the full quiz" if it isn't her. ?faculty=
+     works too; ?quiz=1 forces the quiz. Keys are the referral CODES in
+     config.js, so the same link credits the teacher for anything she books. */
+  /* Tara and Nik point at the class of theirs that is OPEN (Erika's call,
+     6 Oct): their other classes had no dates, and a poll click that can only
+     join a waitlist loses the week's campaign. Revisit when dates change. */
+  var ROUTES = {
+    tara:      { slug: "bookkeeping-1",      who: "Tara" },
+    erika:     { slug: "module-1",           who: "Erika",
+                 copy: "Start here if you want AI to do more than answer questions. Build one useful workflow for your business and learn the foundation for assistants, agents, and automation.",
+                 takeaway: "One working AI workflow and a clear path to what you want to build next." },
+    joshlyn:   { slug: "financial-planning", who: "Joshlyn" },
+    stephanie: { slug: "brand-101",          who: "Stephanie" },
+    nik:       { slug: "legacy-planning",    who: "Nik" }
+  };
+  function cleanCode(v) { return String(v || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); }
+  var routeKey = params.get("quiz") === "1" ? null
+    : [cleanCode(params.get("faculty")), cleanCode(params.get("ref"))].filter(function (k) { return ROUTES[k]; })[0] || null;
+  var route = routeKey ? ROUTES[routeKey] : null;
+
+  /* Who sent her: ?ref= here wins, then ?faculty=, then the code app.js saved
+     when she first landed through a teacher's link (60 days, as waitlist.html). */
+  var REF = cleanCode(params.get("ref")) || routeKey || (function () {
+    try {
+      var s = JSON.parse(localStorage.getItem("quinta_ref") || "null");
+      return s && s.code && Date.now() - s.at < 60 * 24 * 60 * 60 * 1000 ? cleanCode(s.code) : "";
+    } catch (e) { return ""; }
+  })();
+
+  /* The class page and the waitlist both read ?ref= and the utm tags, so
+     hand them on rather than relying on the visitor's browser storage. */
+  function withAttribution(href) {
+    var extra = [];
+    if (REF) extra.push("ref=" + encodeURIComponent(REF));
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      var v = params.get(k);
+      if (v) extra.push(k + "=" + encodeURIComponent(v.slice(0, 200)));
+    });
+    return extra.length ? href + (href.indexOf("?") === -1 ? "?" : "&") + extra.join("&") : href;
+  }
+
   /* One random id per visit, so the drop-off report can follow a single
      person through the two questions without a cookie or any identifier. */
   var SESSION = (function () {
@@ -349,7 +395,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       var payload = {
         name: null, email: email, class_slug: slug,
         class_name: cls ? cls.name : "All classes",
-        source: "where-you-are", ref: null
+        source: "where-you-are", ref: REF || null
       };
       function done(already) {
         form.innerHTML = "";
@@ -379,8 +425,12 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     });
   }
 
-  function renderResult() {
-    var worry = WORRIES.filter(function (w) { return w.label === answers[1]; })[0];
+  /* `direct` is a teacher route: no quiz was taken, so there is no worry to
+     quote back - say whose poll she came from instead. */
+  function renderResult(direct) {
+    var worry = direct
+      ? { slug: direct.slug, label: null }
+      : WORRIES.filter(function (w) { return w.label === answers[1]; })[0];
     if (!worry) { step = 0; render(); return; }
     var cls = classBySlug(worry.slug);
     var name = cls ? cls.name : worry.slug;
@@ -388,19 +438,24 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     /* Open classes go straight to their own page. Anything not open yet goes
        to the waitlist pre-filled with that class, which is where the site
        sends people everywhere else. Either way it is THE class, never a hub. */
-    var href = isOpen ? ("classes/" + worry.slug + ".html")
-                      : ("waitlist.html?c=" + encodeURIComponent(worry.slug) + "&src=where-you-are");
+    var href = withAttribution(isOpen ? ("classes/" + worry.slug + ".html")
+                      : ("waitlist.html?c=" + encodeURIComponent(worry.slug) + "&src=where-you-are"));
     var button = isOpen ? "See dates &amp; book" : "Join the waitlist";
+    var copy = direct
+      ? (direct.copy || "You came from " + direct.who + "’s poll. This class gives that problem a clear place to begin.")
+      : "You said “" + worry.label + ".” This class gives that problem a clear place to begin.";
 
     app.innerHTML =
-      '<div class="wya-step"><span>Your starting point</span><span>2 of 2</span></div>' +
-      '<div class="wya-bar"><span class="on"></span><span class="on"></span></div>' +
+      (direct
+        ? '<div class="wya-step"><span>Recommended for you</span></div><div class="wya-bar"></div>'
+        : '<div class="wya-step"><span>Your starting point</span><span>2 of 2</span></div>' +
+          '<div class="wya-bar"><span class="on"></span><span class="on"></span></div>') +
       '<p class="wya-kind">' + (isOpen ? "A class to start with" : "Coming soon · waitlist") + '</p>' +
       '<h2 class="wya-result-title">' + esc(name) + '</h2>' +
-      '<p class="wya-result-copy">You said &ldquo;' + esc(worry.label) + '.&rdquo; This class gives that problem a clear place to begin.</p>' +
+      '<p class="wya-result-copy">' + esc(copy) + '</p>' +
       '<div class="wya-detail"><strong>' + (isOpen ? "One place to begin" : "We'll tell you when it opens") + '</strong>' +
-        '<span class="wya-muted">' + (isOpen
-          ? "Go straight to the class, see the dates, and book your seat."
+        '<span class="wya-muted">' + esc(isOpen
+          ? (direct && direct.takeaway ? direct.takeaway + " " : "") + "Go straight to the class, see the dates, and book your seat."
           : "This one isn't on the calendar yet. Leave your email and you'll hear first.") + '</span>' +
         '<form id="wyaMini" class="wya-mini" novalidate>' +
           '<label class="sr-only" for="wyaEmail">Your email</label>' +
@@ -411,7 +466,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       '</div>' +
       '<div class="wya-actions">' +
         '<a class="btn btn-solid" id="wyaGo" href="' + href + '">' + button + '</a>' +
-        '<button class="wya-back" type="button" id="again">Start again</button>' +
+        '<button class="wya-back" type="button" id="again">' + (direct ? "Take the full quiz" : "Start again") + '</button>' +
       '</div>' +
       '<p class="wya-fine">Your answers help us decide which classes to run next. We never sell them, and an email is only stored if you give us one. <a href="privacy.html">Privacy</a>.</p>';
 
@@ -421,13 +476,21 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       logEvent("click_class", { class_slug: worry.slug });
     });
     document.getElementById("again").onclick = function () {
-      step = 0; answers[0] = null; answers[1] = null; render();
+      route = null; step = 0; answers[0] = null; answers[1] = null; render(true);
     };
     wireEmail(cls, worry.slug, isOpen);
   }
 
-  function render() {
-    if (step === 2) { renderResult(); return; }
+  /* After each step, move focus to the new question so keyboard and
+     screen-reader users land on it rather than on a button that vanished. */
+  function focusHeading() {
+    var h = app.querySelector("h2");
+    if (h) { h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+  }
+
+  function render(moveFocus) {
+    if (route) { renderResult(route); if (moveFocus) focusHeading(); return; }
+    if (step === 2) { renderResult(); if (moveFocus) focusHeading(); return; }
     var q = questionForStep();
     app.innerHTML =
       '<div class="wya-step"><span>Where you are</span><span>' + (step + 1) + ' of 2</span></div>' +
@@ -435,10 +498,12 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         return '<span class="' + (i <= step ? "on" : "") + '"></span>';
       }).join("") + '</div>' +
       '<h2>' + esc(q.title) + '</h2><p class="wya-help">' + esc(q.help) + '</p>' +
-      '<div class="wya-options" role="group" aria-label="' + esc(q.title) + '">' +
+      '<div class="wya-options" role="radiogroup" aria-label="' + esc(q.title) + '">' +
         q.choices.map(function (c, i) {
-          return '<button class="wya-opt" type="button" data-choice="' + i + '" aria-pressed="' +
-                 (answers[step] === c) + '"><span class="wya-dot" aria-hidden="true"></span>' + esc(c) + '</button>';
+          var on = answers[step] === c;
+          var tabbable = on || (answers[step] === null && i === 0);
+          return '<button class="wya-opt" type="button" role="radio" data-choice="' + i + '" aria-checked="' + on +
+                 '" tabindex="' + (tabbable ? 0 : -1) + '"><span class="wya-dot" aria-hidden="true"></span>' + esc(c) + '</button>';
         }).join("") +
       '</div>' +
       '<div class="wya-actions">' +
@@ -447,21 +512,38 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         (step ? '<button class="wya-back" id="back" type="button">Back</button>' : "") +
       '</div>';
 
-    Array.prototype.forEach.call(app.querySelectorAll("[data-choice]"), function (b) {
+    var opts = Array.prototype.slice.call(app.querySelectorAll("[data-choice]"));
+    var next = document.getElementById("next");
+    /* Picking an option updates it in place rather than redrawing the card,
+       so focus stays on the option - arrow keys then move through the list. */
+    opts.forEach(function (b) {
       b.onclick = function () {
         answers[step] = q.choices[Number(b.dataset.choice)];
         if (step === 0) { answers[1] = null; }
         logEvent(step === 0 ? "answer_1" : "answer_2");
-        render();
-        var n = document.getElementById("next"); if (n) { n.focus(); }
+        opts.forEach(function (o) {
+          var on = o === b;
+          o.setAttribute("aria-checked", String(on));
+          o.tabIndex = on ? 0 : -1;
+        });
+        next.disabled = false;
       };
     });
-    document.getElementById("next").onclick = function () {
-      if (answers[step] !== null) { step++; render(); }
+    app.querySelector(".wya-options").onkeydown = function (ev) {
+      var dir = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[ev.key];
+      if (!dir) return;
+      ev.preventDefault();
+      var at = Math.max(0, opts.indexOf(document.activeElement));
+      var target = opts[(at + dir + opts.length) % opts.length];
+      target.focus(); target.click();
+    };
+    next.onclick = function () {
+      if (answers[step] !== null) { step++; render(true); }
     };
     if (step) {
-      document.getElementById("back").onclick = function () { step--; render(); };
+      document.getElementById("back").onclick = function () { step--; render(true); };
     }
+    if (moveFocus) focusHeading();
   }
 
   logEvent("start");
