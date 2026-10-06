@@ -49,6 +49,34 @@
 // Deploy with --no-verify-jwt - the page calls it with no session.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { sessions as oct21Sessions, clock } from "../_shared/oct21.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+/* 21 OCTOBER sells any class a teacher puts on the day, not only the ones
+   with a $0 twin, because it never goes near Cal.com - so it has its own
+   price list covering the whole paid catalogue. Keep in step with classes.js. */
+const OCT21_PRICES: Record<string, { cents: number; name: string }> = {
+  "entity-setup":       { cents: 17500, name: "Entity setup" },
+  "banking":            { cents:  9900, name: "Banking" },
+  "insurance":          { cents: 17500, name: "Insurance" },
+  "bookkeeping-1":      { cents:  9900, name: "Bookkeeping I — Set up QuickBooks" },
+  "bookkeeping-2":      { cents:  9900, name: "Bookkeeping II — Prep for your bookkeeper" },
+  "taxes":              { cents: 25000, name: "Taxes" },
+  "pricing":            { cents: 25000, name: "Pricing" },
+  "contracts":          { cents: 17500, name: "Contracts" },
+  "first-hire":         { cents: 17500, name: "Your first hire" },
+  "certification":      { cents: 29900, name: "Get certified — WBE / MBE / DBE" },
+  "financial-planning": { cents: 25000, name: "Investing — How to pay yourself first" },
+  "legacy-planning":    { cents: 29900, name: "Legacy planning" },
+  "trademarks":         { cents: 29900, name: "Trademarks" },
+  "funding":            { cents: 17500, name: "Funding" },
+  "brand-101":          { cents: 17500, name: "Brand 101" },
+  "module-1":           { cents: 15000, name: "Module 1 — Claude for beginners" },
+  "module-2":           { cents: 20000, name: "Module 2 — Build your AI assistant" },
+  "module-3":           { cents: 29900, name: "Module 3 — Real databases & automation" },
+};
 
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 
@@ -191,14 +219,16 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const isGift = String(body?.offer || "") === "gift";
+    const offer = String(body?.offer || "");
+    const isGift = offer === "gift";
+    const isOct21 = offer === "oct21";
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
     /* Back to the page she came from, with her choices lost but her place
        kept - not to the top of the landing page, three scrolls away from
        where she was. */
-    form.set("cancel_url", `${SITE}/${isGift ? "gift" : "choose"}.html`);
+    form.set("cancel_url", `${SITE}/${isOct21 ? "oct21" : isGift ? "gift" : "choose"}.html`);
 
     /* Who sent her. The pages read it from the same localStorage key app.js
        fills when she first lands on a ?ref= link, and hand it over here, so a
@@ -210,7 +240,82 @@ serve(async (req) => {
     let lines: Line[] = [];
     let appliedCode: string | null = null;
 
-    if (isGift) {
+    /* Two or more classes get the same automatic discount on 21 October as
+       on Choose Your Own. Returns an error response when the code cannot be
+       attached, so she is never sent on to a price the page did not quote. */
+    async function discountFor(n: number): Promise<Response | null> {
+      const total = lines.reduce((t, l) => t + l.cents, 0);
+      const want = CODE_FOR(n);
+      if (!want) { form.set("allow_promotion_codes", "false"); return null; }
+      const p = await promo(want);
+      if (p && total >= p.min) {
+        form.set("discounts[0][promotion_code]", p.id);
+        appliedCode = want;
+        form.set("metadata[code]", want);
+        return null;
+      }
+      console.error(p
+        ? `${want} NOT APPLIED — cart is ${total} and the code needs ${p.min}. Refused rather than overcharge.`
+        : `PROMOTION CODE ${want} NOT FOUND OR ARCHIVED. Refused rather than overcharge.`);
+      return json({ error: "discount_unavailable", code: want }, 409);
+    }
+
+    if (isOct21) {
+      /* WEDNESDAY 21 OCTOBER, booked here rather than in Cal.com. She picks
+         sessions, not classes: two teachers can run the same class at
+         different times, and each session is its own room of ten.
+
+         Checked here, against the database, never against the page:
+         - every session is on the day and not cancelled
+         - every session still has a seat
+         - no two in the same block, because she cannot be in two rooms
+         The seat count is checked again after payment, in stripe-webhook,
+         because two women can be at checkout for the last seat at once. */
+      if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "not configured" }, 500);
+      const ids: string[] = Array.from(new Set<string>(
+        (Array.isArray(body?.sessions) ? body.sessions : []).map((s: unknown) => String(s))));
+      if (!ids.length) return json({ error: "pick_a_class" }, 400);
+      if (ids.length > 3) return json({ error: "too_many" }, 400);
+
+      const day = await oct21Sessions(SUPABASE_URL, SERVICE_KEY);
+      const byId = new Map(day.map((s) => [s.session_id, s]));
+      const picked = ids.map((id) => byId.get(id));
+      if (picked.some((s) => !s)) return json({ error: "unknown_session" }, 400);
+      const chosen = picked as NonNullable<typeof picked[number]>[];
+
+      const full = chosen.filter((s) => s.seats_left <= 0).map((s) => s.session_id);
+      if (full.length) return json({ error: "full", sessions: full }, 409);
+
+      /* The block comes from the start time. NOT from class_sessions.daypart:
+         that only says "day" or "evening", so every class on the 21st reads
+         as "day" and any two would look like the same block. */
+      const blockOf = (t: string) => {
+        const h = Number(String(t).slice(0, 2));
+        return h < 12 ? "morning" : h < 15 ? "midday" : "afternoon";
+      };
+      const blocks = chosen.map((s) => blockOf(String(s.start_time)));
+      if (new Set(blocks).size !== blocks.length) return json({ error: "same_block" }, 400);
+
+      const unpriced = chosen.filter((s) => !OCT21_PRICES[s.class_slug]).map((s) => s.class_slug);
+      if (unpriced.length) return json({ error: "unknown_class", slugs: unpriced }, 400);
+
+      lines = chosen.map((s) => ({
+        slug: s.class_slug,
+        cents: OCT21_PRICES[s.class_slug].cents,
+        label: `${OCT21_PRICES[s.class_slug].name} — Wed Oct 21, ${clock(s.start_time)}`,
+      }));
+
+      const attending = body?.attending === "online" ? "online" : "in-person";
+      form.set("metadata[offer]", "oct21");
+      // Same order as the lines and as metadata[cents] below - the webhook pairs them up.
+      form.set("metadata[sessions]", chosen.map((s) => s.session_id).join(","));
+      form.set("metadata[slugs]", chosen.map((s) => s.class_slug).join(","));
+      form.set("metadata[attending]", attending);
+      form.set("success_url", `${SITE}/oct21.html?booked=1`);
+
+      const refused = await discountFor(chosen.length);
+      if (refused) return refused;
+    } else if (isGift) {
       /* One for her, one at 75% for someone else. The recipient's email is
          optional on purpose - the landing page says the voucher may well be
          for the buyer herself to hand over, so a blank one means both links

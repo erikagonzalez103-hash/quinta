@@ -436,8 +436,21 @@
     return syncCols;
   }
 
+  /* DAYS BOOKED OFF CAL.COM.
+     October 21 is booked on quintaand.co/oct21.html, not in Cal.com - one
+     Cal.com account is "busy" across all its events once any is booked, so
+     classes side by side would hide each other. The sync Worker no longer
+     sends these dates to Cal.com, so no verdict ever comes back for them,
+     and without this the row would say "we still can't confirm it's
+     bookable" after two minutes about a class that is perfectly bookable. */
+  var OFF_CALCOM_DAYS = ["2026-10-21"];
+
   /* One of: null (say nothing), or {state, text}. */
   function syncStatusOf(s) {
+    if (OFF_CALCOM_DAYS.indexOf(s.session_date) !== -1) {
+      delete PENDING[s.id];
+      return { state: "ok", text: "Bookable on the October 21 page — quintaand.co/oct21.html" };
+    }
     var c = resolveSyncColumns(s);
     var waiting = PENDING[s.id];
     if (!c || c.missing) {

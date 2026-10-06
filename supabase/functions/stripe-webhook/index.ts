@@ -26,6 +26,7 @@
 // signature check below is what authenticates the caller.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { OCT21, SEATS, sessions as oct21Sessions, confirmStudent, tellTeacher, attendingFor, type Session } from "../_shared/oct21.ts";
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -165,6 +166,100 @@ serve(async (req) => {
         return Math.round(paid * list[i] / listTotal);
       }
       return Math.round(paid / lineCount);
+    }
+
+    /* --------------------------------------------- 21 OCTOBER, paid ------
+       A seat on the day, bought on oct21.html. Unlike the other offers this
+       books a real session, so each row is 'booked' with its session_id - that
+       is what oct21_sessions() counts to decide how many seats are left.
+
+       order_ref carries the session id so two sessions in one order can never
+       collide on the (order_ref, class_slug) unique index, while a retried
+       webhook for the same order still lands on it and is treated as done. */
+    if (String(s?.metadata?.offer || "") === "oct21") {
+      const ids = String(s?.metadata?.sessions || "").split(",").map((x: string) => x.trim()).filter(Boolean);
+      const attending = s?.metadata?.attending === "online" ? "online" : "in-person";
+      if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "no database credentials" }, 500);
+      if (ids.length !== slugs.length) {
+        console.error(`Order ${orderId}: ${ids.length} sessions but ${slugs.length} classes in metadata`);
+        return json({ error: "metadata mismatch" }, 422);
+      }
+
+      // Only for names and times in the emails; the rows are written either way.
+      const day: Session[] = await oct21Sessions(SUPABASE_URL, SERVICE_KEY).catch(() => [] as Session[]);
+      const byId = new Map<string, Session>(day.map((x) => [x.session_id, x] as [string, Session]));
+      // An online-only session is online for her whatever she picked for the day.
+      const seats = ids.map((id: string, i: number) => ({
+        session_id: id,
+        class_name: byId.get(id)?.class_name || CLASS_NAMES[slugs[i]] || slugs[i],
+        start_time: String(byId.get(id)?.start_time || "00:00"),
+        online: attendingFor(byId.get(id)?.format, attending) === "online",
+      }));
+
+      const oRows = ids.map((id: string, i: number) => ({
+        student_name: name || null,
+        student_email: email,
+        class_slug: slugs[i],
+        class_name: seats[i].class_name,
+        source: ids.length > 1 ? "multi-discount" : "single",
+        bundle_key: null,
+        order_ref: `${orderId}:${id}`,
+        amount_cents: share(i),
+        ref_code: ref,
+        status: "booked",
+        session_on: OCT21,
+        session_id: id,
+        attending: seats[i].online ? "online" : "in-person",
+        notes: "Booked on oct21.html",
+      }));
+
+      let ledger21 = "written";
+      try {
+        const res = await db("enrollments", { method: "POST", body: JSON.stringify(oRows) });
+        if (res.status === 409) ledger21 = "already recorded";
+        else if (!res.ok) { ledger21 = "insert failed"; console.error("oct21 insert failed", res.status, await res.text()); }
+      } catch (e) { ledger21 = "threw"; console.error("oct21 ledger threw", e); }
+
+      /* The seat check after payment. Checkout refuses a full session, but
+         two women can be at checkout for the last seat at once, and Stripe
+         takes both payments. Nobody is turned away by a machine - Erika is
+         told, and decides between an extra chair and a refund. */
+      const oversold: string[] = [];
+      for (let i = 0; i < ids.length; i++) {
+        const r = await db(
+          `enrollments?session_id=eq.${encodeURIComponent(ids[i])}&status=in.(booked,taken)&select=id`,
+          { headers: { Prefer: "count=exact" } });
+        const total = Number((r.headers.get("content-range") || "").split("/")[1] || 0);
+        if (total > SEATS) oversold.push(`${seats[i].class_name} at ${seats[i].start_time.slice(0, 5)} (${total} of ${SEATS})`);
+      }
+
+      if (!RESEND_API_KEY) return json({ error: "no email service", ledger: ledger21 }, 500);
+
+      if (ledger21 === "insert failed" || ledger21 === "threw" || oversold.length) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: SEND_FROM, to: [BCC],
+            subject: oversold.length ? `October 21 oversold — ${oversold.join("; ")}` : `October 21 seat not recorded — order ${orderId}`,
+            text: `Order ${orderId}, ${name || "(no name)"} <${email}>\n`
+              + `Classes: ${seats.map((x) => x.class_name).join(", ")}\n`
+              + (oversold.length ? `\nOVER THE ${SEATS}-SEAT LIMIT: ${oversold.join("; ")}\n`
+                + `She has paid and been confirmed. Decide: an extra chair, or a refund and an apology.\n` : "")
+              + (ledger21 !== "written" && ledger21 !== "already recorded" ? `\nThe ledger write failed (${ledger21}). Add the rows by hand or ask Claude.\n` : ""),
+          }),
+        }).catch((e) => console.error("alert to Erika failed", e));
+      }
+
+      const okStudent = await confirmStudent(RESEND_API_KEY, email, name, seats, attending);
+      for (const seat of seats) {
+        await tellTeacher(RESEND_API_KEY, SUPABASE_URL, SERVICE_KEY, seat, { name, email },
+                          seat.online ? "online" : "in-person", true);
+      }
+      // Her confirmation is the one that matters; without it she has paid and
+      // has nothing. Ask Stripe to retry. The ledger write is safe to repeat.
+      if (!okStudent) return json({ error: "confirmation email failed", ledger: ledger21 }, 500);
+      return json({ ok: true, oct21: true, ledger: ledger21, seats: ids.length, oversold });
     }
 
     /* EVERY ROW MUST CARRY THE SAME KEYS. PostgREST inserts an array as one
