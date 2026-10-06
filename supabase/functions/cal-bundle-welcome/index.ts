@@ -98,7 +98,7 @@ const BUNDLES: Record<string, {
    classes that appear inside a bundle need to be here; a single-class booking
    takes its name from the Cal.com event title. */
 const CLASS_NAMES: Record<string, string> = {
-  "module-1": "Module 1 — Claude for beginners",
+  "module-1": "Module 1: Your First AI Workflow",
   "module-2": "Module 2 — Build your AI assistant",
   "module-3": "Module 3 — Real databases & automation",
   "bookkeeping-1": "Bookkeeping I — Set up QuickBooks",

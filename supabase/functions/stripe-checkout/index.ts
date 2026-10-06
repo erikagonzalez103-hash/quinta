@@ -73,7 +73,7 @@ const OCT21_PRICES: Record<string, { cents: number; name: string }> = {
   "trademarks":         { cents: 29900, name: "Trademarks" },
   "funding":            { cents: 17500, name: "Funding" },
   "brand-101":          { cents: 17500, name: "Brand 101" },
-  "module-1":           { cents: 15000, name: "Module 1 — Claude for beginners" },
+  "module-1":           { cents: 15000, name: "Module 1: Your First AI Workflow" },
   "module-2":           { cents: 20000, name: "Module 2 — Build your AI assistant" },
   "module-3":           { cents: 29900, name: "Module 3 — Real databases & automation" },
 };
@@ -91,7 +91,7 @@ const ORIGINS = [SITE, "http://localhost:8137"];   // 8137 is the local preview
 const PRICES: Record<string, { cents: number; name: string }> = {
   "bookkeeping-1":      { cents:  9900, name: "Bookkeeping I — Set up QuickBooks" },
   "bookkeeping-2":      { cents:  9900, name: "Bookkeeping II — Prep for your bookkeeper" },
-  "module-1":           { cents: 15000, name: "Module 1 — Claude for beginners" },
+  "module-1":           { cents: 15000, name: "Module 1: Your First AI Workflow" },
   "module-2":           { cents: 20000, name: "Module 2 — Build your AI assistant" },
   "brand-101":          { cents: 17500, name: "Brand 101" },
   "financial-planning": { cents: 25000, name: "Investing — How to pay yourself first" },

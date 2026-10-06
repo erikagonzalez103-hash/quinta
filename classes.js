@@ -385,7 +385,7 @@ const QUINTA_CLASSES = [
   {
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     open: true,   // Erika set 13 & 27 Oct and 3 Nov - bookable
-    name: "Module 1 — Claude for beginners",
+    name: "Module 1: Your First AI Workflow",
     price: 150,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Your first real session: what Claude is, how to talk to it, and how to put it to work for your business that same day.",
