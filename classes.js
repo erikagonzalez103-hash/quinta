@@ -125,8 +125,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "landlord", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
-    // Robin Frazier (joined 6 Oct 2026). Class 1 of her three, one per stage.
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "So you want to be a landlord",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
