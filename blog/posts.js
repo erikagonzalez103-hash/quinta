@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "how-to-prioritize-q4-goals-in-october",
+    title: "How Do You Prioritize Q4 Business Goals When It's Already October?",
+    date: "2026-10-06",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Give every unfinished item one of three verdicts — finish it now, schedule it for January, or discard it. Nine weeks is enough for one real thing, and it is usually a foundation: the books, a contract, a price.",
+    image: "blog-q4-goals.webp"
+  },
+  {
     slug: "why-owners-put-off-investing",
     title: "Why Do Small Business Owners Put Off Investing in Their Own Business? And I Don't Mean $$$",
     date: "2026-09-22",
