@@ -106,9 +106,60 @@ export function kitCard(kitRows, faculty, label) {
   return card(label, faculty.length ? note + lines : quiet("No faculty records to report on."));
 }
 
+/* SALES BY SOURCE - which link each sale came in on, from the utm tags the
+   booking functions write on every enrollments row (2026-10-06-enrollments-
+   ad-source.sql). One purchase = one order: a Stripe order writes a row per
+   class (order_ref "cs_..." or "cs_...:<session>" / ":gift"), a Cal.com
+   bundle a row per class under one booking uid - so rows are grouped by the
+   part before ":" and their amounts added. $0 rows (bundle classes still
+   owed, free redeems) count toward their order, not as sales of their own.
+   null = the ledger could not be read; the card says so rather than "$0". */
+const SOURCE_LABELS = {
+  "facebook|paid_social": "Meta ads", "fb|paid_social": "Meta ads (Facebook)", "ig|paid_social": "Meta ads (Instagram)",
+  "meta|paid": "Meta ads", "instagram|bio": "Instagram bio", "instagram|social": "Instagram post or story",
+  "facebook|social": "Facebook post", "linkedin|social": "LinkedIn post", "newsletter|email": "Email or newsletter",
+};
+export function salesBySource(rows) {
+  const orders = {};
+  (rows || []).forEach((r, i) => {
+    const id = String(r.order_ref || "").split(":")[0] || `row-${i}`;   // a row with no order is its own order
+    const o = orders[id] || (orders[id] = { cents: 0, src: r.utm_source || "", med: r.utm_medium || "", camp: r.utm_campaign || "" });
+    o.cents += Number(r.amount_cents) || 0;
+  });
+  const groups = {};
+  for (const o of Object.values(orders)) {
+    if (!(o.cents > 0)) continue;                       // nothing was paid on this order
+    const key = o.src ? `${o.src}|${o.med}|${o.camp}` : "";
+    const g = groups[key] || (groups[key] = { src: o.src, med: o.med, camp: o.camp, n: 0, cents: 0 });
+    g.n++; g.cents += o.cents;
+  }
+  return Object.values(groups).sort((a, b) => b.cents - a.cents);
+}
+const money = (c) => "$" + (c / 100).toLocaleString("en-US", { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 });
+function sourceLabel(g) {
+  if (!g.src) return `<span style="color:#8A8E83;">No link tag</span> <span style="color:#8A8E83;font-size:12px;">(direct, a teacher link, or before tracking)</span>`;
+  const name = SOURCE_LABELS[`${g.src}|${g.med}`.toLowerCase()] || `${esc(g.src)}${g.med ? ` · ${esc(g.med)}` : ""}`;
+  return `${name}${g.camp ? ` <span style="color:#5A5E55;">— ${esc(g.camp)}</span>` : ""}`;
+}
+export function salesCard(todayRows, allRows, sinceLabel) {
+  if (todayRows === null || allRows === null) {
+    return card("Sales by source", `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The ledger could not be read — this is NOT "no sales".</p>`);
+  }
+  const block = (groups) => groups.map((g) => row(sourceLabel(g), `${g.n} ${g.n === 1 ? "sale" : "sales"} · ${money(g.cents)}`)).join("");
+  const today = salesBySource(todayRows), all = salesBySource(allRows);
+  const total = (gs) => gs.reduce((t, g) => t + g.cents, 0), count = (gs) => gs.reduce((t, g) => t + g.n, 0);
+  return card("Sales by source",
+    (today.length ? block(today) : quiet("No sales today.")) +
+    `<div style="margin:18px 0 8px;font-size:12px;letter-spacing:.14em;color:#4F6B5C;text-transform:uppercase;">${esc(sinceLabel)} · ${count(all)} ${count(all) === 1 ? "sale" : "sales"} · ${money(total(all))}</div>` +
+    (all.length ? block(all) : quiet("No sales yet.")));
+}
+
 export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
-                              waitlistUnreadable = false, kitRows = null }) {
+                              waitlistUnreadable = false, kitRows = null, salesToday = [], salesAll = [] }) {
   const parts = [];
+
+  // --- Sales by source (first: it's the number the campaign is judged on) ---
+  parts.push(salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)"));
 
   // --- The Swarm ---
   //
@@ -248,6 +299,13 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   // Table not created yet (or refused) = leave the card out, not "nobody opened it".
   const kitRows = refused.has("kit_events") ? null : kitRaw;
 
+  // Sales by source: today's purchases, and everything since the sale opened.
+  const salesCols = "select=order_ref,amount_cents,utm_source,utm_medium,utm_campaign,created_at";
+  const end = until || ranAt.toISOString();
+  const salesAllRaw = await get(`enrollments?${salesCols}&created_at=gte.2026-09-29T05:00:00Z&created_at=lt.${end}`);
+  const salesAll = refused.has("enrollments") ? null : salesAllRaw;
+  const salesToday = salesAll === null ? null : salesAll.filter((r) => String(r.created_at || "") >= since);
+
   /* Every table failing is not "a quiet day", it is a broken key — and a
      report that cheerfully says "No signups today" when the database was
      never reachable is worse than no report at all. A partial failure still
@@ -296,7 +354,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const { html, subject } = buildReport({
     now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
     waitlistUnreadable: refused.has("waitlist"),
-    kitRows,
+    kitRows, salesToday, salesAll,
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }

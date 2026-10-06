@@ -1,4 +1,4 @@
-import { run, startOfDallasDay, dallasDay, buildReport, kitCard } from './daily-report.mjs';
+import { run, startOfDallasDay, dallasDay, buildReport, kitCard, salesBySource, salesCard } from './daily-report.mjs';
 
 let pass = 0, fail = 0;
 const check = (n, c, d = '') => { if (c) { pass++; console.log(`  ✓ ${n}`); } else { fail++; console.log(`  ✗ ${n} ${d}`); } };
@@ -54,9 +54,10 @@ console.log('\n4. Missing tables do not kill the report');
   const fetchStub = async (url) => {
     if (url.includes('campaign_activity')) return { ok: false, status: 404, text: async () => 'no such table' };
     if (url.includes('referral_counts')) return { ok: false, status: 404, text: async () => 'no such table' };
-    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'tara@quintaand.co', display_name: 'Tara Johnson' }] };
+    if (url.includes('/faculty?')) return { ok: true, json: async () => [{ email: 'tara@quintaand.co', display_name: 'Tara Johnson' }] };
     if (url.includes('waitlist')) return { ok: true, json: async () => [] };
     if (url.includes('class_sessions')) return { ok: true, json: async () => [] };
+    if (url.includes('/enrollments?') || url.includes('/kit_events?')) return { ok: true, json: async () => [] };
     throw new Error('unexpected ' + url);
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
@@ -73,7 +74,7 @@ console.log('\n5. Unbookable detection adapts to the column name');
   ];
   const fetchStub = async (url) => {
     if (url.includes('class_sessions')) return { ok: true, json: async () => sessions };
-    if (url.includes('faculty')) return { ok: true, json: async () => [] };
+    if (url.includes('/faculty?')) return { ok: true, json: async () => [] };
     return { ok: true, json: async () => [] };
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
@@ -98,7 +99,7 @@ console.log('\n7. One dead table is still just a missing section');
 {
   const fetchStub = async (url) => {
     if (url.includes('campaign_activity')) return { ok: false, status: 404, text: async () => 'gone' };
-    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    if (url.includes('/faculty?')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
     return { ok: true, json: async () => [] };
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
@@ -113,7 +114,7 @@ console.log('\n8. A refused waitlist must never read as "no signups"');
      nothing happened. Signups were still arriving the whole time. */
   const fetchStub = async (url) => {
     if (url.includes('waitlist')) return { ok: false, status: 403, text: async () => 'permission denied for table waitlist' };
-    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    if (url.includes('/faculty?')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
     return { ok: true, json: async () => [] };
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
@@ -127,7 +128,7 @@ console.log('\n8. A refused waitlist must never read as "no signups"');
 console.log('\n9. A genuinely quiet day still reads as one');
 {
   const fetchStub = async (url) => {
-    if (url.includes('faculty')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
+    if (url.includes('/faculty?')) return { ok: true, json: async () => [{ email: 'a@b.co', display_name: 'A B' }] };
     return { ok: true, json: async () => [] };
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
@@ -154,6 +155,33 @@ console.log('\n10. Week 2 kit card');
   const base = { now: new Date('2026-10-07T23:00:00Z'), posts: {}, faculty: F, signups: [], referrals: [], sessionsToday: [], unbookable: [] };
   check('appears in the report', buildReport({ ...base, kitRows: rows }).html.includes('Week 2 kit'));
   check('left out when the table is missing', !buildReport(base).html.includes('Week 2 kit'));
+}
+
+console.log('\n11. Sales by source');
+{
+  const rows = [
+    // a 2-class Oct 21 order from the Meta ad: two rows, one order
+    { order_ref: 'cs_A:s1', amount_cents: 14875, utm_source: 'facebook', utm_medium: 'paid_social', utm_campaign: 'FFF 250k' },
+    { order_ref: 'cs_A:s2', amount_cents: 14875, utm_source: 'facebook', utm_medium: 'paid_social', utm_campaign: 'FFF 250k' },
+    // a Cal.com bundle from LinkedIn: anchor paid, the rest owed at $0
+    { order_ref: 'uid-B', amount_cents: 21200, utm_source: 'linkedin', utm_medium: 'social', utm_campaign: 'week2' },
+    { order_ref: 'uid-B', amount_cents: 0, utm_source: 'linkedin', utm_medium: 'social', utm_campaign: 'week2' },
+    // an untagged single class
+    { order_ref: 'uid-C', amount_cents: 9900 },
+    // a free redeem with nothing paid - not a sale
+    { order_ref: 'uid-D', amount_cents: 0 },
+  ];
+  const g = salesBySource(rows);
+  check('two rows of one order count as one sale', g.find((x) => x.src === 'facebook').n === 1);
+  check('and add up', g.find((x) => x.src === 'facebook').cents === 29750);
+  check('a bundle counts once at its price', g.find((x) => x.src === 'linkedin').cents === 21200);
+  check('untagged sales are grouped', g.find((x) => x.src === '').n === 1);
+  check('a $0 order is not a sale', g.reduce((t, x) => t + x.n, 0) === 3);
+  const html = salesCard(rows, rows, 'Since Sept 29');
+  check('Meta ads get a plain name', html.includes('Meta ads') && html.includes('FFF 250k'));
+  check('shows the total', html.includes('3 sales · $608.50'));
+  check('unreadable ledger is not "no sales"', salesCard(null, null, 'x').includes('NOT'));
+  check('quiet day says so', salesCard([], [], 'x').includes('No sales today'));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
