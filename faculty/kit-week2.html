@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 Kit · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<style>
+/* Same look as kit.html (Week 1). Built for a phone first: every faculty
+   member opens this from a link on her phone, then switches to Instagram. */
+.kit-wrap{max-width:760px}
+.kit-meta{font-size:15.5px;line-height:1.7;color:var(--ink);margin:18px 0 0}
+.kit-meta strong{color:var(--moss)}
+.kit-wrap h2{margin-top:44px}
+.kit-wrap h3{font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--moss);margin:30px 0 8px}
+.kit-wrap p,.kit-wrap li{font-size:15.5px;line-height:1.65;color:var(--ink)}
+.kit-steps{counter-reset:s;list-style:none;padding:0;margin:18px 0 0}
+.kit-steps li{counter-increment:s;position:relative;padding-left:38px;margin-bottom:13px}
+.kit-steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:25px;height:25px;
+  border-radius:50%;background:var(--sage-deep);color:var(--cream);display:grid;place-items:center;
+  font-family:var(--label);font-size:12px;font-weight:600}
+.kit-steps.from9{counter-reset:s 8}
+.kit-tip{background:#EEF2EC;border-left:3px solid var(--sage);border-radius:0 8px 8px 0;
+  padding:15px 18px;margin:20px 0 0}
+.kit-fig{margin:22px 0 6px}
+.kit-fig img{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;display:block;background:#F7F7F5}
+.ask{border:1px solid var(--line);border-radius:12px;background:#fff;padding:18px 20px;margin:18px 0 0}
+.ask .q{font-family:var(--display);font-size:1.35rem;color:var(--moss);margin:0 0 12px}
+.who{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:20px 20px 18px;margin:16px 0 0}
+.who.mine{border-color:var(--sage-deep);box-shadow:0 0 0 2px rgba(78,107,92,.15)}
+.who-top{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:start}
+.who-top img{width:96px;border-radius:8px;border:1px solid var(--line);display:block}
+.who h3{margin:0 0 2px}
+.who .mine-tag{display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;
+  font-size:10px;font-weight:600;color:var(--cream);background:var(--sage-deep);border-radius:999px;
+  padding:3px 9px;margin-left:8px;vertical-align:middle}
+.who .wclass{margin:0 0 8px}
+/* styles.css has no .btn-sm - portal.html keeps its own copy, so this does too. */
+.btn-sm{display:inline-block;padding:8px 15px;border-radius:999px;font-size:.88rem;line-height:1.3;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+.btn-sm.solid{background:var(--sage-deep);color:var(--cream)}
+.btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+.who .lnk{font-size:15px;word-break:break-all;margin:0 0 10px}
+.who .note{font-size:14.5px;background:#EEF2EC;border-radius:8px;padding:11px 13px;margin:12px 0 0}
+.answers{list-style:none;padding:0;margin:14px 0 10px;display:grid;gap:8px}
+.answers li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;
+  border:1px solid var(--line);border-radius:8px;padding:9px 10px 9px 13px;font-size:15px;margin:0}
+.acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.cap{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:18px 20px;margin:16px 0 0}
+.cap pre{white-space:pre-wrap;font-family:inherit;font-size:15px;line-height:1.65;color:var(--ink);
+  margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px 16px}
+.cap .tags{font-size:14px;color:var(--sage-deep);line-height:1.5;margin:0 0 12px;word-break:break-word}
+.btn-sm.tiny{padding:5px 11px;font-size:.8rem;flex:0 0 auto}
+.kit-note{font-size:13.5px;line-height:1.6;color:var(--sage-deep);margin-top:34px}
+@media(max-width:520px){ .who-top{grid-template-columns:72px 1fr} .who-top img{width:72px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="portal.html">Back to portal</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div id="gate" class="wrap">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <!-- NOT LINKED FROM portal.html YET. Erika approves it first, and Nik still
+       has to approve her poll answers. To publish: add the Week 2 card to
+       portal.html and point "This week's kit" here. -->
+  <section class="detail wrap" id="kit" style="display:none">
+    <div class="kit-wrap">
+      <p class="phase-label">Faculty Portal · Private</p>
+      <h1>Week 2 Kit · The Countdown to 10.21</h1>
+
+      <p class="kit-meta"><strong>Post:</strong> anytime this week, Tuesday, October 6 through Sunday, October 11<br>
+        <strong>What you'll post:</strong> your countdown Story with a poll, a LinkedIn poll, and (if you'd like) a Facebook post. You don't need to film anything.<br>
+        <strong>Time it takes:</strong> about 20 minutes the first time, and less after that.</p>
+
+      <p>October 21 is Fork and Femme, HER Texas's day to spend with women-owned businesses. This week, you're asking your network one question: <em>What should I cover on 10.21?</em> Their answers help shape your class, and your post reminds them the day is coming.</p>
+
+      <p>If anything on your screen looks different from these steps, don't worry. The apps change their look often. Take a screenshot of what you see and text it to Erika, and she'll walk you through it.</p>
+
+      <h2>Before you start</h2>
+      <p>You'll need three things on your phone:</p>
+      <ol class="kit-steps">
+        <li><strong>The Instagram app and the LinkedIn app</strong>, signed in to your account. Facebook is optional.</li>
+        <li><strong>Your Story picture.</strong> It's the cream one with your photo, the countdown squares, and your web address at the bottom. Tap the <strong>Download</strong> button under it. On an iPhone, if the picture opens on its own page instead of downloading, press and hold your finger on it, then tap <strong>Save to Photos</strong>. On Android, press and hold, then tap <strong>Download image</strong>. It will now be in your phone's photos.</li>
+        <li><strong>Your link.</strong> This is your personal web address. It's listed with your name in the next section, and it's printed at the bottom of your Story picture. It ends in <strong>?ref=</strong> and your name, which is how your seats are counted for the $500 challenge. Anyone who taps it, or types it exactly, gets counted as yours.</li>
+      </ol>
+      <div class="kit-tip"><strong>How to copy and paste on a phone:</strong> On this page, tap a <strong>Copy</strong> button. Then, in the app, press and hold your finger in the empty text box until a small menu appears, and tap <strong>Paste</strong>.</div>
+
+      <h2>Your poll and your class</h2>
+      <p>Everyone asks the same question (except Joshlyn, below). Your four answers are about your class. Your class name goes wherever a caption says <strong>[your class]</strong>.</p>
+      <div class="ask">
+        <p class="q">What should I cover on 10.21?</p>
+        <button class="btn-sm solid" type="button" data-copy-text="What should I cover on 10.21?">Copy the question</button>
+      </div>
+      <div id="people"></div>
+
+      <h2>Step 1: Put your link in your Instagram bio</h2>
+      <p>Your bio is the short description at the top of your Instagram profile. Putting your link there means anyone who visits your profile can tap it.</p>
+      <ol class="kit-steps">
+        <li>Open Instagram and tap your <strong>profile picture</strong> in the bottom right corner.</li>
+        <li>Tap <strong>Edit profile</strong>.</li>
+        <li>Tap <strong>Links</strong>, then <strong>Add external link</strong>.</li>
+        <li>Paste your link in the <strong>URL</strong> box. In the <strong>Title</strong> box, type <em>Fork, Femme &amp; Foundations</em>.</li>
+        <li>Tap <strong>Done</strong> or the check mark in the top right corner.</li>
+      </ol>
+
+      <h2>Step 2: Post your countdown Story with your poll</h2>
+      <p>A Story is a picture that shows at the top of your followers' screens for 24 hours. A poll sticker is a small box you add on top that lets people vote with one tap.</p>
+      <figure class="kit-fig"><img src="kit/week2/instagram-poll-steps.webp" width="2000" height="1481"
+        alt="How to add a poll sticker: tap the sticker icon, tap POLL, then type your question and answers and tap Done"></figure>
+      <ol class="kit-steps">
+        <li>Open Instagram. On the home screen, tap <strong>your profile picture in the top left corner</strong> (it has a small <strong>+</strong> on it). The camera opens.</li>
+        <li>In the bottom left corner, tap the <strong>small square showing your latest photo</strong>. Your photos open. Tap <strong>your Story picture</strong>, the one with your photo.</li>
+        <li><strong>Tap the sticker icon.</strong> It's the square smiley face along the top of the screen.</li>
+        <li><strong>Tap POLL</strong> in the menu that slides up.</li>
+        <li><strong>Type the question,</strong> <em>What should I cover on 10.21?</em>, where it says <em>Ask a question</em>.</li>
+        <li>Tap the first answer box and type your first answer. Do the same for the second. Tap <strong>Add option</strong> to get boxes for your third and fourth answers.</li>
+        <li><strong>Tap Done</strong> in the top right corner.</li>
+        <li>Press and hold the poll with one finger and drag it onto the <strong>green band</strong>. That band is the poll's spot. If the poll hangs over the edges, pinch it with two fingers to shrink it a little. Don't make it much smaller, or the answers get hard to read and tap.</li>
+      </ol>
+      <p><strong>Now add your link to the same Story:</strong></p>
+      <ol class="kit-steps from9">
+        <li>Tap the <strong>sticker icon</strong> again, and this time tap <strong>LINK</strong>.</li>
+        <li>In the <strong>URL</strong> box, paste your link, the same web address printed on your picture. Then tap <strong>Customize sticker text</strong> and type <em>Get your seat</em>. Tap <strong>Done</strong>.
+          <p style="margin:8px 0 0"><em>Why both?</em> People can tap the sticker, and anyone who screenshots your Story can still type the address they see on the picture. Either way, the seat counts as yours.</p></li>
+        <li>Drag the link sticker to the empty space to the right of <em>Save your seat</em>, just below the green band.</li>
+        <li>In the bottom left corner, tap <strong>Your story</strong>. It's live.</li>
+      </ol>
+
+      <h3>Seeing your votes, and saving them before they disappear</h3>
+      <p>Your Story disappears after <strong>24 hours</strong>, and so do your results. Save them before then.</p>
+      <ol class="kit-steps">
+        <li>On the Instagram home screen, tap your profile picture in the top left corner to open your Story.</li>
+        <li>Swipe up on the screen, or tap <strong>Activity</strong> at the bottom. You'll see how many people chose each answer.</li>
+        <li><strong>Take a screenshot.</strong> On an iPhone, press the side button and the volume-up button at the same time. On Android, press the power button and the volume-down button at the same time. The screenshot saves to your photos.</li>
+      </ol>
+
+      <h2>Step 3: Run your poll on LinkedIn</h2>
+      <p>On LinkedIn, the poll stays up for a full week and sits right under your post. LinkedIn polls don't use a picture, so you won't need your Story picture here.</p>
+      <figure class="kit-fig"><img src="kit/week2/linkedin-poll-steps.webp" width="2000" height="1481"
+        alt="How to make a LinkedIn poll: tap Create a poll, fill in your question and answers, then paste your text and tap Post"></figure>
+      <ol class="kit-steps">
+        <li>Open LinkedIn and tap <strong>Post</strong> (the <strong>+</strong> at the bottom of the screen).</li>
+        <li>A list of choices appears at the bottom. If you only see a row of small icons, tap the <strong>+</strong> or the <strong>three dots</strong> to see the full list. <strong>Tap Create a poll.</strong></li>
+        <li>In <strong>Your question</strong>, type <em>What should I cover on 10.21?</em></li>
+        <li>Type your first answer in <strong>Option 1</strong> and your second in <strong>Option 2</strong>. Tap <strong>+ Add option</strong> twice to add your third and fourth answers.</li>
+        <li>Tap <strong>Poll duration</strong> and choose <strong>1 week</strong>.</li>
+        <li><strong>Tap Done</strong> in the top right corner.</li>
+        <li>You're back on the post screen with your poll underneath. Tap the space above the poll where it says <em>What do you want to talk about?</em> and paste the LinkedIn post text below. Replace <strong>[your class]</strong> and <strong>[your link]</strong>.</li>
+        <li>Paste the hashtags at the end.</li>
+        <li><strong>Tap Post</strong> in the top right corner.</li>
+      </ol>
+      <div class="cap">
+        <h3 style="margin-top:0">LinkedIn post text</h3>
+        <pre id="li-text">October 21 is Fork and Femme, HER Texas's day to spend with women-owned businesses.
+
+I'm teaching [your class] that day at Fork, Femme &amp; Foundations, in Dallas and live on Zoom. Before I finalize what I cover, I want to hear from you. Vote below, and I'll share what comes back.
+
+Save your seat, or buy one and gift one at 25% off: [your link]</pre>
+        <p class="tags"><strong>Hashtags (keep it to three):</strong> <span id="li-tags">#ForkAndFemme #WomenOwnedBusiness #HERTexas</span></p>
+        <div class="acts">
+          <button class="btn-sm solid" type="button" data-copy-from="li-text">Copy the post text</button>
+          <button class="btn-sm" type="button" data-copy-from="li-tags">Copy the hashtags</button>
+        </div>
+      </div>
+
+      <h3>Seeing your votes</h3>
+      <p>Tap your profile picture, then <strong>View profile</strong>, then scroll down to <strong>Activity</strong> and tap your poll. You'll see the percentages for each answer. Take a screenshot the same way as above.</p>
+
+      <h2>Step 4 (optional): Facebook</h2>
+      <p>Facebook doesn't have a poll for personal pages, so this post asks people to answer in the comments.</p>
+      <ol class="kit-steps">
+        <li>Open Facebook and tap <strong>What's on your mind?</strong> at the top of the screen.</li>
+        <li>Paste the Facebook caption below and fill in the brackets.</li>
+        <li>Tap <strong>Photo/video</strong> and choose your Story picture.</li>
+        <li>Tap <strong>Post</strong>.</li>
+      </ol>
+      <div class="cap">
+        <h3 style="margin-top:0">Facebook caption</h3>
+        <pre id="fb-text">October 21 is Fork and Femme, HER Texas's day to spend with women-owned businesses, and I'm teaching [your class] at Fork, Femme &amp; Foundations. In Dallas and live on Zoom.
+
+Help me plan: what's the one [your class] question you'd want answered that day? Tell me in the comments.
+
+Classes from $99, or buy one and gift one at 25% off: [your link]</pre>
+        <p class="tags"><strong>Hashtags (keep it to three):</strong> <span id="fb-tags">#ForkAndFemme #BuyFromHer #WomenOwnedBusiness</span></p>
+        <div class="acts">
+          <button class="btn-sm solid" type="button" data-copy-from="fb-text">Copy the caption</button>
+          <button class="btn-sm" type="button" data-copy-from="fb-tags">Copy the hashtags</button>
+        </div>
+      </div>
+
+      <h2>Last step: Send Erika your results</h2>
+      <p><strong>By Sunday, October 11,</strong> text Erika your screenshots from Instagram and LinkedIn. Your results become next week's post, so you'll have content without having to write any.</p>
+
+      <!-- Replaces the draft's "use code FFFF26" line: FFFF26 is the campaign's
+           name, not a code. Bundle prices are set in Cal.com, gifts are priced
+           on gift.html, and FFF15/FFF25 apply themselves - there is no box to
+           type a code into anywhere. PENDING ERIKA'S OK on this wording. -->
+      <p>No code needed. Bundle and buy-one-gift-one prices apply automatically.</p>
+
+      <p class="kit-note">Want a version without a photo? <a href="kit/week2/week2-story-generic.png" download="Fork-Femme-Foundations-countdown-story.png">Download the general Story</a>. If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Each teacher's card. The link uses her plain referral code (config.js
+     CODES), which is what quintaand.co/go/whereyouare routes on - it sends
+     her link straight to her class. Answers are the kit's, word for word. */
+  var PEOPLE = [
+    { key: "tara", name: "Tara", cls: "Bookkeeping I: Set Up QuickBooks",
+      answers: ["Set up QuickBooks right", "Catch up my books", "What's deductible", "How far behind I am"] },
+    { key: "erika", name: "Erika", cls: "Module 1: Your First AI Workflow",
+      answers: ["Where to even start", "Emails & follow-ups", "Social posts & content", "Which AI tool to trust"] },
+    { key: "joshlyn", name: "Joshlyn", cls: "Investing", question: "What should I cover first?",
+      note: "Your dates aren't set yet, so your question is <strong>What should I cover first?</strong> Your link goes to the waitlist, and your Story says <em>Join the waitlist</em>. In the captions, use <em>I'm teaching Investing with Quinta &amp; Co.</em> instead of the October 21 line.",
+      answers: ["Pay myself first", "Start investing", "Separate business & personal", "Where profit should sit"] },
+    { key: "stephanie", name: "Stephanie", cls: "Brand 101",
+      answers: ["Replace my DIY logo", "Build a real strategy", "Make it consistent", "Find my brand's voice"] },
+    { key: "nik", name: "Nik", cls: "Legacy Planning",
+      answers: ["Who takes over my business", "Wills vs. trusts", "Protect what I've built", "Where to even start"] }
+  ];
+  function linkOf(p) { return "quintaand.co/go/whereyouare?ref=" + p.key; }
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient("https://pmpaslevwimofohirves.supabase.co", "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  function gate(t, x, action) {
+    document.getElementById("gate").style.display = "block";
+    document.getElementById("kit").style.display = "none";
+    document.getElementById("gate-title").textContent = t;
+    document.getElementById("gate-text").textContent = x;
+    document.getElementById("gate-action").style.display = action ? "block" : "none";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* Copy that still works in the in-app browsers faculty open this in, where
+     navigator.clipboard often isn't there. Same as kit.html. */
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", "");
+        ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta); resolve();
+      } catch (e) { reject(e); }
+    });
+  }
+  function wireCopy(btn, getText) {
+    btn.addEventListener("click", function () {
+      copyText(getText()).then(function () {
+        var was = btn.textContent;
+        btn.textContent = "Copied ✓";
+        window.setTimeout(function () { btn.textContent = was; }, 1800);
+      }).catch(function () { window.prompt("Copy this:", getText()); });
+    });
+  }
+
+  function render(myKey) {
+    // Her own card first, marked; everyone else's after it.
+    var list = PEOPLE.slice().sort(function (a, b) { return (b.key === myKey) - (a.key === myKey); });
+    var box = document.getElementById("people");
+    box.innerHTML = list.map(function (p) {
+      var mine = p.key === myKey;
+      var file = "kit/week2/week2-story-" + p.key + ".png";
+      return '<div class="who' + (mine ? " mine" : "") + '">' +
+        '<div class="who-top">' +
+          '<img src="' + file + '" alt="' + esc(p.name) + '’s Story picture" width="96" height="171">' +
+          '<div>' +
+            '<h3>' + esc(p.name) + (mine ? '<span class="mine-tag">You</span>' : "") + '</h3>' +
+            '<p class="wclass">Your class: <em>' + esc(p.cls) + '</em></p>' +
+            '<p class="lnk">Your link: <strong>' + esc(linkOf(p)) + '</strong></p>' +
+            '<div class="acts">' +
+              '<a class="btn-sm solid" href="' + file + '" download="Fork-Femme-Foundations-' + p.key + '-story.png">Download ' + esc(p.name) + '’s Story</a>' +
+              '<button class="btn-sm" type="button" data-copy-text="https://' + esc(linkOf(p)) + '">Copy the link</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        (p.note ? '<p class="note">' + p.note + '</p>' : "") +
+        (p.question ? '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.question) + '">Copy the question: ' + esc(p.question) + '</button></div>' : "") +
+        '<ul class="answers">' + p.answers.map(function (a) {
+          return '<li><span>' + esc(a) + '</span><button class="btn-sm tiny" type="button" data-copy-text="' + esc(a) + '">Copy</button></li>';
+        }).join("") + '</ul>' +
+        '<div class="acts"><button class="btn-sm" type="button" data-copy-text="' + esc(p.answers.join("\n")) + '">Copy all four answers</button></div>' +
+      '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-copy-text]"), function (b) {
+      wireCopy(b, function () { return b.getAttribute("data-copy-text"); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-copy-from]"), function (b) {
+      wireCopy(b, function () { return document.getElementById(b.getAttribute("data-copy-from")).textContent; });
+    });
+  }
+
+  if (!sb) { gate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { gate("You're not signed in", "Sign in first, then come back for your kit.", true); return; }
+    var email = session.user.email.toLowerCase();
+    sb.from("faculty").select("*").eq("email", email).maybeSingle().then(function (r) {
+      if (r.error || !r.data) {
+        gate("Almost there", "You're signed in as " + email +
+          ", but there's no faculty record under that email yet — email hello@quintaand.co.", true);
+        return;
+      }
+      var first = String(r.data.display_name || r.data.full_name || "").trim().split(/\s+/)[0].toLowerCase();
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("kit").style.display = "block";
+      render(first);
+    });
+  });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>

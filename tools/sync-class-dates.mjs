@@ -149,6 +149,28 @@ async function lookup(fetchImpl, event, now) {
   return null;
 }
 
+/* WEDNESDAY 21 OCTOBER is booked on oct21.html, not in Cal.com - so a class
+   whose only date is the 21st (Brand 101, on 6 Oct) looks undated to Cal.com
+   and this job would close it while its seats are on sale. Ask the day's own
+   list too. It can only ever ADD a date: if it fails, nothing is closed for
+   it. Stops counting once sales for the day close (midnight going into it). */
+const OCT21_CLOSE = Date.parse("2026-10-21T00:00:00-05:00");
+async function oct21Slugs(fetchImpl, now) {
+  if (now >= OCT21_CLOSE) return new Set();
+  const KEY = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf";   // public by design
+  try {
+    const r = await fetchImpl("https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/oct21_sessions", {
+      method: "POST",
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (!r.ok) return new Set();
+    const rows = await r.json();
+    return new Set((Array.isArray(rows) ? rows : [])
+      .filter((s) => s && s.class_slug && Number(s.seats_left) > 0).map((s) => s.class_slug));
+  } catch { return new Set(); }
+}
+
 function walk(dir, skip, out = []) {
   for (const name of readdirSync(dir)) {
     if (skip.has(name)) continue;
@@ -170,6 +192,10 @@ export async function run({ root, fetchImpl = fetch, now = Date.now(), dryRun = 
   const items = syncable(classes);
   const dated = {};
   await Promise.all(items.map(async ({ slug, event }) => { dated[slug] = await lookup(fetchImpl, event, now); }));
+  const on21 = await oct21Slugs(fetchImpl, now);
+  for (const { slug } of items) {
+    if (on21.has(slug) && dated[slug] !== true) { dated[slug] = true; log(`${slug}: on sale for October 21`); }
+  }
 
   const failed = items.filter(({ slug }) => dated[slug] === null).map((x) => x.slug);
   if (failed.length === items.length) {

@@ -445,6 +445,24 @@
      bookable" after two minutes about a class that is perfectly bookable. */
   var OFF_CALCOM_DAYS = ["2026-10-21"];
 
+  /* THE 15-DAY LEAD TIME, AND THE ONE DAY EXEMPT FROM IT.
+     New classes normally need 15 days' notice so the seats can be filled.
+     October 21 is the exception: every teacher is teaching that day, its
+     seats are sold by the campaign already running, and from 7 Oct it is
+     inside the 15 days - so without this, nobody could add her session.
+     Open until the day itself (booking for it closes at midnight going in). */
+  var LEAD_EXEMPT_UNTIL = ["2026-10-21"];
+  var LEAD_MIN = "";
+  function todayLocal() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function LEAD_EXEMPT_OVER() { return todayLocal() >= LEAD_EXEMPT_UNTIL[0]; }
+  function leadOk(date) {
+    if (!LEAD_MIN || date >= LEAD_MIN) return true;
+    return LEAD_EXEMPT_UNTIL.indexOf(date) !== -1 && !LEAD_EXEMPT_OVER();
+  }
+
   /* One of: null (say nothing), or {state, text}. */
   function syncStatusOf(s) {
     if (OFF_CALCOM_DAYS.indexOf(s.session_date) !== -1) {
@@ -702,7 +720,7 @@
       cell.addEventListener("click", function () {
         var d = cell.getAttribute("data-date");
         var input = document.getElementById("s-date");
-        if (input.min && d < input.min) {
+        if (!leadOk(d)) {
           show("err", "That date is inside the 15-day lead time — pick something further out, or email hello@quintaand.co.");
           return;
         }
@@ -752,7 +770,12 @@
       }
       var dateEl = document.getElementById("s-date");
       var min = new Date(); min.setDate(min.getDate() + 15);
-      dateEl.min = min.toISOString().slice(0, 10);
+      LEAD_MIN = min.toISOString().slice(0, 10);
+      /* The picker's own floor has to reach back to the 21st, or the date
+         can't even be chosen; leadOk() still refuses everything else inside
+         the 15 days. */
+      dateEl.min = LEAD_EXEMPT_UNTIL[0] && LEAD_MIN > LEAD_EXEMPT_UNTIL[0] && !LEAD_EXEMPT_OVER()
+        ? LEAD_EXEMPT_UNTIL[0] : LEAD_MIN;
 
       loadSessions();
       goLive(session);
@@ -974,7 +997,7 @@
     var time = document.getElementById("s-time").value;
     var format = document.querySelector('input[name="s-format"]:checked').value;
     if (!date) { show("err", "Pick a date first."); return; }
-    if (date < document.getElementById("s-date").min) {
+    if (!leadOk(date)) {
       show("err", "New classes need at least 15 days of lead time so we can fill the seats. For anything sooner, email hello@quintaand.co.");
       return;
     }
