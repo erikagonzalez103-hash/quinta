@@ -66,7 +66,7 @@
   <section class="detail wrap edit-head" id="editor">
     <p class="phase-label">Faculty Portal · Private</p>
     <h1>Edit my class</h1>
-    <p class="desc">This is the wording on your public class page. Change it here, save, and the page updates within about 10 minutes. Write it the way you'd explain it to someone deciding whether to come.</p>
+    <p class="desc">This is the wording on your public class page. Change it here and save. Your class page shows the new wording straight away. Write it the way you'd explain it to someone deciding whether to come.</p>
 
     <div class="frow" id="pick-row" style="margin-top:22px;display:none">
       <label for="f-class">Which class</label>
@@ -160,7 +160,8 @@
 /* EDIT MY CLASS
    Saves through save_class_edit() (supabase/sql/2026-10-07-class-editor.sql),
    which checks she teaches the class. tools/publish-class-edits.mjs then
-   copies the saved text into classes.js and the class page every 10 minutes.
+   copies the saved text into classes.js and the class page (for search engines);
+   until it has, the class page reads the saved text itself, so it shows at once.
    The class name, price and length are shown but not editable here. */
 (function () {
   "use strict";
@@ -240,7 +241,7 @@
     if (text && !same(text, live(current))) {
       st.className = "status pending";
       st.textContent = "Saved" + (saved.by ? " by " + saved.by : "") + (saved.at ? " on " + saved.at : "") +
-        ". It's on its way to your class page, usually within 10 minutes.";
+        ". It's on your class page now.";
     } else {
       st.className = "status";
       st.textContent = "This is what's on your class page now.";
@@ -303,7 +304,7 @@
       setStatus({ desc: f.desc, covers: f.covers, walkout: f.walkout, prereq: f.prereq, at: pretty(r.data) });
       show("ok", same(f, live(current))
         ? "Saved. That's the same as your class page already says."
-        : "Saved. Your class page will show this within about 10 minutes. Erika gets a copy by email.");
+        : "Saved. It's on your class page now. Open it to check how it reads.");
     });
   });
 

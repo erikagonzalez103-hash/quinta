@@ -8,7 +8,10 @@
  * class_edits table. This reads those rows and makes classes.js say the same
  * thing, then rebuilds the class pages and bumps the cache version - so the
  * words are in the real HTML, where search engines and AI answer engines read
- * them, not painted in by a script. Runs every 10 minutes from
+ * them, not painted in by a script. The class page also reads the saved
+ * text when it loads (tools/build-class-pages.mjs), so a teacher sees her
+ * change at once; this is what makes it permanent. Scheduled every 10 minutes
+ * (GitHub often runs it later than that) from
  * .github/workflows/publish-class-edits.yml, which commits what changed.
  *
  * ONCE A CLASS HAS BEEN EDITED IN THE PORTAL, THE PORTAL OWNS THOSE FOUR
