@@ -219,7 +219,7 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
            type a code into anywhere. PENDING ERIKA'S OK on this wording. -->
       <p>No code needed. Bundle and buy-one-gift-one prices apply automatically.</p>
 
-      <p class="kit-note">Want a version without a photo? <a href="kit/week2/week2-story-generic.png" download="Fork-Femme-Foundations-countdown-story.png" data-log="generic">Download the general Story</a>. If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+      <p class="kit-note">Want a version without a photo? <a href="kit/week2/week2-story-generic.png?v=2" download="Fork-Femme-Foundations-countdown-story.png" data-log="generic">Download the general Story</a>. If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
     </div>
   </section>
 </main>
@@ -325,7 +325,7 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
     var box = document.getElementById("people");
     box.innerHTML = list.map(function (p) {
       var mine = p.key === myKey;
-      var file = "kit/week2/week2-story-" + p.key + ".png";
+      var file = "kit/week2/week2-story-" + p.key + ".png?v=2";   // v2: Fork and Femme + kiln logos added
       return '<div class="who' + (mine ? " mine" : "") + '">' +
         '<div class="who-top">' +
           '<img src="' + file + '" alt="' + esc(p.name) + '’s Story picture" width="96" height="171">' +
