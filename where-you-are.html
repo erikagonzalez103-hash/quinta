@@ -200,9 +200,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
 <script src="js/supabase-2.110.1.min.js"></script>
 <script src="config.js?v=8"></script>
-<script src="classes.js?v=17"></script>
+<script src="classes.js?v=18"></script>
 <script src="app.js?v=7" defer></script>
-<script src="js/meta.js?v=3" defer></script>
+<script src="js/meta.js?v=4" defer></script>
 
 <script>
 /* ============================================================
@@ -229,7 +229,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     { label: "Signing what I don't get",     slug: "contracts" },
     { label: "Making my first hire",         slug: "first-hire" },
     { label: "I need WBE certification",     slug: "certification" },
-    { label: "I need a legacy plan",         slug: "legacy-planning" }
+    { label: "I want my own AI assistant",   slug: "module-2" }
   ];
 
   var AREAS = [
@@ -237,7 +237,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     { label: "Entity setup or contracts",    worries: ["My setup might be wrong", "Signing what I don't get"] },
     { label: "Brand or trademark",           worries: ["We don't have a solid brand", "My name isn't protected"] },
     { label: "Hiring or WBE certification",  worries: ["Making my first hire", "I need WBE certification"] },
-    { label: "Systems or legacy planning",   worries: ["Doing it all by hand", "I need a legacy plan"] }
+    { label: "Systems, AI, or automation",   worries: ["Doing it all by hand", "I want my own AI assistant"] }
   ];
 
   var app = document.getElementById("app");
@@ -264,9 +264,11 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
      straight away, with "Take the full quiz" if it isn't her. ?faculty=
      works too; ?quiz=1 forces the quiz. Keys are the referral CODES in
      config.js, so the same link credits the teacher for anything she books. */
-  /* Tara and Nik point at the class of theirs that is OPEN (Erika's call,
-     6 Oct): their other classes had no dates, and a poll click that can only
-     join a waitlist loses the week's campaign. Revisit when dates change. */
+  /* Tara points at the class of hers that is OPEN (Erika's call, 6 Oct): her
+     other class had no dates, and a poll click that can only join a waitlist
+     loses the week's campaign. Nik is on Trademarks (7 Oct: she has closed the
+     estate-planning side of her business and Legacy Planning is gone). Once
+     she has an October 21 session it shows "Book October 21" by itself. */
   var ROUTES = {
     tara:      { slug: "bookkeeping-1",      who: "Tara" },
     erika:     { slug: "module-1",           who: "Erika",
@@ -274,7 +276,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
                  takeaway: "One working AI workflow and a clear path to what you want to build next." },
     joshlyn:   { slug: "financial-planning", who: "Joshlyn" },
     stephanie: { slug: "brand-101",          who: "Stephanie" },
-    nik:       { slug: "legacy-planning",    who: "Nik" },
+    nik:       { slug: "trademarks",         who: "Nik" },
     robin:     { slug: "landlord",           who: "Robin" }
   };
   function cleanCode(v) { return String(v || "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24); }

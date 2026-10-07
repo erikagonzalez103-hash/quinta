@@ -85,9 +85,9 @@ const BUNDLES: Record<string, {
     classes: ["bookkeeping-1", "bookkeeping-2"],
   },
   "build-to-last-fff": {
-    key: "build-to-last", name: "Build to last", anchor: "legacy-planning",
-    classes: ["legacy-planning", "certification", "financial-planning",
-              "trademarks", "brand-101"],
+    // 7 Oct: Legacy Planning retired; four classes, anchored on Get Certified.
+    key: "build-to-last", name: "Build to last", anchor: "certification",
+    classes: ["certification", "financial-planning", "trademarks", "brand-101"],
   },
   "the-practice-fff": {
     key: "the-practice", name: "The Practice", anchor: "module-1",
@@ -104,7 +104,6 @@ const CLASS_NAMES: Record<string, string> = {
   "module-3": "Module 3 — Real databases & automation",
   "bookkeeping-1": "Bookkeeping I — Set up QuickBooks",
   "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
-  "legacy-planning": "Legacy planning",
   "certification": "Get certified — WBE / MBE / DBE",
   "financial-planning": "Investing — How to pay yourself first",
   "trademarks": "Trademarks",

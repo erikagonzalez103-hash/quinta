@@ -51,7 +51,7 @@ KEYFILE = os.path.join(REPO, "docs", "cal-api-key.txt")
 BUNDLES = {
     "the-practice-fff":   ("the-practice",   ["module-1", "module-2", "module-3"]),
     "build-to-last-fff":  ("build-to-last",  ["certification", "financial-planning",
-                                              "legacy-planning", "trademarks", "brand-101"]),
+                                              "trademarks", "brand-101"]),
     "keep-the-books-fff": ("keep-the-books", ["bookkeeping-1", "bookkeeping-2"]),
     "get-started-fff":    ("get-started",    ["entity-setup", "module-1"]),
 }

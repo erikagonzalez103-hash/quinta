@@ -51,7 +51,7 @@ const FALLBACK_TO = "erika@quintaand.co";   // used when no instructor is found
    schedule in Cal.com, never off the bundle's name. */
 const BUNDLE_STARTS_WITH: Record<string, string> = {
   "the-practice-fff": "module-1",
-  "build-to-last-fff": "legacy-planning",   // re-anchored; Certification had no dates
+  "build-to-last-fff": "certification",     // back on Get Certified 7 Oct (Legacy Planning retired)
   "keep-the-books-fff": "bookkeeping-1",    // back on Bookkeeping I once Tara scheduled it (2 Oct)
   "get-started-fff": "module-1",            // Entity setup has no instructor
 };

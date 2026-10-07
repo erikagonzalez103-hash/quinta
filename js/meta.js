@@ -48,7 +48,7 @@
   var BUNDLES = {
     "get-started-fff":    { name: "Get started (bundle)",    value: 212 },
     "keep-the-books-fff": { name: "Keep the books (bundle)", value: 168 },
-    "build-to-last-fff":  { name: "Build to last (bundle)",  value: 990 },
+    "build-to-last-fff":  { name: "Build to last (bundle)",  value: 767 },
     "the-practice-fff":   { name: "The Practice (bundle)",   value: 485 }
   };
   var PENDING = "quinta_meta_pending";     // sessionStorage: what she was about to pay for

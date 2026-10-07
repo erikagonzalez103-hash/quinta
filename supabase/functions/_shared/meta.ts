@@ -43,7 +43,6 @@ export const CAL_PRICES: Record<string, { value: number; name: string }> = {
   "first-hire":         { value: 175, name: "Your first hire" },
   "certification":      { value: 299, name: "Get certified — WBE / MBE / DBE" },
   "financial-planning": { value: 250, name: "Investing — How to pay yourself first" },
-  "legacy-planning":    { value: 299, name: "Legacy planning" },
   "trademarks":         { value: 299, name: "Trademarks" },
   "funding":            { value: 175, name: "Funding" },
   "brand-101":          { value: 175, name: "Brand 101" },
@@ -55,7 +54,7 @@ export const CAL_PRICES: Record<string, { value: number; name: string }> = {
   "rental-growth":      { value: 299, name: "Grow it and build your team" },
   "get-started-fff":    { value: 212, name: "Get started (bundle)" },
   "keep-the-books-fff": { value: 168, name: "Keep the books (bundle)" },
-  "build-to-last-fff":  { value: 990, name: "Build to last (bundle)" },
+  "build-to-last-fff":  { value: 767, name: "Build to last (bundle)" },
   "the-practice-fff":   { value: 485, name: "The Practice (bundle)" },
 };
 

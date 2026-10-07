@@ -247,8 +247,9 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
       answers: ["Pay myself first", "Start investing", "Separate business & personal", "Where profit should sit"] },
     { key: "stephanie", name: "Stephanie", cls: "Brand 101",
       answers: ["Replace my DIY logo", "Build a real strategy", "Make it consistent", "Find my brand's voice"] },
-    { key: "nik", name: "Nik", cls: "Legacy Planning",
-      answers: ["Who takes over my business", "Wills vs. trusts", "Protect what I've built", "Where to even start"] },
+    // 7 Oct: Legacy Planning retired, so Nik's card is Trademarks. Answers are drafts for her to approve.
+    { key: "nik", name: "Nik", cls: "Trademarks",
+      answers: ["Is my name safe to use?", "Trademark vs. LLC name", "Should I file it myself?", "Where to even start"] },
     // Added 6 Oct, Robin's first week. Her answers are drafts for her to approve.
     { key: "robin", name: "Robin", cls: "Intro to Real Estate Management: So You Want to Be a Landlord",
       answers: ["Running the numbers", "Finding good tenants", "Landlord legal basics", "Repairs & reserves"] }
@@ -325,7 +326,7 @@ A class costs as low as $99, or buy one and gift one at 25% off: [your link]</pr
     var box = document.getElementById("people");
     box.innerHTML = list.map(function (p) {
       var mine = p.key === myKey;
-      var file = "kit/week2/week2-story-" + p.key + ".png?v=2";   // v2: Fork and Femme + kiln logos added
+      var file = "kit/week2/week2-story-" + p.key + ".png?v=3";   // v2: logos added; v3: Nik is Trademarks
       return '<div class="who' + (mine ? " mine" : "") + '">' +
         '<div class="who-top">' +
           '<img src="' + file + '" alt="' + esc(p.name) + '’s Story picture" width="96" height="171">' +

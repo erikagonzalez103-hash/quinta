@@ -78,10 +78,10 @@ const QUINTA_FACULTY_TASKS = [
   {
     key: "nik-which-class",
     who: ["nik"],
-    title: "Trademarks or Legacy planning on the 21st?",
+    title: "Put Trademarks on the 21st",
     detail:
-      "Whichever you'd rather teach. Both are $299 and both sit in Build to " +
-      "last. Legacy planning already has dates in; Trademarks has none yet.",
+      "Legacy planning is retired (7 Oct), so Trademarks is your class for the " +
+      "day. Add a 21 October session in My schedule, in person or online.",
     type: "answer"
   },
   {
@@ -103,8 +103,7 @@ const QUINTA_FACULTY_TASKS = [
       "A day or two either side of the 21st works better than the night " +
       "itself — a day before builds toward the Dallas day, a day after gives " +
       "people somewhere to land. If you're coming to Dallas on the 21st it " +
-      "can't be that evening. Note you already have Legacy planning on the " +
-      "28th, so tell us if that week is getting crowded.",
+      "can't be that evening. Tell us if that week is getting crowded.",
     type: "answer"
   },
   {

@@ -46,7 +46,6 @@ const CLASS_NAMES: Record<string, string> = {
   "brand-101": "Brand 101",
   "financial-planning": "Investing — How to pay yourself first",
   "certification": "Get certified — WBE / MBE / DBE",
-  "legacy-planning": "Legacy planning",
   "trademarks": "Trademarks",
 };
 

@@ -328,26 +328,6 @@ const QUINTA_CLASSES = [
   
   },
   {
-    slug: "legacy-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: true,   // Nik set October-December dates - bookable
-    name: "Legacy planning",
-    price: 299,
-    venue: "Zoom",
-    desc: "What happens to your business if something happens to you? Make the plan — wills, beneficiaries, and who could step in — so the answer is never \"nobody knows.\"",
-    format: "90 minutes · live, small group",
-    covers: [
-      "What happens to an LLC (or sole prop) when its owner can't run it",
-      "Wills, beneficiaries, and powers of attorney — the business edition",
-      "Succession basics: who could step in, and what they'd need from you",
-      "The one-page \"if something happens\" file every owner should keep"
-    ],
-    walkout: "A one-page business continuity file, and a checklist ready to bring an estate attorney.",
-    prereq: "Nothing — pairs well with Investing — How to pay yourself first.",
-    price: 299,
-    booking: "https://cal.com/quintaandco/legacy-planning",
-    disclaimer: "Educational only — not legal advice. Confirm your plan with an estate attorney."
-  },
-  {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     open: false,  // WAITLIST since 30 Sep: Nik's September date passed. Set true when she adds a new one.
     name: "Trademarks",

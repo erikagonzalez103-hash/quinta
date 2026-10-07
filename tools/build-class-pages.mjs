@@ -260,10 +260,10 @@ ${faqHtml}
 </footer>
 
 <script src="../config.js?v=8"></script>
-<script src="../classes.js?v=17"></script>
+<script src="../classes.js?v=18"></script>
 <script src="../icons.js?v=3"></script>
 <script src="../app.js?v=7" defer></script>
-<script src="../js/meta.js?v=3" defer></script>${c.free ? "" : `
+<script src="../js/meta.js?v=4" defer></script>${c.free ? "" : `
 <script>
 /* WEDNESDAY 21 OCTOBER is booked on oct21.html, not in Cal.com, so the button
    above cannot reach it. If this class has a seat on sale that day, put the
