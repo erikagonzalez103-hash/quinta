@@ -36,8 +36,23 @@
   background:var(--sage-deep);color:var(--cream);font-family:inherit;
   font-size:14px;font-weight:600;cursor:pointer}
 .um-link:disabled{opacity:.5;cursor:default}
-.um-none{font-size:14.5px;color:var(--sage-deep);margin:4px 0 0;font-style:italic}
+.um-none{font-size:14.5px;line-height:1.6;color:var(--sage-deep);margin:4px 0 0}
+.um-how{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:16px 22px;margin:18px 0 30px;max-width:66ch}
+.um-how-h{font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;
+  font-size:11px;color:var(--sage-deep);margin:0 0 8px}
+.um-how ul{margin:0;padding-left:18px}
+.um-how li{font-size:14.5px;line-height:1.6;color:var(--ink);margin:0 0 6px}
+.um-ask{font-size:14px;color:var(--sage-deep);margin:0 0 2px}
+.um-foot{display:flex;gap:14px;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+.um-foot p{flex:1 1 260px;font-size:13.5px;line-height:1.5;color:var(--sage-deep);margin:0}
+.um-clr{flex:0 0 auto;padding:9px 16px;border-radius:8px;
+  border:1px solid var(--sage-deep);background:transparent;color:var(--sage-deep);
+  font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.um-clr:disabled{opacity:.5;cursor:default}
 .um-msg{font-size:14.5px;margin:14px 0 0;min-height:1.3em}
+.um-msg:empty{margin:0;min-height:0}
 .um-msg.bad{color:#9C3B2E}
 .um-msg.good{color:var(--sage-deep)}
 .um-clear{border:1px solid var(--line);border-radius:12px;padding:26px 22px;
@@ -56,11 +71,27 @@
 <main>
   <div class="um-wrap">
     <h1 class="um-h1">Unmatched check-ins</h1>
-    <p class="um-lead">Someone scanned in, and the ledger couldn't tell who she was.
-      She's marked present either way — what's missing is the link to what she
-      bought, so her bundle still shows this class as owed.</p>
-    <p class="um-sub">Almost always a name typed differently from the one she
-      booked with. Pick her from the list and it's done.</p>
+    <p class="um-lead">When a student scans the class QR code, she types her name
+      on her phone. The system then looks for that exact name on the class list to
+      find what she paid for. When the name doesn't match — "Bobbi" instead of
+      "Roberta," a missing last name, a typo — the scan lands here.</p>
+    <p class="um-lead">Her attendance is already saved. What's missing is the link
+      to her purchase, so her account still shows this class as unused. If she
+      bought a bundle, it looks like she has a class left that she's already taken.</p>
+
+    <div class="um-how">
+      <p class="um-how-h">What to do with each card</p>
+      <ul>
+        <li><strong>Pick the right person.</strong> Under her name you'll see
+          everyone enrolled in that class who hasn't checked in yet. Click
+          <em>This is her</em> next to the right one, and the class is marked
+          as taken on her account.</li>
+        <li><strong>Clear it if there's nothing to link.</strong> If she paid at
+          the door, booked under someone else's name, or the scan was a test,
+          click <em>Clear</em>. The scan stays in your attendance records; it
+          just leaves this list. You can undo it right after.</li>
+      </ul>
+    </div>
     <div id="um">
       <p class="um-sub">Loading…</p>
     </div>
@@ -113,15 +144,25 @@
              '</div>';
     }).join("");
 
+    var body = cands
+      ? '<p class="um-ask">Signed in as “' + esc(r.first_name) + ' ' + esc(r.last_name) +
+          '.” Is she one of these?</p>' + cands
+      : '<p class="um-none">No one on this class list is still waiting to be ' +
+          'checked in, so there’s no purchase to link this scan to. Usually that ' +
+          'means she paid at the door, booked under someone else’s name, or this ' +
+          'was a test scan. Her attendance is saved either way.</p>';
+
+    var foot = cands
+      ? 'None of these? If she paid at the door or this was a test, clear it.'
+      : 'If that sounds right, clear it from this list.';
+
     return '<div class="um-card" id="c-' + esc(r.id) + '">' +
              '<p class="um-who">' + esc(r.first_name) + ' ' + esc(r.last_name) + '</p>' +
              '<p class="um-meta">' + esc(r.class_name || r.class_slug) +
                ' &middot; ' + esc(prettyDate(r.session_date)) + '</p>' +
-             '<div class="um-cands">' +
-               (cands || '<p class="um-none">Nobody is still owed this class — ' +
-                 'she may have booked it under another email, or paid on the day. ' +
-                 'Her attendance is recorded; nothing else to do here.</p>') +
-             '</div>' +
+             '<div class="um-cands">' + body + '</div>' +
+             '<div class="um-foot"><p>' + foot + '</p>' +
+               '<button class="um-clr" data-a="' + esc(r.id) + '">Clear</button></div>' +
              '<p class="um-msg" id="m-' + esc(r.id) + '" role="status" aria-live="polite"></p>' +
            '</div>';
   }
@@ -133,10 +174,69 @@
       return;
     }
     box.innerHTML = rows.map(card).join("");
-    Array.prototype.forEach.call(box.querySelectorAll(".um-link"), function (b) {
+    wire(box);
+  }
+
+  // Give every button inside el its click. Also used after Undo puts a card back.
+  function wire(el) {
+    Array.prototype.forEach.call(el.querySelectorAll(".um-link"), function (b) {
       b.addEventListener("click", function () { link(b); });
     });
+    Array.prototype.forEach.call(el.querySelectorAll(".um-clr"), function (b) {
+      b.addEventListener("click", function () { clear(b); });
+    });
   }
+
+  /* Clearing never deletes the scan - it only hides it from this list. The
+     card's original contents are kept so Undo can put it back as it was. */
+  function clear(btn) {
+    var a = btn.getAttribute("data-a");
+    var cardEl = document.getElementById("c-" + a);
+    var msg = document.getElementById("m-" + a);
+    var before = cardEl.innerHTML;
+    btn.disabled = true;
+    btn.textContent = "Clearing…";
+    sb.rpc("dismiss_checkin", { p_attendance: a }).then(function (res) {
+      if (res.error) { throw res.error; }
+      var d = res.data || {};
+      if (!d.ok) {
+        btn.disabled = false; btn.textContent = "Clear";
+        msg.className = "um-msg bad";
+        msg.textContent = d.reason === "already_linked"
+          ? "This one was already linked. Refresh the page."
+          : "Couldn't clear that one — " + (d.reason || "unknown reason") + ".";
+        return;
+      }
+      cardEl.innerHTML = '<p class="um-who">Cleared</p>' +
+        '<p class="um-meta">Off the list. Her attendance is still saved.</p>' +
+        '<button class="um-clr" type="button">Undo</button>' +
+        '<p class="um-msg" role="status" aria-live="polite"></p>';
+      var undo = cardEl.querySelector(".um-clr");
+      undo.addEventListener("click", function () {
+        undo.disabled = true;
+        undo.textContent = "Undoing…";
+        sb.rpc("dismiss_checkin", { p_attendance: a, p_undo: true }).then(function (r2) {
+          if (r2.error || !(r2.data || {}).ok) { throw r2.error || new Error("undo"); }
+          cardEl.innerHTML = before;
+          var b = cardEl.querySelector(".um-clr");
+          b.disabled = false; b.textContent = "Clear";
+          wire(cardEl);
+        }).catch(function (err) {
+          console.error(err);
+          undo.disabled = false; undo.textContent = "Undo";
+          cardEl.querySelector(".um-msg").className = "um-msg bad";
+          cardEl.querySelector(".um-msg").textContent =
+            "Undo didn't save. Check your signal and try again.";
+        });
+      });
+    }).catch(function (err) {
+      console.error(err);
+      btn.disabled = false; btn.textContent = "Clear";
+      msg.className = "um-msg bad";
+      msg.textContent = "That didn't save. Check your signal and try again.";
+    });
+  }
+
 
   function link(btn) {
     var a = btn.getAttribute("data-a"), e = btn.getAttribute("data-e");
