@@ -9,6 +9,8 @@
        Caught here for the whole page, so a new button needs no wiring.
      - "Continue to payment" on oct21.html / choose.html / gift.html,
        which call QuintaMeta.checkout() just before going to Stripe.
+       checkout() returns a Promise - AWAIT IT before redirecting to Stripe,
+       or the event can be cancelled when the page unloads.
 
    Purchase - only where the buyer comes back to our own site:
      - oct21.html?booked=1&s=<session>  and  bundle/?b=custom|gift&s=<session>
@@ -28,9 +30,20 @@
 
    Free bookings (Coffee, the $0 "-redeem" links) never fire either event.
    Referral (?ref=) handling is untouched - this file only reads links.
+
+   v3 (Oct 2026): InitiateCheckout was being dropped when the page left
+   for Cal.com / Stripe before the pixel finished sending (seen in Test
+   events: button click logged, checkout not). Fixes:
+     - SEND_WAIT raised from 150ms to 500ms before leaving the page.
+     - QuintaMeta.checkout() now returns a Promise that resolves after
+       SEND_WAIT, so Stripe pages can wait for it.
+     - Every InitiateCheckout carries an eventID (also exposed as
+       QuintaMeta.lastCheckoutId) so a server-side copy can be deduplicated.
    ============================================================ */
 (function () {
   "use strict";
+
+  var SEND_WAIT = 500;                     // ms to let the pixel send before the page unloads
 
   var BUNDLES = {
     "get-started-fff":    { name: "Get started (bundle)",    value: 212 },
@@ -84,6 +97,13 @@
     try { if (typeof fbq === "function") fbq("track", name, data, opts || {}); } catch (e) {}
   }
 
+  /* A unique id per checkout, so a browser + server copy of the same
+     InitiateCheckout is counted once by Meta. */
+  function newEventId() {
+    try { if (window.crypto && crypto.randomUUID) return "ic_" + crypto.randomUUID(); } catch (e) {}
+    return "ic_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
+  }
+
   function priceOf(slug) {
     if (BUNDLES[slug]) return BUNDLES[slug];
     var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
@@ -104,6 +124,7 @@
     var m = /^https:\/\/cal\.com\/quintaandco\/([a-z0-9-]+)/i.exec(href || "");
     return m ? m[1].toLowerCase() : "";
   }
+  var leaving = false;                     // ignore double-clicks while we wait to leave
   document.addEventListener("click", function (ev) {
     var a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
     if (!a) return;
@@ -111,26 +132,46 @@
     if (!slug || /-redeem$/.test(slug)) return;
     var p = priceOf(slug);
     if (!p) return;
-    fire("InitiateCheckout", { content_name: p.name, content_ids: [slug], content_type: "product", value: p.value, currency: "USD" });
-    /* Give the pixel a moment to send before the page is gone - unless the
-       link opens a new tab, or another script already handled the click. */
+    if (leaving) { ev.preventDefault(); return; }
+    var eventId = newEventId();
+    window.QuintaMeta && (window.QuintaMeta.lastCheckoutId = eventId);
+    fire("InitiateCheckout",
+         { content_name: p.name, content_ids: [slug], content_type: "product", value: p.value, currency: "USD" },
+         { eventID: eventId });
     // The ad tags ride along to Cal.com, which records them on the booking.
     a.href = withUtm(a.href);
+    /* Give the pixel time to send before the page is gone - unless the
+       link opens a new tab, or another script already handled the click. */
     if (ev.defaultPrevented || a.target === "_blank" || ev.button !== 0 ||
         ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
     ev.preventDefault();
+    leaving = true;
     var href = a.href;
-    window.setTimeout(function () { window.location.href = href; }, 150);
+    window.setTimeout(function () { window.location.href = href; }, SEND_WAIT);
+    // If she comes back with the Back button, let the links work again.
+    window.addEventListener("pageshow", function () { leaving = false; }, { once: true });
   });
 
   window.QuintaMeta = {
-    /* Stripe checkouts: call just before sending her to Stripe.
-       ids: slugs; value: the total the page quoted; name: what it is. */
+    lastCheckoutId: "",
+
+    /* Stripe checkouts: call just before sending her to Stripe, and AWAIT
+       the result before redirecting:
+           await QuintaMeta.checkout(ids, total, name);
+           location.href = stripeUrl;
+       ids: slugs; value: the total the page quoted; name: what it is.
+       Resolves with the eventID (pass it to the server if it also sends
+       InitiateCheckout, so Meta dedupes the two). */
     checkout: function (ids, value, name) {
       var data = { content_name: name, content_ids: ids, content_type: "product",
                    num_items: ids.length, value: Math.round(Number(value) * 100) / 100, currency: "USD" };
-      fire("InitiateCheckout", data);
+      var eventId = newEventId();
+      this.lastCheckoutId = eventId;
+      fire("InitiateCheckout", data, { eventID: eventId });
       try { sessionStorage.setItem(PENDING, JSON.stringify(data)); } catch (e) {}
+      return new Promise(function (resolve) {
+        window.setTimeout(function () { resolve(eventId); }, SEND_WAIT);
+      });
     },
 
     /* Back from Stripe with a session id: Purchase, once per session, under

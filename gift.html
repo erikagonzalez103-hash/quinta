@@ -131,7 +131,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=17"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=2"></script>
+<script src="js/meta.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -271,8 +271,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d && d.url) {
         // Meta's checkout event, at the total this page quoted (js/meta.js).
-        if (window.QuintaMeta) QuintaMeta.checkout([a, b], (cents(a) + giftCents(b)) / 100, "Buy one, gift one");
-        window.setTimeout(function () { window.location.href = d.url; }, 150);
+        // Wait for the pixel to send before leaving for Stripe (js/meta.js v3).
+        var sent = window.QuintaMeta ? QuintaMeta.checkout([a, b], (cents(a) + giftCents(b)) / 100, "Buy one, gift one") : Promise.resolve();
+        sent.then(function () { window.location.href = d.url; });
         return;
       }
       if (d && d.error === "no_dates") {

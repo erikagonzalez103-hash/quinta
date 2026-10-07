@@ -110,7 +110,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=17"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=2"></script>
+<script src="js/meta.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -269,8 +269,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         // Meta's checkout event, at the total this page quoted (js/meta.js).
         var total = p.reduce(function (t, s) { return t + cents(s); }, 0);
         var pct = p.length >= 3 ? 25 : p.length === 2 ? 15 : 0;
-        if (window.QuintaMeta) QuintaMeta.checkout(p, Math.round(total * (100 - pct) / 100) / 100, "Choose your own classes");
-        window.setTimeout(function () { window.location.href = d.url; }, 150);
+        // Wait for the pixel to send before leaving for Stripe (js/meta.js v3).
+        var sent = window.QuintaMeta ? QuintaMeta.checkout(p, Math.round(total * (100 - pct) / 100) / 100, "Choose your own classes") : Promise.resolve();
+        sent.then(function () { window.location.href = d.url; });
         return;
       }
 

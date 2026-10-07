@@ -184,7 +184,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=17"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=2"></script>
+<script src="js/meta.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -348,9 +348,10 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         var chosen = day.filter(function (s) { return p.indexOf(s.session_id) !== -1; });
         var total = chosen.reduce(function (t, s) { return t + cents(s.class_slug); }, 0);
         var pct = chosen.length >= 3 ? 25 : chosen.length === 2 ? 15 : 0;
-        if (window.QuintaMeta) QuintaMeta.checkout(chosen.map(function (s) { return s.class_slug; }),
-          Math.round(total * (100 - pct) / 100) / 100, "October 21 classes");
-        window.setTimeout(function () { window.location.href = d.url; }, 150);
+        // Wait for the pixel to send before leaving for Stripe (js/meta.js v3).
+        var sent = window.QuintaMeta ? QuintaMeta.checkout(chosen.map(function (s) { return s.class_slug; }),
+          Math.round(total * (100 - pct) / 100) / 100, "October 21 classes") : Promise.resolve();
+        sent.then(function () { window.location.href = d.url; });
         return;
       }
       if (d && d.error === "full") { fail("One of those classes has just filled up. We've refreshed the list — pick again."); load(); return; }
