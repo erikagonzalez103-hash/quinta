@@ -2,23 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Where You Are | Quinta &amp; Co.</title>
+<title>Fork, Femme &amp; Foundations | Quinta &amp; Co.</title>
 <meta name="robots" content="noindex,follow">
-<link rel="canonical" href="https://quintaand.co/where-you-are.html">
+<link rel="canonical" href="https://quintaand.co/fork-femme-foundations.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Quinta &amp; Co.">
-<meta property="og:title" content="What is costing you the most right now?">
-<meta property="og:description" content="Two quick questions. One useful place to begin. No score, no email required.">
-<meta property="og:url" content="https://quintaand.co/where-you-are.html">
+<meta property="og:title" content="Fork, Femme &amp; Foundations — the things you can't Google">
+<meta property="og:description" content="October 21 at kiln Dallas, and online everywhere. Buy from her. Learn from her.">
+<meta property="og:url" content="https://quintaand.co/fork-femme-foundations.html">
 <meta property="og:image" content="https://quintaand.co/images/og-default.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="What is costing you the most right now?">
+<meta name="twitter:title" content="Fork, Femme &amp; Foundations — the things you can't Google">
 <meta name="twitter:image" content="https://quintaand.co/images/og-default.jpg">
-<meta http-equiv="refresh" content="0; url=https://quintaand.co/where-you-are.html">
-<!-- Keep ?ref= and the utm tags: teachers' poll links are /go/whereyouare?ref=tara,
-     and dropping the query would lose both the teacher's class and her credit.
+<meta http-equiv="refresh" content="0; url=https://quintaand.co/fork-femme-foundations.html">
+<!-- The Week 2 poll link (printed on every teacher's Story picture as
+     quintaand.co/go/whereyouare?ref=tara). It used to open that teacher's
+     class card on where-you-are.html; since 7 Oct it goes to the October 21
+     page instead (Erika's call), so every poll lands on the day itself.
+     Joshlyn is the exception: her class isn't on the 21st and her Story says
+     "Join the waitlist", so her link still opens her waitlist card.
+     Keep ?ref= and the utm tags across the hop - they carry her credit.
      The meta refresh above is only the no-JavaScript fallback. -->
-<script>location.replace("https://quintaand.co/where-you-are.html" + location.search);</script>
+<script>
+(function () {
+  var q = location.search;
+  var ref = (new URLSearchParams(q).get("ref") || "").toLowerCase();
+  var WAITLIST = { joshlyn: true };
+  location.replace((WAITLIST[ref]
+    ? "https://quintaand.co/where-you-are.html"
+    : "https://quintaand.co/fork-femme-foundations.html") + q);
+})();
+</script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>
@@ -67,6 +81,6 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <!-- End LinkedIn Insight Tag -->
 </head>
 <body>
-<p>Redirecting to <a href="https://quintaand.co/where-you-are.html">What is costing you the most right now?</a>&hellip;</p>
+<p>Redirecting to <a href="https://quintaand.co/fork-femme-foundations.html">Fork, Femme &amp; Foundations</a>&hellip;</p>
 </body>
 </html>
