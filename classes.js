@@ -333,7 +333,7 @@ const QUINTA_CLASSES = [
     price: 299,
     venue: "Zoom",
     desc: "Learn what a trademark actually protects, search properly before you fall in love with a name, and leave knowing whether filing is worth it for you.",
-    format: "90 minutes · live, small group",
+    format: "120 minutes · live, small group",
     covers: [
       "Trademarks vs. LLC names vs. domains — what each one actually protects",
       "How to search properly before you commit to a name",
