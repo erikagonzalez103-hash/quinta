@@ -344,6 +344,11 @@ serve(async (req) => {
       // The session id lets the page fire Meta's Purchase under the same id
       // the server uses, so the two count once (js/meta.js, _shared/meta.ts).
       form.set("success_url", `${SITE}/oct21.html?booked=1&s={CHECKOUT_SESSION_ID}`);
+      /* A line above Stripe's Pay button (Erika, 6 Oct). The $250,000 is HER
+         Texas's goal for Fork and Femme, not Quinta's - keep the attribution.
+         Stripe renders **bold** in custom_text. */
+      form.set("custom_text[submit][message]",
+        "**We can't wait to see you on October 21.** Thank you for being part of Fork and Femme and helping HER Texas reach its $250,000 goal.");
       /* Seats are not held while she pays, so an open cart is a claim on a
          seat nobody can see. Stripe's default keeps it payable for 24 hours;
          30 minutes (Stripe's minimum) keeps a sold-out class from collecting
