@@ -98,10 +98,15 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 <main>
   <div class="od-wrap">
     <div id="odDone" hidden class="od-done">
-      <h2>You're booked.</h2>
-      <p>Your payment went through. Check your email for your classes and times — it usually arrives
+      <h2>Thank you — you're in.</h2>
+      <p>Check your email for your classes and times — it usually arrives
         within a minute. If it hasn't in ten, check spam, then email
         <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>
+      <!-- A bank payment lands here too, before the money has cleared: it gets
+           a "processing" email now and the confirmation when it clears
+           (stripe-webhook). So this page must not say the payment went through. -->
+      <p>Paid by bank? You'll get an email now saying it's processing, and your confirmation as soon as
+        the payment clears — usually within a few business days.</p>
     </div>
 
     <p class="od-kicker">Fork, Femme &amp; Foundations</p>

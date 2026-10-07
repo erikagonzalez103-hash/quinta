@@ -196,7 +196,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       '<p class="bd-kicker">Quinta &amp; Co.</p>' +
       '<h1 class="bd-h1">' + (isGift ? "That’s a good thing to have done."
                                      : "You’re in.") + '</h1>' +
-      '<p class="bd-lead">Your payment went through. Check your email — ' +
+      '<p class="bd-lead">Thank you. Check your email — ' +
         'there’s a booking link for each class, and you pick the dates ' +
         'that suit you.</p>' +
       (isGift
@@ -208,6 +208,11 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         'in ten, check spam and then email ' +
         '<a href="mailto:hello@quintaand.co">hello@quintaand.co</a> — ' +
         'we can see your order and will resend it.</p>' +
+      /* A bank payment lands here before the money has cleared - it gets a
+         "processing" email now and its links when it clears (stripe-webhook). */
+      '<p class="bd-note">Paid by bank? You’ll get an email now saying it’s ' +
+        'processing, and your links as soon as the payment clears — usually ' +
+        'within a few business days.</p>' +
       OCT21_NOTE +
       '<p class="bd-after">If a class you picked doesn’t have a date yet, ' +
         'that’s us, not you. <strong>Your classes are good until June 30, 2027</strong> — and if we haven’t given one a date by then, we refund it. <a href="../policies.html#classes-paid-for-in-advance">How it works</a>.</p>';

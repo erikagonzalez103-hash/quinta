@@ -348,7 +348,8 @@ serve(async (req) => {
          Texas's goal for Fork and Femme, not Quinta's - keep the attribution.
          Stripe renders **bold** in custom_text. */
       form.set("custom_text[submit][message]",
-        "**We can't wait to see you on October 21.** Thank you for being part of Fork and Femme and helping HER Texas reach its $250,000 goal.");
+        "**We can't wait to see you on October 21.** Thank you for being part of Fork and Femme and helping HER Texas reach its $250,000 goal.\n\n"
+        + "Paying by bank? Your seat is confirmed as soon as the payment clears, usually within a few business days, and we'll email you.");
       /* Seats are not held while she pays, so an open cart is a claim on a
          seat nobody can see. Stripe's default keeps it payable for 24 hours;
          30 minutes (Stripe's minimum) keeps a sold-out class from collecting
@@ -385,6 +386,8 @@ serve(async (req) => {
       if (to) form.set("metadata[gift_email]", to);
       if (toName) form.set("metadata[gift_name]", toName);
       form.set("success_url", `${SITE}/bundle/?b=gift&s={CHECKOUT_SESSION_ID}`);
+      // Same bank-payment note as October 21 (stripe-webhook handles the wait).
+      form.set("custom_text[submit][message]", "Paying by bank? Your classes are confirmed as soon as the payment clears, usually within a few business days, and we'll email you.");
       /* Already discounted. A code on top would stack. */
       form.set("allow_promotion_codes", "false");
     } else {
@@ -410,6 +413,8 @@ serve(async (req) => {
       form.set("metadata[offer]", "choose-your-own");
       form.set("metadata[slugs]", slugs.join(","));
       form.set("success_url", `${SITE}/bundle/?b=custom&s={CHECKOUT_SESSION_ID}`);
+      // Same bank-payment note as October 21 (stripe-webhook handles the wait).
+      form.set("custom_text[submit][message]", "Paying by bank? Your classes are confirmed as soon as the payment clears, usually within a few business days, and we'll email you.");
 
       const total = lines.reduce((t, l) => t + l.cents, 0);
       const want = CODE_FOR(slugs.length);

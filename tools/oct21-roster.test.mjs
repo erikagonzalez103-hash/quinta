@@ -46,6 +46,10 @@ check("nobody booked says so", /Module 2.*0 - No one yet/.test(hc.text));
 check("lists who to write to", hc.text.includes("Lone Booker <lone@example.com>"));
 check("does not list the running class's students", !/WHO TO WRITE TO[\s\S]*zoe@example.com/.test(hc.text));
 check("all running says so", buildHeadcount([session], students).subject.includes("every class is running"));
+const hp = buildHeadcount([session, s2], students.concat(one), [{ session_id: "s2", student_name: "Bank Payer", student_email: "bank@example.com" }]);
+check("a bank payment still clearing is shown", hp.text.includes("WAITING ON A BANK PAYMENT") && hp.text.includes("Bank Payer <bank@example.com>"));
+check("but not counted as a seat", hp.text.includes("Brand 101 (Sam): 1 (1 online) - Needs one more"));
+check("and flagged in the table", hp.html.includes("+1 bank pending"));
 
 console.log("sending once");
 const dir = mkdtempSync(join(tmpdir(), "roster-"));

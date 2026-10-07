@@ -53,12 +53,14 @@ export function phaseFor(now) {
 
 /* Erika's Monday headcount: every session, how many are booked, and - for
    any under two - who to write to. One email, to her only. */
-export function buildHeadcount(sessions, seats) {
+export function buildHeadcount(sessions, seats, pending = []) {
   const MIN = 2;
   const rows = sessions.map((s) => {
     const mine = seats.filter((x) => x.session_id === s.id);
     const online = mine.filter((x) => x.attending === "online").length;
-    return { s, mine, n: mine.length, online, short: mine.length < MIN };
+    // Bank payments still clearing (status 'pending'): not a seat yet, but worth counting in.
+    const waiting = pending.filter((x) => x.session_id === s.id);
+    return { s, mine, waiting, n: mine.length, online, short: mine.length < MIN };
   });
   const short = rows.filter((r) => r.short);
   const who = (r) => String(r.s.instructor_name || "").split(/\s+/)[0] || "no teacher";
@@ -67,12 +69,20 @@ export function buildHeadcount(sessions, seats) {
 
   const table = rows.map((r) =>
     `<tr><td style="padding:7px 14px 7px 0">${esc(label(r))}</td>` +
-    `<td style="padding:7px 14px 7px 0;text-align:right"><strong>${r.n}</strong>${r.online ? ` <span style="color:#5A5E55">(${r.online} online)</span>` : ""}</td>` +
+    `<td style="padding:7px 14px 7px 0;text-align:right"><strong>${r.n}</strong>${r.online ? ` <span style="color:#5A5E55">(${r.online} online)</span>` : ""}${r.waiting.length ? ` <span style="color:#A0782C">+${r.waiting.length} bank pending</span>` : ""}</td>` +
     `<td style="padding:7px 0;${r.short ? "color:#9C3B2E;font-weight:bold" : "color:#4F6B5C"}">${status(r)}</td></tr>`).join("");
   const shortHtml = short.filter((r) => r.n > 0).map((r) =>
     `<p style="margin:16px 0 4px"><strong>${esc(label(r))}</strong></p>` +
     `<p style="margin:0 0 8px">${r.mine.map((x) => `${esc(x.student_name || "(no name)")} &lt;${esc(x.student_email)}&gt;`).join("<br>")}</p>`).join("");
 
+  const waitingAll = rows.filter((r) => r.waiting.length);
+  const waitingHtml = waitingAll.map((r) =>
+    `<p style="margin:12px 0 4px"><strong>${esc(label(r))}</strong></p>` +
+    `<p style="margin:0 0 8px">${r.waiting.map((x) => `${esc(x.student_name || "(no name)")} &lt;${esc(x.student_email)}&gt;`).join("<br>")}</p>`).join("");
+  const waitingText = waitingAll.length
+    ? "\n\nWAITING ON A BANK PAYMENT (not counted above)\n" + waitingAll.map((r) =>
+        `${label(r)}\n` + r.waiting.map((x) => `  ${x.student_name || "(no name)"} <${x.student_email}>`).join("\n")).join("\n")
+    : "";
   const lead = short.length
     ? `${short.length} ${short.length === 1 ? "class is" : "classes are"} under the two-person minimum. The booking page and every confirmation email promise those students a heads-up <strong>today</strong>, with their choice of a full refund or a seat in the next round.`
     : "Every class has at least two people. Nothing to send anyone today.";
@@ -80,6 +90,8 @@ export function buildHeadcount(sessions, seats) {
     <p style="margin:0 0 16px">${lead}</p>
     <table style="border-collapse:collapse;font-size:15px;margin:0 0 18px">${table}</table>
     ${shortHtml ? `<p style="margin:22px 0 0;font-family:Georgia,serif;font-size:17px">Who to write to</p>${shortHtml}` : ""}
+    ${waitingHtml ? `<p style="margin:22px 0 0;font-family:Georgia,serif;font-size:17px">Waiting on a bank payment</p>
+      <p style="margin:4px 0 0;font-size:14px;color:#5A5E55">Paid by bank, not cleared yet, so not counted above. They're booked automatically the moment it clears - you may want to count them in.</p>${waitingHtml}` : ""}
     <p style="margin:22px 0 0;font-size:14px;color:#5A5E55">Booking is still open until midnight on Tuesday, so a
       class can still reach two after this. Classes with no one booked have no one to tell - decide whether
       to keep them on the page. Teachers get their own lists tomorrow morning.</p>
@@ -88,6 +100,7 @@ export function buildHeadcount(sessions, seats) {
     + rows.map((r) => `- ${label(r)}: ${r.n}${r.online ? ` (${r.online} online)` : ""} - ${status(r)}`).join("\n")
     + (short.some((r) => r.n > 0) ? "\n\nWHO TO WRITE TO\n" + short.filter((r) => r.n > 0).map((r) =>
         `${label(r)}\n` + r.mine.map((x) => `  ${x.student_name || "(no name)"} <${x.student_email}>`).join("\n")).join("\n") : "")
+    + waitingText
     + "\n\nBooking stays open until midnight Tuesday, so a class can still reach two.\n";
   return {
     to: ERIKA,
@@ -166,7 +179,8 @@ export async function run({ fetch, env, now = new Date(), phase, dryRun = false,
 
   let sent = 0;
   if (phase === "headcount") {
-    const mail = buildHeadcount(sessions, seats);
+    const pending = await get(`enrollments?session_id=in.(${ids})&status=eq.pending&select=session_id,student_name,student_email`);
+    const mail = buildHeadcount(sessions, seats, pending);
     if (dryRun) { log(`[dry run] to ${mail.to}: ${mail.subject}`); return { sent: 0, phase }; }
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",

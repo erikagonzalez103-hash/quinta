@@ -105,6 +105,105 @@ function db(path: string, init: RequestInit = {}) {
   });
 }
 
+/* ---------------------------------------------------- bank payments ----- */
+
+// What a session was for, from the metadata stripe-checkout wrote.
+function orderLines(s: any) {
+  const slugs = String(s?.metadata?.slugs || "").split(",").map((x: string) => x.trim()).filter(Boolean);
+  const offer = String(s?.metadata?.offer || "");
+  const sessions = String(s?.metadata?.sessions || "").split(",").map((x: string) => x.trim()).filter(Boolean);
+  const gift = String(s?.metadata?.gift_slug || "").trim();
+  const lines = slugs.map((slug: string, i: number) => ({ slug, session: offer === "oct21" ? (sessions[i] || null) : null, gift: false }));
+  if (gift) lines.push({ slug: gift, session: null, gift: true });
+  return { offer, lines };
+}
+const nameOf = (slug: string) => CLASS_NAMES[slug] || slug;
+const PENDING_TAG = ":pending:";
+
+/* Placeholder rows while a bank payment clears: status 'pending', so the
+   Monday headcount can list her but no seat is taken and no sale counted.
+   order_ref "<session>:pending:<n>" never collides with the real rows. */
+async function writePending(s: any) {
+  if (!SUPABASE_URL || !SERVICE_KEY) return;
+  const { offer, lines } = orderLines(s);
+  const email = String(s?.customer_details?.email || "").trim().toLowerCase();
+  if (!email || !lines.length) return;
+  const rows = lines.map((l, i) => ({
+    student_name: String(s?.customer_details?.name || "").trim() || null,
+    student_email: email,
+    class_slug: l.slug,
+    class_name: nameOf(l.slug),
+    source: l.gift ? "gift" : lines.length > 1 ? "multi-discount" : "single",
+    bundle_key: null,
+    order_ref: `${s.id}${PENDING_TAG}${i}`,
+    amount_cents: null,
+    ref_code: String(s?.metadata?.ref || "").trim() || null,
+    status: "pending",
+    session_on: offer === "oct21" ? OCT21 : null,
+    session_id: l.session,
+    notes: "Bank payment processing",
+    utm_source: String(s?.metadata?.utm_source || "") || null,
+    utm_medium: String(s?.metadata?.utm_medium || "") || null,
+    utm_campaign: String(s?.metadata?.utm_campaign || "") || null,
+    utm_content: String(s?.metadata?.utm_content || "") || null,
+  }));
+  try {
+    const r = await db("enrollments", { method: "POST", body: JSON.stringify(rows) });
+    if (!r.ok && r.status !== 409) console.error("pending insert failed", r.status, await r.text());
+  } catch (e) { console.error("pending insert threw", e); }
+}
+
+async function clearPending(sessionId: string) {
+  if (!SUPABASE_URL || !SERVICE_KEY || !sessionId) return;
+  try {
+    const r = await db(`enrollments?order_ref=like.${encodeURIComponent(sessionId + PENDING_TAG)}*&status=eq.pending`, { method: "DELETE" });
+    if (!r.ok) console.error("pending clear failed", r.status, await r.text());
+  } catch (e) { console.error("pending clear threw", e); }
+}
+
+/* Her email: "processing" when the bank payment starts, "didn't go
+   through" if it fails. Erika is copied on both. */
+async function bankEmail(kind: "pending" | "failed", s: any) {
+  if (!RESEND_API_KEY) return;
+  const email = String(s?.customer_details?.email || "").trim();
+  const first = String(s?.customer_details?.name || "").trim().split(/\s+/)[0] || "there";
+  const { offer, lines } = orderLines(s);
+  const what = lines.map((l) => nameOf(l.slug) + (l.gift ? " (the gift)" : "")).join(", ");
+  const again = offer === "oct21" ? "https://quintaand.co/oct21.html" : offer === "gift" ? "https://quintaand.co/gift.html" : "https://quintaand.co/choose.html";
+  const wrapMail = (inner: string) => `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">${inner}` +
+    `<p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p></div>`;
+  const msg = kind === "pending"
+    ? {
+        subject: "Thank you — your order is in, your bank payment is processing",
+        html: wrapMail(`<p style="margin:0 0 16px">Hi ${esc(first)},</p>
+          <p style="margin:0 0 16px">Thank you — we've got your order for <strong>${esc(what)}</strong>.</p>
+          <p style="margin:0 0 16px">You paid by bank, which takes a few business days to clear. <strong>The moment it does, we'll email your
+            confirmation</strong>${offer === "oct21" ? " with your classes and times for October 21" : " with your booking links"}. There's nothing else you need to do.</p>
+          <p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Questions? Just reply to this email.</p>`),
+        text: `Hi ${first},\n\nThank you - we've got your order for ${what}.\n\nYou paid by bank, which takes a few business days to clear. `
+          + `The moment it does, we'll email your confirmation. There's nothing else you need to do.\n\nQuestions? Just reply.\n\nQuinta & Co.\n`,
+      }
+    : {
+        subject: "Your bank payment didn't go through",
+        html: wrapMail(`<p style="margin:0 0 16px">Hi ${esc(first)},</p>
+          <p style="margin:0 0 16px">Your bank payment for <strong>${esc(what)}</strong> didn't go through, so your order isn't complete and
+            you haven't been charged.</p>
+          <p style="margin:0 0 16px">You're welcome to try again — paying by card, Apple Pay or Google Pay confirms straight away:
+            <a href="${again}" style="color:#4F6B5C;font-weight:bold">${again.replace("https://", "")}</a></p>
+          <p style="margin:0 0 16px;font-size:14px;color:#5A5E55">If something's not right, just reply and we'll sort it out.</p>`),
+        text: `Hi ${first},\n\nYour bank payment for ${what} didn't go through, so your order isn't complete and you haven't been charged.\n\n`
+          + `You're welcome to try again - card, Apple Pay or Google Pay confirm straight away: ${again}\n\nQuinta & Co.\n`,
+      };
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: SEND_FROM, to: email ? [email] : [BCC], bcc: email ? [BCC] : undefined, reply_to: BCC, ...msg }),
+    });
+    if (!r.ok) console.error("bank email failed", r.status, await r.text());
+  } catch (e) { console.error("bank email threw", e); }
+}
+
 serve(async (req) => {
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -119,33 +218,35 @@ serve(async (req) => {
     }
 
     const event = JSON.parse(raw);
-    if (event?.type !== "checkout.session.completed") {
-      return json({ skipped: `not a completed checkout: ${event?.type}` });
-    }
-
+    const type = String(event?.type || "");
     const s = event?.data?.object ?? {};
 
-    /* Only a payment that has actually cleared books anything. Checkout is
-       cards-only, so this is always "paid" - but if a delayed method (bank
-       debit, pay-later) is ever switched back on, "completed" arrives before
-       the money does, and a seat and a confirmation would go out for a
-       payment that can still fail. 200, so Stripe does not retry it. */
-    if (s?.payment_status !== "paid" && s?.payment_status !== "no_payment_required") {
-      console.error(`Session ${s?.id} completed but payment_status is ${s?.payment_status} - nothing booked.`);
-      if (RESEND_API_KEY) {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from: SEND_FROM, to: [BCC],
-            subject: `Payment not cleared yet — nothing booked (${s?.customer_details?.email || "no email"})`,
-            text: `Stripe checkout ${s?.id} finished with payment_status "${s?.payment_status}", so no seat or class was recorded and no confirmation sent.\n`
-              + `Check the payment in Stripe. If it clears, book her by hand or ask Claude. Checkout should be cards-only, so this means a delayed payment method got through.\n`,
-          }),
-        }).catch((e) => console.error("alert to Erika failed", e));
-      }
-      return json({ skipped: `payment_status ${s?.payment_status}` });
+    /* BANK PAYMENTS (Erika, 6 Oct). Stripe's Link offers "Bank" alongside
+       cards. A bank payment finishes checkout ("completed") before the money
+       arrives, and can take a few business days to clear:
+         completed, payment_status "unpaid"  -> write 'pending' rows (visible,
+           no seat, not a sale) and tell her it's processing
+         async_payment_succeeded             -> the money is here: remove the
+           pending rows and book exactly as a card payment does (below)
+         async_payment_failed                -> remove the pending rows and
+           tell her kindly, with a link to try again
+       The two async events must be ticked on the Stripe webhook endpoint
+       (Developers > Webhooks), or Stripe never sends them. */
+    if (type === "checkout.session.async_payment_failed") {
+      await clearPending(String(s?.id || ""));
+      await bankEmail("failed", s);
+      return json({ ok: true, bank: "failed" });
     }
+    if (type !== "checkout.session.completed" && type !== "checkout.session.async_payment_succeeded") {
+      return json({ skipped: `not a completed checkout: ${type}` });
+    }
+    if (s?.payment_status !== "paid" && s?.payment_status !== "no_payment_required") {
+      await writePending(s);
+      await bankEmail("pending", s);
+      return json({ ok: true, bank: "pending" });
+    }
+    // Paid. If this is a bank payment arriving, its placeholders go first.
+    await clearPending(String(s?.id || ""));
 
     const slugs =String(s?.metadata?.slugs || "")
       .split(",").map((x: string) => x.trim()).filter(Boolean);
