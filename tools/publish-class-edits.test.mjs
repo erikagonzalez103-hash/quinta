@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadClasses, wanted, differs, applyEdit, emailHtml, run } from "./publish-class-edits.mjs";
+import { loadClasses, wanted, differs, lengthDiffers, minutesOf, withMinutes, lengthTargets, applyEdit, emailHtml, run } from "./publish-class-edits.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const src = readFileSync(join(root, "classes.js"), "utf-8");
@@ -65,5 +65,34 @@ const fake = async () => ({ ok: true, json: async () => rows });
 const res = await run({ root, fetchImpl: fake, dryRun: true, log: () => {} });
 assert.deepEqual(res.changes.map((c) => c.slug), ["trademarks"]);
 assert.equal(readFileSync(join(root, "classes.js"), "utf-8"), src, "dry run wrote nothing");
+
+// 9. Length: read, rewrite, and only when asked.
+assert.equal(minutesOf("90 minutes · live, small group"), 90);
+assert.equal(minutesOf("Live, small group"), null);
+assert.equal(withMinutes("90 minutes · live, small group", 120), "120 minutes · live, small group");
+const s9 = applyEdit(src, "trademarks", { ...w1, minutes: 120 });
+const t9 = after(s9).trademarks;
+assert.equal(t9.format, "120 minutes · live, small group");
+assert.equal(differs(t9, { ...w1, minutes: 120 }), false);
+assert.equal(after(applyEdit(src, "trademarks", { ...w1, minutes: null })).trademarks.format, before.trademarks.format, "no minutes = length untouched");
+assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: null }), false);
+assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: 90 }), false, "same length is not a change");
+
+// 10. Which Cal.com events a length change touches.
+const ev = [
+  { id: 1, slug: "trademarks", scheduleId: 10 }, { id: 2, slug: "trademarks-redeem", scheduleId: 10 },
+  { id: 3, slug: "trademarks-fall25", scheduleId: 10 }, { id: 4, slug: "build-to-last-fff", scheduleId: 20 },
+  { id: 5, slug: "certification", scheduleId: 20 }, { id: 6, slug: "funding", scheduleId: 2187337 },
+  { id: 7, slug: "insurance", scheduleId: 2187337 }, { id: 8, slug: "get-started-fff", scheduleId: 2187337 },
+];
+assert.deepEqual(lengthTargets(ev, "trademarks").map((e) => e.id), [1, 2, 3]);
+assert.deepEqual(lengthTargets(ev, "certification").map((e) => e.id), [4, 5], "bundle twin on the same schedule");
+assert.deepEqual(lengthTargets(ev, "funding").map((e) => e.id), [6], "never the shared empty schedule's others");
+assert.deepEqual(lengthTargets(ev, "nope"), []);
+
+// 11. A length change with no Cal.com key publishes the words but not the length.
+const rows11 = [{ slug: "trademarks", description: w1.desc, covers: w1.covers, walkout: w1.walkout, prereq: w1.prereq, minutes: 120 }];
+const res11 = await run({ root, fetchImpl: async () => ({ ok: true, json: async () => rows11 }), dryRun: true, log: () => {}, env: {} });
+assert.equal(res11.changes.length, 1);
 
 console.log("all checks passed");

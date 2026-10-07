@@ -81,8 +81,17 @@
           <dt>Price</dt><dd id="c-price">—</dd>
           <dt>Page</dt><dd><a id="c-link" href="#" target="_blank" rel="noopener">See the live page</a></dd>
         </dl>
-        <p class="hint" style="margin:14px 0 0">To change the class name, price or length, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>. Those are tied to booking and payments, so Erika changes them.</p>
+        <p class="hint" style="margin:14px 0 0">To change the class name or price, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>. Those are tied to payments, so Erika changes them.</p>
         <div class="status" id="c-status" role="status"></div>
+      </div>
+
+      <div class="ecard">
+        <h2>Length</h2>
+        <p class="hint">How long the class runs. Changing it also changes your booking calendar, for every date you've set. A class of 2 hours or more has to start on the hour, or Cal.com can't offer that time.</p>
+        <div class="frow">
+          <label for="f-minutes">Length</label>
+          <select id="f-minutes"></select>
+        </div>
       </div>
 
       <div class="ecard">
@@ -180,6 +189,13 @@
   var current = null;     // the class being edited
   var dirty = false;
   var LIMIT = { desc: 600, line: 240, lines: 10, walkout: 400, prereq: 400 };
+  var LENGTHS = [60, 75, 90, 105, 120, 150, 180];
+  function minutesOf(format) { var m = String(format || "").match(/^\s*(\d+)\s*min/i); return m ? Number(m[1]) : null; }
+  function withMinutes(format, n) {
+    var f = String(format || "");
+    return minutesOf(f) !== null ? f.replace(/^\s*\d+\s*minutes?/i, n + " minutes") : n + " minutes · live, small group";
+  }
+  function label(n) { return n % 60 === 0 ? (n / 60) + (n === 60 ? " hour" : " hours") + " (" + n + " minutes)" : n + " minutes"; }
 
   function showGate(title, text, offerReset) {
     $("gate-title").textContent = title; $("gate-text").textContent = text; $("gate-action").style.display = "block";
@@ -198,10 +214,12 @@
 
   function form() {
     return { desc: $("f-desc").value.trim(), covers: lines($("f-covers").value),
-             walkout: $("f-walkout").value.trim(), prereq: $("f-prereq").value.trim() };
+             walkout: $("f-walkout").value.trim(), prereq: $("f-prereq").value.trim(),
+             minutes: Number($("f-minutes").value) || null };
   }
   function live(c) {
-    return { desc: c.desc || "", covers: (c.covers || []).slice(), walkout: c.walkout || "", prereq: c.prereq || "" };
+    return { desc: c.desc || "", covers: (c.covers || []).slice(), walkout: c.walkout || "", prereq: c.prereq || "",
+             minutes: minutesOf(c.format) };
   }
 
   function counters() {
@@ -220,7 +238,7 @@
     $("preview").innerHTML =
       '<h3 style="margin:0 0 8px">' + esc(current ? current.name : "") + '</h3>' +
       '<p class="desc">' + esc(f.desc) + '</p>' +
-      (current && current.format ? '<p class="syl-format">' + esc(current.format) + '</p>' : "") +
+      (current && (current.format || f.minutes) ? '<p class="syl-format">' + esc(f.minutes ? withMinutes(current.format, f.minutes) : current.format) + '</p>' : "") +
       (f.covers.length ? '<p class="syl-label">What we\'ll cover</p><ul class="syl-list">' +
         f.covers.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul>" : "") +
       (f.walkout ? '<p class="syl-label">What you\'ll walk out with</p><p class="syl-walkout">' + esc(f.walkout) + "</p>" : "") +
@@ -232,12 +250,17 @@
     $("f-covers").value = v.covers.join("\n");
     $("f-walkout").value = v.walkout;
     $("f-prereq").value = v.prereq;
+    var sel = $("f-minutes"), have = LENGTHS.slice();
+    if (v.minutes && have.indexOf(v.minutes) === -1) { have.push(v.minutes); have.sort(function (a, b) { return a - b; }); }
+    sel.innerHTML = have.map(function (n) { return '<option value="' + n + '">' + label(n) + "</option>"; }).join("");
+    sel.value = String(v.minutes || 90);
     counters(); preview();
   }
 
   function setStatus(saved) {
     var st = $("c-status");
-    var text = saved && { desc: saved.desc, covers: saved.covers, walkout: saved.walkout, prereq: saved.prereq };
+    var text = saved && { desc: saved.desc, covers: saved.covers, walkout: saved.walkout, prereq: saved.prereq,
+                          minutes: saved.minutes || minutesOf(current.format) };
     if (text && !same(text, live(current))) {
       st.className = "status pending";
       st.textContent = "Saved" + (saved.by ? " by " + saved.by : "") + (saved.at ? " on " + saved.at : "") +
@@ -264,17 +287,19 @@
     fill(live(current));
     setStatus(null);
     dirty = false;
-    sb.from("class_edits").select("slug,description,covers,walkout,prereq,edited_by_name,updated_at")
+    sb.from("class_edits").select("slug,description,covers,walkout,prereq,minutes,edited_by_name,updated_at")
       .eq("slug", slug).maybeSingle().then(function (r) {
         if (r.error || !r.data || current.slug !== slug) return;
         var d = r.data;
-        var saved = { desc: d.description || "", covers: d.covers || [], walkout: d.walkout || "", prereq: d.prereq || "" };
+        var saved = { desc: d.description || "", covers: d.covers || [], walkout: d.walkout || "", prereq: d.prereq || "",
+                      minutes: d.minutes || minutesOf(current.format) };
         if (!dirty) fill(saved);
         setStatus({ desc: saved.desc, covers: saved.covers, walkout: saved.walkout, prereq: saved.prereq,
-                    by: d.edited_by_name, at: pretty(d.updated_at) });
+                    minutes: saved.minutes, by: d.edited_by_name, at: pretty(d.updated_at) });
       });
   }
 
+  $("f-minutes").addEventListener("change", function () { dirty = true; preview(); });
   ["f-desc", "f-covers", "f-walkout", "f-prereq"].forEach(function (id) {
     $(id).addEventListener("input", function () { dirty = true; counters(); preview(); });
   });
@@ -291,8 +316,10 @@
     if (f.covers.some(function (s) { return s.length > LIMIT.line; })) { show("err", "One of your points is over 240 characters. Split it in two."); $("f-covers").focus(); return; }
     var btn = $("save-btn");
     btn.disabled = true; btn.textContent = "Saving…";
+    // Length is only sent when it changes, so an untouched length stays whatever classes.js says.
+    var sendMinutes = f.minutes && f.minutes !== minutesOf(current.format) ? f.minutes : null;
     sb.rpc("save_class_edit", { p_slug: current.slug, p_description: f.desc, p_covers: f.covers,
-                                p_walkout: f.walkout, p_prereq: f.prereq }).then(function (r) {
+                                p_walkout: f.walkout, p_prereq: f.prereq, p_minutes: sendMinutes }).then(function (r) {
       btn.disabled = false; btn.textContent = "Save my class page";
       if (r.error) {
         console.error(r.error);
@@ -301,10 +328,11 @@
       }
       dirty = false;
       fill(f);
-      setStatus({ desc: f.desc, covers: f.covers, walkout: f.walkout, prereq: f.prereq, at: pretty(r.data) });
+      setStatus({ desc: f.desc, covers: f.covers, walkout: f.walkout, prereq: f.prereq, minutes: f.minutes, at: pretty(r.data) });
       show("ok", same(f, live(current))
         ? "Saved. That's the same as your class page already says."
-        : "Saved. It's on your class page now. Open it to check how it reads.");
+        : "Saved. It's on your class page now. Open it to check how it reads." +
+          (sendMinutes ? " The new length reaches your booking calendar shortly; Erika will confirm." : ""));
     });
   });
 

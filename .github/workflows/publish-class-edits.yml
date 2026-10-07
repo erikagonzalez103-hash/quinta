@@ -40,8 +40,14 @@ jobs:
       - name: Check the logic still holds
         run: node tools/publish-class-edits.test.mjs
 
+      # CAL_API_KEY lets a length change reach Cal.com; the service role key
+      # re-saves her dates so the booking windows fit. Without them a length
+      # change waits (the rest of the edit still publishes).
       - name: Copy portal edits into the site
         id: pub
+        env:
+          CAL_API_KEY: ${{ secrets.CAL_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node tools/publish-class-edits.mjs
 
       - name: Publish what changed

@@ -53,15 +53,31 @@ export function wanted(row) {
     covers: (row.covers || []).map(clean).filter(Boolean),
     walkout: clean(row.walkout),
     prereq: clean(row.prereq),
+    minutes: Number.isInteger(row.minutes) ? row.minutes : null,   // null = length not changed in the portal
   };
 }
 
-export function differs(c, w) {
+/* "90 minutes · live, small group" -> 90. null when the line has no minutes. */
+export function minutesOf(format) {
+  const m = String(format || "").match(/^\s*(\d+)\s*min/i);
+  return m ? Number(m[1]) : null;
+}
+/* The same line with a new number of minutes; the rest of it is kept. */
+export function withMinutes(format, minutes) {
+  const f = String(format || "");
+  return minutesOf(f) !== null ? f.replace(/^\s*\d+\s*minutes?/i, `${minutes} minutes`) : `${minutes} minutes · live, small group`;
+}
+
+export function textDiffers(c, w) {
   return (c.desc || "") !== w.desc
     || JSON.stringify(c.covers || []) !== JSON.stringify(w.covers)
     || (c.walkout || "") !== w.walkout
     || (c.prereq || "") !== w.prereq;
 }
+export function lengthDiffers(c, w) {
+  return w.minutes !== null && minutesOf(c.format) !== w.minutes;
+}
+export function differs(c, w) { return textDiffers(c, w) || lengthDiffers(c, w); }
 
 /* Rewrite one class's four text fields inside the classes.js source.
 
@@ -83,6 +99,15 @@ export function applyEdit(src, slug, w) {
   const S = (v) => JSON.stringify(v);
 
   const find = (re) => block.findIndex((l) => re.test(l));
+
+  // length (only when the edit carries one)
+  if (w.minutes !== null && w.minutes !== undefined) {
+    const fi = find(/^\s*format\s*:/);
+    const cur = fi >= 0 ? (block[fi].match(/format\s*:\s*("(?:[^"\\]|\\.)*")/) || [])[1] : null;
+    const line = `${indent}format: ${S(withMinutes(cur ? JSON.parse(cur) : "", w.minutes))},`;
+    if (fi >= 0) block[fi] = line;
+    else block.splice(find(/^\s*desc\s*:/) + 1, 0, line);
+  }
 
   // desc
   const di = find(/^\s*desc\s*:/);
@@ -128,21 +153,75 @@ export function applyEdit(src, slug, w) {
 
 export function emailHtml(changes) {
   const e = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return changes.map(({ name, by, w }) => `
+  return changes.map(({ name, by, w, lengthWaiting, resyncNeeded }) => `
   <h2 style="font-family:Georgia,serif;color:#2E4A3C;margin:24px 0 4px">${e(name)}</h2>
   <p style="color:#5A5E55;margin:0 0 12px">Changed by ${e(by || "someone in the portal")}. It's live on the class page now.</p>
+  ${w.minutes ? `<p style="margin:0 0 10px"><strong>Length: ${w.minutes} minutes.</strong> Changed in Cal.com too.</p>` : ""}
   <p style="margin:0 0 10px">${e(w.desc)}</p>
   <p style="margin:12px 0 4px;font-weight:600">What we'll cover</p>
   <ul style="margin:0 0 10px">${w.covers.map((c) => `<li>${e(c)}</li>`).join("")}</ul>
   ${w.walkout ? `<p style="margin:12px 0 4px;font-weight:600">What you'll walk out with</p><p style="margin:0">${e(w.walkout)}</p>` : ""}
-  ${w.prereq ? `<p style="margin:12px 0 4px;font-weight:600">Know before you go</p><p style="margin:0">${e(w.prereq)}</p>` : ""}`).join("\n")
+  ${w.prereq ? `<p style="margin:12px 0 4px;font-weight:600">Know before you go</p><p style="margin:0">${e(w.prereq)}</p>` : ""}
+  ${lengthWaiting ? `<p style="margin:12px 0 0;color:#9C3B2E"><strong>Not done yet:</strong> the length change to ${lengthWaiting} minutes couldn't be made in Cal.com, so the booking calendar still has the old length. Ask Claude to finish it.</p>` : ""}
+  ${resyncNeeded ? `<p style="margin:12px 0 0;color:#9C3B2E"><strong>Not done yet:</strong> her dates need re-saving so Cal.com's booking windows fit the new length. Ask Claude.</p>` : ""}`).join("\n")
   + `<p style="color:#8A8E83;font-size:13px;margin-top:28px">If something here shouldn't be public, change it back in the portal (Edit my class) - you can edit any class.</p>`;
+}
+
+/* ------------------------------------------------------------ class length -- */
+
+/* A class's length lives in Cal.com as well as on the page: the event's
+   lengthInMinutes decides the slot, and the schedule-sync Worker sizes each
+   date's booking window from it. So a length change goes to Cal.com first -
+   the class's own event, its "-redeem" (and any other suffixed) twin, and a
+   "-fff" bundle twin that starts with this class (same schedule) - and only
+   then onto the page. Never touches the schedule every dateless class shares. */
+const SHARED_EMPTY_SCHEDULE_ID = "2187337";
+export function lengthTargets(events, slug) {
+  const main = events.find((e) => e.slug === slug);
+  if (!main) return [];
+  return events.filter((e) => e.slug === slug || e.slug.startsWith(slug + "-")
+    || (/-fff$/.test(e.slug) && main.scheduleId && e.scheduleId === main.scheduleId
+        && String(main.scheduleId) !== SHARED_EMPTY_SCHEDULE_ID));
+}
+
+async function setCalLength({ fetchImpl, key, slug, minutes, log }) {
+  const H = { Authorization: `Bearer ${key}`, "cal-api-version": "2024-06-14", "Content-Type": "application/json" };
+  const list = await fetchImpl("https://api.cal.com/v2/event-types", { headers: H });
+  if (!list.ok) throw new Error(`Cal.com event list: ${list.status}`);
+  const events = (await list.json()).data || [];
+  const targets = lengthTargets(events, slug);
+  if (!targets.length) throw new Error(`no Cal.com event called ${slug}`);
+  for (const e of targets) {
+    if (e.lengthInMinutes === minutes) continue;
+    const r = await fetchImpl(`https://api.cal.com/v2/event-types/${e.id}`, { method: "PATCH", headers: H, body: JSON.stringify({ lengthInMinutes: minutes }) });
+    if (!r.ok) throw new Error(`Cal.com refused ${e.slug}: ${r.status} ${await r.text()}`);
+    log(`  Cal.com ${e.slug}: ${e.lengthInMinutes} -> ${minutes} minutes`);
+  }
+  return targets.map((e) => e.slug);
+}
+
+/* Re-save each of the class's dates unchanged. The class_sessions webhook then
+   runs the schedule-sync Worker, which rebuilds the booking windows at the new
+   length - without it a longer class no longer fits its window and the date
+   stops being bookable. */
+async function resyncDates({ fetchImpl, key, slug, log }) {
+  const H = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+  const r = await fetchImpl(`${SUPABASE_URL}/rest/v1/class_sessions?class_slug=eq.${slug}&or=(status.is.null,status.neq.canceled)&select=id,class_name`, { headers: H });
+  if (!r.ok) throw new Error(`class_sessions: ${r.status}`);
+  const rows = await r.json();
+  for (const s of rows) {
+    const u = await fetchImpl(`${SUPABASE_URL}/rest/v1/class_sessions?id=eq.${s.id}`, {
+      method: "PATCH", headers: { ...H, Prefer: "return=minimal" }, body: JSON.stringify({ class_name: s.class_name }) });
+    if (!u.ok) throw new Error(`re-sync ${s.id}: ${u.status}`);
+  }
+  log(`  re-synced ${rows.length} date(s) for ${slug}`);
+  return rows.length;
 }
 
 /* ------------------------------------------------------------ the run ------ */
 
-export async function run({ root, fetchImpl = fetch, dryRun = false, log = console.log } = {}) {
-  const r = await fetchImpl(`${SUPABASE_URL}/rest/v1/class_edits?select=slug,description,covers,walkout,prereq,edited_by_name,updated_at&order=slug`, {
+export async function run({ root, fetchImpl = fetch, dryRun = false, log = console.log, env = process.env } = {}) {
+  const r = await fetchImpl(`${SUPABASE_URL}/rest/v1/class_edits?select=slug,description,covers,walkout,prereq,minutes,edited_by_name,updated_at&order=slug`, {
     headers: { apikey: PUBLIC_KEY, Authorization: `Bearer ${PUBLIC_KEY}` },
   });
   if (!r.ok) throw new Error(`could not read class_edits: ${r.status} ${await r.text()}`);
@@ -161,11 +240,30 @@ export async function run({ root, fetchImpl = fetch, dryRun = false, log = conso
     const w = wanted(row);
     if (!w.desc || !w.covers.length) { log(`${row.slug}: empty edit - skipped`); continue; }
     if (!differs(c, w)) continue;
-    next = applyEdit(next, row.slug, w);
-    changes.push({ slug: row.slug, name: c.name, by: row.edited_by_name, w });
+    const ch = { slug: row.slug, name: c.name, by: row.edited_by_name, w, from: minutesOf(c.format) };
     log(`UPDATE ${row.slug} (${row.edited_by_name || "?"})`);
+    if (lengthDiffers(c, w)) {
+      if (dryRun) log(`  length ${ch.from} -> ${w.minutes} minutes (Cal.com too)`);
+      else if (!env.CAL_API_KEY) {
+        log(`  length ${ch.from} -> ${w.minutes} WAITING: no CAL_API_KEY, so Cal.com can't be changed - text only`);
+        ch.lengthWaiting = w.minutes; ch.w = w = { ...w, minutes: null };
+      } else {
+        try {
+          ch.calEvents = await setCalLength({ fetchImpl, key: env.CAL_API_KEY, slug: row.slug, minutes: w.minutes, log });
+          if (env.SUPABASE_SERVICE_ROLE_KEY) ch.resynced = await resyncDates({ fetchImpl, key: env.SUPABASE_SERVICE_ROLE_KEY, slug: row.slug, log });
+          else { ch.resyncNeeded = true; log("  no SUPABASE_SERVICE_ROLE_KEY - her dates need re-saving so Cal.com fits the new length"); }
+        } catch (e) {
+          log(`  length NOT changed: ${e.message}`);
+          ch.lengthWaiting = w.minutes; ch.w = w = { ...w, minutes: null };
+        }
+      }
+    }
+    if (!differs(c, w)) { if (ch.lengthWaiting) changes.push(ch); continue; }
+    next = applyEdit(next, row.slug, w);
+    changes.push(ch);
   }
   if (!changes.length) { log("Every edited class already matches the site."); return { changes }; }
+  if (next === src) { log("Nothing to write to the site."); return { changes, wrote: false }; }
 
   // The rewrite must read back exactly as the edit, or nothing is written.
   const check = Object.fromEntries(loadClasses(next).map((c) => [c.slug, c]));
@@ -186,7 +284,7 @@ export async function run({ root, fetchImpl = fetch, dryRun = false, log = conso
   log(`classes.js cache version bumped in ${bumped} files`);
   execFileSync(process.execPath, [join(root, "tools", "build-class-pages.mjs")], { stdio: "ignore" });
   log("class pages rebuilt");
-  return { changes };
+  return { changes, wrote: true };
 }
 
 export async function notify(changes, { fetchImpl = fetch, key = process.env.RESEND_API_KEY, log = console.log } = {}) {
@@ -215,8 +313,11 @@ if (isMain) {
   } else {
     const dryRun = process.argv.includes("--dry-run");
     run({ root, dryRun })
-      .then(({ changes }) => {
-        if (dryRun || !changes.length) return;
+      .then(({ changes, wrote }) => {
+        /* Only a run that changed the site commits and emails. A length that
+           is still waiting on Cal.com is retried every run; emailing each
+           time would be every 10 minutes. */
+        if (dryRun || !wrote) return;
         writeFileSync(notesFile, JSON.stringify(changes));
         if (process.env.GITHUB_OUTPUT) {
           writeFileSync(process.env.GITHUB_OUTPUT, `summary=${changes.map((c) => c.name).join(", ")}\n`, { flag: "a" });

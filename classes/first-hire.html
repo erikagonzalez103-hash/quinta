@@ -221,7 +221,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   var slug = "first-hire";
   var K = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf";
   var got = fetch("https://pmpaslevwimofohirves.supabase.co/rest/v1/class_edits?slug=eq." + slug +
-    "&select=description,covers,walkout,prereq", { headers: { apikey: K, Authorization: "Bearer " + K } })
+    "&select=description,covers,walkout,prereq,minutes", { headers: { apikey: K, Authorization: "Bearer " + K } })
     .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
   function el(tag, cls, text) { var n = document.createElement(tag); n.className = cls; n.textContent = text; return n; }
   function apply(rows) {
@@ -232,6 +232,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     function label(t) { return labels.filter(function (l) { return l.textContent === t; })[0] || null; }
     var stop = sec.querySelector(".soon-note, .book, .book-note, .class-disclaimer");
     var d = sec.querySelector("p.desc"); if (d) d.textContent = e.description;
+    var fm = sec.querySelector("p.syl-format");
+    if (fm && e.minutes) fm.textContent = /^\s*\d+\s*minutes?/i.test(fm.textContent)
+      ? fm.textContent.replace(/^\s*\d+\s*minutes?/i, e.minutes + " minutes") : e.minutes + " minutes · " + fm.textContent;
     var cl = label("What we\u2019ll cover") || label("What we'll cover"), ul = cl && cl.nextElementSibling;
     if (ul && ul.tagName === "UL") {
       ul.innerHTML = "";
