@@ -1,0 +1,69 @@
+# Put class-page edits made in the faculty portal onto the site.
+#
+# Teachers (and Erika) change a class's description and syllabus in the
+# portal's "Edit my class" page. That saves to the class_edits table. This
+# copies the saved text into classes.js, rebuilds the class pages, commits,
+# and emails Erika what changed. See tools/publish-class-edits.mjs.
+#
+# Every 10 minutes, off the hour. GitHub sometimes runs scheduled jobs late;
+# a missed run is simply picked up by the next one.
+#
+# RUN IT NOW: Actions tab -> "Publish class edits" -> Run workflow.
+
+name: Publish class edits
+
+on:
+  schedule:
+    - cron: "3,13,23,33,43,53 * * * *"
+  workflow_dispatch:
+
+# Shares a lane with the class-date sync: both rewrite classes.js and bump the
+# cache version, so they must never run at the same time.
+concurrency:
+  group: sync-class-dates
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Check the logic still holds
+        run: node tools/publish-class-edits.test.mjs
+
+      - name: Copy portal edits into the site
+        id: pub
+        run: node tools/publish-class-edits.mjs
+
+      - name: Publish what changed
+        if: steps.pub.outputs.summary != ''
+        env:
+          SUMMARY: ${{ steps.pub.outputs.summary }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "Quinta class editor"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "Class page edited in the portal: $SUMMARY" -m "Published by tools/publish-class-edits.mjs."
+          git pull --rebase --autostash
+          git push
+          curl -sf -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" \
+            && echo "Pages rebuild requested" || echo "Pages rebuild request not accepted - the push may still deploy on its own"
+
+      - name: Tell Erika
+        if: steps.pub.outputs.summary != ''
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node tools/publish-class-edits.mjs --notify

@@ -28,3 +28,6 @@ qr-cards/
 
 # Supabase CLI scratch — project ref and cached version, not the website
 supabase/.temp/
+
+# publish-class-edits.mjs hand-off between the run and the email
+.class-edits-published.json

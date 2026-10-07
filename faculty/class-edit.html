@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit my class — Faculty — Quinta &amp; Co.</title>
+<meta name="description" content="Edit your Quinta &amp; Co. class page.">
+<meta name="theme-color" content="#FAFAF6">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<style>
+  .edit-head{padding-top:48px}
+  .edit-head h1{margin:6px 0 4px}
+  .ecard{background:#FFFFFF;border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin-top:24px}
+  .ecard h2{font-size:1.12rem;margin:0 0 4px}
+  .ecard .hint{color:#8A8E83;font-size:.9rem;margin:0 0 18px}
+  .frow{margin-bottom:20px}
+  .frow label{display:block;font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sage-deep);margin-bottom:7px}
+  .frow textarea,.frow select{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:1rem;background:var(--cream);color:var(--ink);line-height:1.5}
+  .frow textarea:focus,.frow select:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+  .frow textarea{min-height:110px;resize:vertical}
+  #f-covers{min-height:240px}
+  .frow .sub{color:#8A8E83;font-size:.85rem;margin-top:6px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .frow .sub .over{color:#9C3B2E;font-weight:600}
+  .fixed{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:.95rem;margin:0}
+  .fixed dt{color:#8A8E83}
+  .fixed dd{margin:0;color:var(--ink)}
+  .status{font-size:.92rem;padding:10px 14px;border-radius:8px;background:#EEF2EC;border:1px solid var(--line);margin-top:18px}
+  .status.pending{background:#FBF6EA;border-color:#D9C28F}
+  .preview{background:var(--cream);border:1px dashed var(--line);border-radius:12px;padding:22px 24px;margin-top:10px}
+  .preview .desc{margin-top:0}
+  .save-bar{position:sticky;bottom:0;background:var(--cream);border-top:1px solid var(--line);padding:14px 0;margin-top:30px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .msg{padding:12px 16px;border-radius:8px;font-size:.95rem;display:none;flex-basis:100%}
+  .msg.ok{display:block;background:#EEF2EC;border:1px solid var(--sage-deep)}
+  .msg.err{display:block;background:#F7EFEA;border:1px solid #B0713F;color:#5A4632}
+  #gate{max-width:520px;margin:0 auto;padding:80px 20px;text-align:center}
+  #editor{display:none}
+  /* On a phone a sticky bar with two buttons covers a third of the screen. */
+  @media(max-width:640px){.ecard{padding:22px 18px}.save-bar{position:static}}
+</style>
+</head>
+<body data-page="faculty-class-edit" data-root="../">
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right">
+      <nav class="top">
+        <a href="portal.html">Back to portal</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="gate">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <section class="detail wrap edit-head" id="editor">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1>Edit my class</h1>
+    <p class="desc">This is the wording on your public class page. Change it here, save, and the page updates within about 10 minutes. Write it the way you'd explain it to someone deciding whether to come.</p>
+
+    <div class="frow" id="pick-row" style="margin-top:22px;display:none">
+      <label for="f-class">Which class</label>
+      <select id="f-class"></select>
+    </div>
+
+    <form id="cform" novalidate>
+      <div class="ecard">
+        <h2 id="c-name">Your class</h2>
+        <dl class="fixed">
+          <dt>Length</dt><dd id="c-format">—</dd>
+          <dt>Price</dt><dd id="c-price">—</dd>
+          <dt>Page</dt><dd><a id="c-link" href="#" target="_blank" rel="noopener">See the live page</a></dd>
+        </dl>
+        <p class="hint" style="margin:14px 0 0">To change the class name, price or length, email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>. Those are tied to booking and payments, so Erika changes them.</p>
+        <div class="status" id="c-status" role="status"></div>
+      </div>
+
+      <div class="ecard">
+        <h2>The description</h2>
+        <p class="hint">One or two sentences under the class name. What she'll learn and why it matters to her business.</p>
+        <div class="frow">
+          <label for="f-desc">Description</label>
+          <textarea id="f-desc" maxlength="600"></textarea>
+          <p class="sub"><span>Between 20 and 600 characters.</span><span id="n-desc"></span></p>
+        </div>
+      </div>
+
+      <div class="ecard">
+        <h2>What we'll cover</h2>
+        <p class="hint">Your syllabus. <strong>One point per line</strong>, up to 10. Each line becomes a bullet on the page.</p>
+        <div class="frow">
+          <label for="f-covers">One point per line</label>
+          <textarea id="f-covers"></textarea>
+          <p class="sub"><span>Up to 240 characters a line.</span><span id="n-covers"></span></p>
+        </div>
+      </div>
+
+      <div class="ecard">
+        <h2>What you'll walk out with</h2>
+        <p class="hint">The real thing she leaves with: a plan, a filled-in template, a decision made.</p>
+        <div class="frow">
+          <label for="f-walkout">What she walks out with</label>
+          <textarea id="f-walkout" maxlength="400" style="min-height:80px"></textarea>
+          <p class="sub"><span>Up to 400 characters.</span><span id="n-walkout"></span></p>
+        </div>
+      </div>
+
+      <div class="ecard">
+        <h2>Know before you go <span style="font-weight:400;color:#8A8E83">(optional)</span></h2>
+        <p class="hint">Anything to bring or do first. Leave it empty and the section doesn't show.</p>
+        <div class="frow">
+          <label for="f-prereq">Know before you go</label>
+          <textarea id="f-prereq" maxlength="400" style="min-height:80px"></textarea>
+          <p class="sub"><span>Up to 400 characters.</span><span id="n-prereq"></span></p>
+        </div>
+      </div>
+
+      <div class="ecard">
+        <h2>Preview</h2>
+        <p class="hint">Roughly how it reads on your class page.</p>
+        <div class="preview" id="preview"></div>
+      </div>
+
+      <div class="save-bar">
+        <button type="submit" class="btn btn-solid" id="save-btn">Save my class page</button>
+        <a class="btn btn-ghost" href="portal.html">Back to portal</a>
+        <div class="msg" id="save-msg" role="status"></div>
+      </div>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <div>
+        <a href="../index.html" class="wordmark">Quinta &amp; Co.</a>
+        <p class="fine" style="margin-top:10px">Practical business &amp; AI education · Dallas, Texas &amp; online</p>
+      </div>
+      <nav class="fnav">
+        <a href="mailto:hello@quintaand.co">Contact Erika</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script src="../classes.js?v=18"></script>
+<script>
+/* EDIT MY CLASS
+   Saves through save_class_edit() (supabase/sql/2026-10-07-class-editor.sql),
+   which checks she teaches the class. tools/publish-class-edits.mjs then
+   copies the saved text into classes.js and the class page every 10 minutes.
+   The class name, price and length are shown but not editable here. */
+(function () {
+  "use strict";
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient("https://pmpaslevwimofohirves.supabase.co", "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var CATALOG = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+  var bySlug = {};
+  CATALOG.forEach(function (c) { if (c && c.slug) bySlug[c.slug] = c; });
+
+  var current = null;     // the class being edited
+  var dirty = false;
+  var LIMIT = { desc: 600, line: 240, lines: 10, walkout: 400, prereq: 400 };
+
+  function showGate(title, text, offerReset) {
+    $("gate-title").textContent = title; $("gate-text").textContent = text; $("gate-action").style.display = "block";
+    if (offerReset && !$("gate-reset")) {
+      var b = document.createElement("button");
+      b.id = "gate-reset"; b.className = "btn btn-ghost"; b.style.marginLeft = "10px";
+      b.textContent = "Sign out & start fresh";
+      b.addEventListener("click", function () { sb.auth.signOut().then(function () { location.replace("login.html"); }); });
+      $("gate-action").appendChild(b);
+    }
+  }
+  function show(kind, text) { var m = $("save-msg"); m.className = "msg " + kind; m.textContent = text; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function lines(v) { return String(v || "").split(/\r?\n/).map(function (s) { return s.replace(/^\s*[-•*]\s*/, "").trim(); }).filter(Boolean); }
+  function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+  function form() {
+    return { desc: $("f-desc").value.trim(), covers: lines($("f-covers").value),
+             walkout: $("f-walkout").value.trim(), prereq: $("f-prereq").value.trim() };
+  }
+  function live(c) {
+    return { desc: c.desc || "", covers: (c.covers || []).slice(), walkout: c.walkout || "", prereq: c.prereq || "" };
+  }
+
+  function counters() {
+    var f = form();
+    function put(id, n, max) { var el = $(id); el.textContent = n + " / " + max; el.className = n > max ? "over" : ""; }
+    put("n-desc", f.desc.length, LIMIT.desc);
+    var longest = f.covers.reduce(function (m, s) { return Math.max(m, s.length); }, 0);
+    $("n-covers").textContent = f.covers.length + " point" + (f.covers.length === 1 ? "" : "s") + (longest > LIMIT.line ? " · one line is too long" : "");
+    $("n-covers").className = (f.covers.length > LIMIT.lines || longest > LIMIT.line) ? "over" : "";
+    put("n-walkout", f.walkout.length, LIMIT.walkout);
+    put("n-prereq", f.prereq.length, LIMIT.prereq);
+  }
+
+  function preview() {
+    var f = form();
+    $("preview").innerHTML =
+      '<h3 style="margin:0 0 8px">' + esc(current ? current.name : "") + '</h3>' +
+      '<p class="desc">' + esc(f.desc) + '</p>' +
+      (current && current.format ? '<p class="syl-format">' + esc(current.format) + '</p>' : "") +
+      (f.covers.length ? '<p class="syl-label">What we\'ll cover</p><ul class="syl-list">' +
+        f.covers.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul>" : "") +
+      (f.walkout ? '<p class="syl-label">What you\'ll walk out with</p><p class="syl-walkout">' + esc(f.walkout) + "</p>" : "") +
+      (f.prereq ? '<p class="syl-label">Know before you go</p><p class="syl-prereq">' + esc(f.prereq) + "</p>" : "");
+  }
+
+  function fill(v) {
+    $("f-desc").value = v.desc;
+    $("f-covers").value = v.covers.join("\n");
+    $("f-walkout").value = v.walkout;
+    $("f-prereq").value = v.prereq;
+    counters(); preview();
+  }
+
+  function setStatus(saved) {
+    var st = $("c-status");
+    var text = saved && { desc: saved.desc, covers: saved.covers, walkout: saved.walkout, prereq: saved.prereq };
+    if (text && !same(text, live(current))) {
+      st.className = "status pending";
+      st.textContent = "Saved" + (saved.by ? " by " + saved.by : "") + (saved.at ? " on " + saved.at : "") +
+        ". It's on its way to your class page, usually within 10 minutes.";
+    } else {
+      st.className = "status";
+      st.textContent = "This is what's on your class page now.";
+    }
+  }
+
+  function pretty(ts) {
+    try { return new Date(ts).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+    catch (e) { return ""; }
+  }
+
+  function open(slug) {
+    current = bySlug[slug];
+    if (!current) return;
+    $("c-name").textContent = current.name;
+    $("c-format").textContent = current.format || "—";
+    $("c-price").textContent = current.free ? "Free" : (current.price ? "$" + current.price : "—");
+    $("c-link").href = "../classes/" + current.slug + ".html";
+    $("save-msg").className = "msg";
+    fill(live(current));
+    setStatus(null);
+    dirty = false;
+    sb.from("class_edits").select("slug,description,covers,walkout,prereq,edited_by_name,updated_at")
+      .eq("slug", slug).maybeSingle().then(function (r) {
+        if (r.error || !r.data || current.slug !== slug) return;
+        var d = r.data;
+        var saved = { desc: d.description || "", covers: d.covers || [], walkout: d.walkout || "", prereq: d.prereq || "" };
+        if (!dirty) fill(saved);
+        setStatus({ desc: saved.desc, covers: saved.covers, walkout: saved.walkout, prereq: saved.prereq,
+                    by: d.edited_by_name, at: pretty(d.updated_at) });
+      });
+  }
+
+  ["f-desc", "f-covers", "f-walkout", "f-prereq"].forEach(function (id) {
+    $(id).addEventListener("input", function () { dirty = true; counters(); preview(); });
+  });
+  window.addEventListener("beforeunload", function (e) { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+  $("cform").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (!current) return;
+    var f = form();
+    if (f.desc.length < 20) { show("err", "The description needs at least 20 characters."); $("f-desc").focus(); return; }
+    if (f.desc.length > LIMIT.desc) { show("err", "The description is over 600 characters."); $("f-desc").focus(); return; }
+    if (!f.covers.length) { show("err", "Add at least one thing you'll cover."); $("f-covers").focus(); return; }
+    if (f.covers.length > LIMIT.lines) { show("err", "Keep it to 10 points or fewer."); $("f-covers").focus(); return; }
+    if (f.covers.some(function (s) { return s.length > LIMIT.line; })) { show("err", "One of your points is over 240 characters. Split it in two."); $("f-covers").focus(); return; }
+    var btn = $("save-btn");
+    btn.disabled = true; btn.textContent = "Saving…";
+    sb.rpc("save_class_edit", { p_slug: current.slug, p_description: f.desc, p_covers: f.covers,
+                                p_walkout: f.walkout, p_prereq: f.prereq }).then(function (r) {
+      btn.disabled = false; btn.textContent = "Save my class page";
+      if (r.error) {
+        console.error(r.error);
+        show("err", "That didn't save: " + (r.error.message || "unknown error") + " If it keeps happening, email hello@quintaand.co.");
+        return;
+      }
+      dirty = false;
+      fill(f);
+      setStatus({ desc: f.desc, covers: f.covers, walkout: f.walkout, prereq: f.prereq, at: pretty(r.data) });
+      show("ok", same(f, live(current))
+        ? "Saved. That's the same as your class page already says."
+        : "Saved. Your class page will show this within about 10 minutes. Erika gets a copy by email.");
+    });
+  });
+
+  if (!sb) { showGate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { showGate("You're not signed in", "Sign in first, then come back to edit your class."); return; }
+    var email = session.user.email.toLowerCase();
+    sb.rpc("my_editable_classes").then(function (r) {
+      if (r.error) {
+        console.error(r.error);
+        showGate("Hmm — the database said no", "Signed in as " + email + ", but your classes couldn't be read (" +
+          (r.error.message || r.error.code || "unknown") + "). Try signing out and back in, or email hello@quintaand.co.", true);
+        return;
+      }
+      var got = (r.data || []).map(function (x) { return typeof x === "string" ? x : (x && (x.my_editable_classes || Object.values(x)[0])); });
+      var all = got.indexOf("*") !== -1;
+      var mine = CATALOG.filter(function (c) {
+        return c && c.slug && !c.free && (all || got.indexOf(c.slug) !== -1);
+      });
+      if (!mine.length) {
+        showGate("No class to edit yet", "Once you've added a date for your class in My classes, it shows up here. If you think it should be here already, email hello@quintaand.co.");
+        return;
+      }
+      $("gate").style.display = "none";
+      $("editor").style.display = "block";
+      var sel = $("f-class");
+      mine.forEach(function (c) {
+        var o = document.createElement("option"); o.value = c.slug; o.textContent = c.name; sel.appendChild(o);
+      });
+      if (mine.length > 1) $("pick-row").style.display = "block";
+      var want = new URLSearchParams(location.search).get("c");
+      if (want && bySlug[want] && mine.some(function (c) { return c.slug === want; })) sel.value = want;
+      sel.addEventListener("change", function () {
+        if (dirty && !confirm("You have changes you haven't saved. Switch class anyway?")) { sel.value = current.slug; return; }
+        open(sel.value);
+      });
+      open(sel.value);
+    });
+  });
+})();
+</script>
+</body>
+</html>

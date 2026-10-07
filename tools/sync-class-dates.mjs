@@ -171,7 +171,7 @@ async function oct21Slugs(fetchImpl, now) {
   } catch { return new Set(); }
 }
 
-function walk(dir, skip, out = []) {
+export function walk(dir, skip, out = []) {
   for (const name of readdirSync(dir)) {
     if (skip.has(name)) continue;
     const p = join(dir, name);
