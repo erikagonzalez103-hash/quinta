@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "continuing-education-small-business",
+    title: "Continuing Education for Small Business Owners: Does Skipping It Actually Save Money?",
+    date: "2026-10-08",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "No — it moves the cost downstream. A three-month bookkeeping backlog runs $300–$500; past a year it's $3,500–$8,000. Same receipts, sixteen times the invoice, because you opened the box late.",
+    image: "blog-continuing-education.webp"
+  },
+  {
     slug: "how-to-prioritize-q4-goals-in-october",
     title: "How Do You Prioritize Q4 Business Goals When It's Already October?",
     date: "2026-10-06",
