@@ -146,19 +146,51 @@
   /* Copy that still works in the in-app browsers faculty actually open this
      in, where navigator.clipboard often isn't there. */
   function copyText(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text);
+    /* The old fallback ignored whether the copy worked, so in a phone's in-app
+       browser (Gmail, Instagram, LinkedIn) the button said "Copied" with
+       nothing on the clipboard - Erika, 8 Oct. Now a failed copy is a failure,
+       and the caller shows the text to press-and-hold instead. */
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "0";
+      ta.style.opacity = "0"; ta.style.fontSize = "16px";   // 16px: iPhone won't zoom
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { ta.setSelectionRange(0, text.length); } catch (e) {}
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
     }
-    return new Promise(function (resolve, reject) {
-      try {
-        var ta = document.createElement("textarea");
-        ta.value = text; ta.setAttribute("readonly", "");
-        ta.style.position = "fixed"; ta.style.opacity = "0";
-        document.body.appendChild(ta); ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta); resolve();
-      } catch (e) { reject(e); }
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext !== false) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        if (!legacy()) throw new Error("copy blocked");
+      });
+    }
+    return legacy() ? Promise.resolve() : Promise.reject(new Error("copy blocked"));
+  }
+  /* Copying was blocked: put the text right under the button, selected, with
+     how to copy it by hand. Works everywhere, keeps line breaks. */
+  function showToCopy(btn, text) {
+    var holder = btn.closest(".acts, li, div") || btn.parentNode;
+    var old = holder.parentNode.querySelector(".copy-manual[data-for='" + (btn.dataset.copyId || "") + "']");
+    if (old) old.remove();
+    btn.dataset.copyId = btn.dataset.copyId || String(Math.random()).slice(2);
+    var box = document.createElement("div");
+    box.className = "copy-manual"; box.setAttribute("data-for", btn.dataset.copyId);
+    box.style.cssText = "margin:8px 0 4px;width:100%";
+    var note = document.createElement("p");
+    note.style.cssText = "margin:0 0 6px;font-size:.85rem;color:#5A5E55";
+    note.textContent = "Your browser blocked copying. Press and hold the text below, then tap Copy (on a computer: Ctrl+C).";
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.readOnly = true;
+    ta.style.cssText = "width:100%;box-sizing:border-box;min-height:" + (text.indexOf("\n") !== -1 ? "120px" : "48px") +
+      ";font:inherit;font-size:16px;padding:8px 10px;border:1px solid #C9D3CB;border-radius:8px;background:#fff";
+    box.appendChild(note); box.appendChild(ta);
+    holder.parentNode.insertBefore(box, holder.nextSibling);
+    ta.focus(); ta.select();
+    try { ta.setSelectionRange(0, text.length); } catch (e) {}
   }
   function wireCopy(btn, getText, label) {
     btn.addEventListener("click", function () {
@@ -166,7 +198,7 @@
         var was = btn.textContent;
         btn.textContent = "Copied ✓";
         window.setTimeout(function () { btn.textContent = was; }, 1800);
-      }).catch(function () { window.prompt(label || "Copy this:", getText()); });
+      }).catch(function () { showToCopy(btn, getText()); });
     });
   }
 
