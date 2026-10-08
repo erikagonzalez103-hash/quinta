@@ -65,6 +65,10 @@
 .od-paid{font-size:15px;line-height:1.55;color:var(--ink);margin:0 0 22px}
 .od-paid a{color:var(--moss);font-weight:600}
 .od-retry{margin-top:10px}
+.od-pick{border:1px solid var(--sage-deep);border-radius:12px;background:#fff;padding:16px 18px;margin:0 0 22px}
+.od-pick p{margin:0 0 4px;font-size:15px;line-height:1.5;color:var(--ink)}
+.od-pick .od-pick-name{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.3;color:var(--moss)}
+.od-pick .od-go{margin-top:12px}
 .od-terms a{color:var(--sage-deep)}
 .od-done{border:1px solid var(--line);border-radius:12px;background:#fff;padding:22px;margin:0 0 26px}
 .od-done h2{font-family:var(--display);font-weight:500;font-size:22px;color:var(--moss);margin:0 0 6px}
@@ -120,6 +124,16 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
     <p class="od-kicker">Fork, Femme &amp; Foundations</p>
     <h1 class="od-h1">Wednesday, October&nbsp;21.</h1>
+    <!-- From a teacher's poll link (?pick=): her class, ticked, with the
+         button to pay - on the first screen, not three scrolls down. -->
+    <div class="od-pick" id="odPick" hidden>
+      <p>Picked for you</p>
+      <p class="od-pick-name" id="odPickName"></p>
+      <p id="odPickMeta"></p>
+      <button class="od-go" type="button" id="odPickGo">Continue to payment</button>
+      <p style="margin:10px 0 0;font-size:14px"><a href="#odBlocks">Add a class in another block for 15% off</a></p>
+      <p style="margin:8px 0 0;font-size:13.5px;color:var(--sage-deep)">Every class needs at least two people to run &mdash; if yours doesn't, you choose a full refund or a seat in the next round.</p>
+    </div>
     <p class="od-lead">Pick a class in each block you can come to — at kiln in Dallas or online.
       Two classes are 15% off, three are 25% off, applied for you.</p>
     <p class="od-note">Ten seats per class, in the room and online together.</p>
@@ -263,6 +277,11 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
      stripe-checkout and oct21-redeem functions start refusing (SALES_CLOSE in
      supabase/functions/_shared/oct21.ts). Dallas is on CDT, UTC-5. */
   var CLOSED = Date.now() >= Date.parse("2026-10-21T00:00:00-05:00");
+  if (CLOSED && /[?&]pick=/.test(location.search)) {
+    var pk = (new URLSearchParams(location.search).get("pick") || "").replace(/[^a-z0-9-]/gi, "");
+    var pc = bySlug(pk);
+    if (pc) location.replace(pc.open ? "classes/" + pk + ".html" + carry() : "waitlist.html" + carry("c=" + pk + "&src=poll"));
+  }
   if (CLOSED) {
     el("odClosed").hidden = false;
     el("odForm").hidden = true;
@@ -446,6 +465,56 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     });
   });
 
+  /* ?pick=<class> - from a teacher's poll link (go/whereyouare). Tick that
+     class so she only has to press Continue. Her in-room session if there is
+     one, and "Online" chosen for her if it only runs online. If the class has
+     no seat that day, send her where it can be booked: its class page when
+     it has dates in Cal.com, its waitlist when it has none. The teacher's
+     ?ref= and the ad tags go along. */
+  var PICK = (new URLSearchParams(location.search).get("pick") || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  try { if (window.QuintaShop) QuintaShop.ref(); } catch (e) {}   // keeps her teacher's credit from the URL
+  function carry(extra) {
+    var q = new URLSearchParams(location.search), out = new URLSearchParams(extra || "");
+    ["ref", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      var v = q.get(k); if (v) out.set(k, v);
+    });
+    var s = out.toString();
+    return s ? "?" + s : "";
+  }
+  function sendOn() {
+    var c = bySlug(PICK);
+    if (!c) return false;
+    location.replace(c.open ? "classes/" + PICK + ".html" + carry()
+                            : "waitlist.html" + carry("c=" + PICK + "&src=poll"));
+    return true;
+  }
+  var picked1 = false;
+  function applyPick() {
+    if (!PICK || picked1 || BACK) return;
+    picked1 = true;
+    var mine = day.filter(function (s) { return s.class_slug === PICK && s.seats_left > 0; });
+    if (!mine.length) { sendOn(); return; }
+    var s = mine.filter(function (x) { return x.format !== "online"; })[0] || mine[0];
+    var box = blocksEl.querySelector('input[value="' + s.session_id + '"]');
+    if (!box || box.disabled) return;
+    box.checked = true;
+    if (s.format === "online") { var on = document.querySelector('input[name="how"][value="online"]'); if (on) on.checked = true; }
+    update();
+    msg.className = "od-msg good";
+    msg.textContent = "Picked for you: " + nameOf(s) + (s.teacher ? " with " + s.teacher : "") + ".";
+    el("odPickName").textContent = nameOf(s);
+    el("odPickMeta").textContent = clock(s.start_time) + (s.teacher ? " with " + s.teacher : "") + " · " +
+      (s.format === "online" ? "online" : "at kiln in Dallas or online") + " · " + QuintaShop.money(cents(s.class_slug));
+    el("odPick").hidden = false;
+    el("odPickGo").onclick = function () {
+      var f = el("odForm");
+      if (f.requestSubmit) f.requestSubmit(go); else go.click();
+    };
+    /* The card says what's in the cart - if she changes the picks below,
+       it would be wrong, so it goes. */
+    blocksEl.addEventListener("change", function () { el("odPick").hidden = true; }, { once: true });
+  }
+
   function restorePicks() {
     var saved = null;
     try { saved = JSON.parse(sessionStorage.getItem("od_picks") || "null"); } catch (e) {}
@@ -477,6 +546,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       day = Array.isArray(rows) ? rows : [];
       render(); renderRedeem();
       restorePicks();
+      applyPick();
       /* Buyer emails and the bundle page link to #already-paid. The classes
          above it load after the browser has already jumped, which pushes
          the form back down out of sight - so jump again once they're in. */

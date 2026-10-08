@@ -231,7 +231,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       <p class="fff-goal">The goal this October: $250,000 spent with women&#8209;owned businesses. Quinta&nbsp;&amp;&nbsp;Co. is here to help.</p>
       <p class="fff-priceline"><strong>A class costs as low as $99</strong><span class="fff-dot"> · </span><span class="fff-when">Oct 21 at kiln Dallas&nbsp;&amp;&nbsp;online</span></p>
       <div class="fff-cta">
-        <a class="btn btn-solid fff-find" id="fffFind" href="where-you-are.html">Find your class</a>
+        <a class="btn btn-solid fff-find" id="fffFind" href="oct21.html">Book October 21</a>
+        <a class="fff-textlink" href="where-you-are.html" id="fffQuizTop">Not sure which class? Two questions</a>
         <a class="fff-textlink" href="#bundles">See the bundles ↓</a>
       </div>
       <p class="fff-scarce">Seats are capped at ten per class.</p>
@@ -588,9 +589,13 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       var v = here.get(k); if (v) keep.set(k, v.slice(0, 200));
     });
     var q = keep.toString();
-    if (q) find.href = "where-you-are.html?" + q;
-    var quiz = document.getElementById("fffQuiz");
-    if (q && quiz) quiz.href = "where-you-are.html?" + q;
+    /* 8 Oct: the first button books the day (fewest taps to paying); the
+       two-question survey is the optional link beside it. */
+    if (q) find.href = "oct21.html?" + q;
+    ["fffQuiz", "fffQuizTop"].forEach(function (id) {
+      var quiz = document.getElementById(id);
+      if (q && quiz) quiz.href = "where-you-are.html?" + q;
+    });
     if (Date.now() >= Date.parse("2026-10-21T00:00:00-05:00")) {
       document.querySelectorAll(".until-oct21").forEach(function (e) { e.remove(); });
     }

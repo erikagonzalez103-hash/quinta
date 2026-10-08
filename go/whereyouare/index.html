@@ -14,23 +14,33 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Fork, Femme &amp; Foundations — the things you can't Google">
 <meta name="twitter:image" content="https://quintaand.co/images/og-default.jpg">
-<meta http-equiv="refresh" content="0; url=https://quintaand.co/fork-femme-foundations.html">
+<meta http-equiv="refresh" content="0; url=https://quintaand.co/oct21.html">
 <!-- The Week 2 poll link (printed on every teacher's Story picture as
-     quintaand.co/go/whereyouare?ref=tara). It used to open that teacher's
-     class card on where-you-are.html; since 7 Oct it goes to the October 21
-     page instead (Erika's call), so every poll lands on the day itself.
-     Joshlyn is the exception: her class isn't on the 21st and her Story says
-     "Join the waitlist", so her link still opens her waitlist card.
+     quintaand.co/go/whereyouare?ref=tara).
+     8 Oct (Erika: fewest taps from post to paying): a teacher's link opens
+     the October 21 page with HER class already ticked (?pick=), so it is tap
+     the link, Continue to payment, Pay. If her class has no seat that day,
+     oct21.html passes her on to the class page (dates in Cal.com) or its
+     waitlist. Joshlyn's class has no dates at all, so hers goes straight to
+     the waitlist with Investing picked. No ref: the October 21 page.
      Keep ?ref= and the utm tags across the hop - they carry her credit.
      The meta refresh above is only the no-JavaScript fallback. -->
 <script>
 (function () {
-  var q = location.search;
-  var ref = (new URLSearchParams(q).get("ref") || "").toLowerCase();
+  var q = new URLSearchParams(location.search);
+  var ref = (q.get("ref") || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  var CLASS = { erika: "module-1", tara: "bookkeeping-1", nik: "trademarks",
+                stephanie: "brand-101", robin: "landlord", joshlyn: "financial-planning" };
   var WAITLIST = { joshlyn: true };
-  location.replace((WAITLIST[ref]
-    ? "https://quintaand.co/where-you-are.html"
-    : "https://quintaand.co/fork-femme-foundations.html") + q);
+  var slug = CLASS[ref];
+  if (slug && WAITLIST[ref]) {
+    q.set("c", slug); q.set("src", "poll");
+    location.replace("https://quintaand.co/waitlist.html?" + q.toString());
+    return;
+  }
+  if (slug) q.set("pick", slug);
+  var s = q.toString();
+  location.replace("https://quintaand.co/oct21.html" + (s ? "?" + s : ""));
 })();
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
@@ -81,6 +91,6 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <!-- End LinkedIn Insight Tag -->
 </head>
 <body>
-<p>Redirecting to <a href="https://quintaand.co/fork-femme-foundations.html">Fork, Femme &amp; Foundations</a>&hellip;</p>
+<p>Taking you to <a href="https://quintaand.co/oct21.html">October 21</a>&hellip;</p>
 </body>
 </html>
