@@ -76,7 +76,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="../classes.js?v=20"></script>
 <script src="../js/shop.js?v=1"></script>
-<script src="../js/meta.js?v=4"></script>
+<script src="../js/meta.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -282,7 +282,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     '<p class="bd-note">There’s no card and nothing more to pay. ' +
       'Bookmark this page, or keep the email — the same link brings you ' +
       'back here any time.</p>' +
-    OCT21_NOTE +
+    '<div id="bdOct21"></div>' +
     /* Module 1 bundles book their first class in Cal.com at checkout, and
        Cal.com has no October 21 - so moving it to the day is done by hand
        (Erika's call, 6 Oct). */
@@ -295,6 +295,13 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       'us, not you — email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> ' +
       'and we’ll tell you the moment it’s on the calendar. ' +
       '<strong>Your classes are good until June 30, 2027</strong> — and if we haven’t given one a date by then, we refund it. <a href="../policies.html#classes-paid-for-in-advance">How it works</a>.</p>';
+  /* Keep the books has no class on October 21, so it doesn't get told to
+     book one there (stress test, 7 Oct). */
+  onOct21().then(function (m) {
+    var box = document.getElementById("bdOct21");
+    var mine = [b.anchor].concat(b.redeem || []).some(function (slug) { return m[slug]; });
+    if (box && mine) box.innerHTML = OCT21_NOTE;
+  });
   markDates();
 })();
 </script>

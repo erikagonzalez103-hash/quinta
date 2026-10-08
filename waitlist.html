@@ -117,7 +117,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   <section class="wl wrap">
     <p class="label" style="margin-bottom:14px">First dibs</p>
     <h1>Join the waitlist.</h1>
-    <p class="desc">Classes are small by design — ten seats each. Several already have September dates and can be <a href="foundations.html">booked now</a>; for the ones still to come, tell us what you want to learn and we'll email you the moment it opens.</p>
+    <p class="desc">Classes are small by design — ten seats each. Several already have dates and can be <a href="foundations.html">booked now</a><span class="until-oct21">, and many run on <a href="oct21.html">Wednesday, October 21</a></span>. For the ones still to come, tell us what you want to learn and we'll email you the moment it opens.</p>
 
     <form id="wlForm" novalidate>
       <div class="wl-field">
@@ -160,7 +160,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     <div class="wl-success" id="wlSuccess">
       <svg class="sprout" viewBox="0 0 18 13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5" aria-hidden="true"><path d="M9 8.5 V 13.5"/><path d="M9 8.5 C6.5 7.9 2.8 6 1 1.1 C4 0 7.8 2.9 9 8.5 Z"/><path d="M9 8.5 C11.5 7.9 15.2 6 17 1.1 C14 0 10.2 2.9 9 8.5 Z"/><circle cx="9" cy="3.5" r="0.8" fill="currentColor" stroke="none"/></svg>
       <h2 id="wlSuccessHeading" tabindex="-1">You're on the list.</h2>
-      <p id="wlSuccessLine">We'll email you the moment it opens. Until then, the free <a href="coffee.html">Coffee with Quinta</a> is the best seat in the house.</p>
+      <p id="wlSuccessLine">We'll email you the moment it opens.<span class="until-oct21"> While you wait, <a href="oct21.html">see what's on October 21</a>.</span> And the free <a href="coffee.html">Coffee with Quinta</a> is always open.</p>
     </div>
 
     <!-- Deliberately BELOW the form. On a phone the submit button only just
@@ -177,7 +177,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         <li>Most classes in Dallas. Some on Zoom.</li>
       </ul>
       <hr class="qbanner-rule">
-      <p class="qbanner-fixed">First semester opens <strong>September 1</strong>. The free monthly <a href="coffee.html">Coffee with Quinta</a> is open now.</p>
+      <p class="qbanner-fixed"><span class="until-oct21">Fork, Femme &amp; Foundations is <strong>Wednesday, October 21</strong>: <a href="oct21.html">see the day</a>. </span>The free monthly <a href="coffee.html">Coffee with Quinta</a> is open now.</p>
+      <!-- The October 21 lines go by themselves once sales close at midnight going into the day. -->
+      <script>if (Date.now() >= Date.parse("2026-10-21T00:00:00-05:00")) document.querySelectorAll(".until-oct21").forEach(function (e) { e.remove(); });</script>
     </div>
   </section>
 
@@ -238,7 +240,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <script src="classes.js?v=20"></script>
 <script src="icons.js?v=3"></script>
 <script src="app.js?v=7" defer></script>
-<script src="js/meta.js?v=4" defer></script>
+<script src="js/meta.js?v=5" defer></script>
 
 <!-- supabase-js is self-hosted (pinned 2.110.1) so no third-party CDN can break or tamper with the form -->
 <script src="js/supabase-2.110.1.min.js"></script>

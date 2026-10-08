@@ -47,6 +47,10 @@
 .gf-msg.bad{color:#9C3B2E}
 .ch-terms{font-size:13px;line-height:1.55;color:var(--sage-deep);margin:12px 0 0;text-align:center}
 .ch-terms a{color:var(--sage-deep)}
+.gf-msg:empty{display:none}
+.oct21-note{font-size:15px;line-height:1.55;color:var(--ink);background:#EEF2EC;border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;margin:0 0 26px}
+.oct21-note a{color:var(--moss);font-weight:600}
 </style>
 <!-- Meta Pixel -->
 <script>
@@ -80,6 +84,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     <h1 class="gf-h1">Buy one, gift one.</h1>
     <p class="gf-lead">Take a class yourself and give one to a woman who'd use
       it — hers is 25% off. She picks her own date, any time up to June 30, 2027.</p>
+    <p class="oct21-note">Both of you coming on <strong>October 21</strong>? You can each use these classes on the day:
+      after paying, book your seats on <a href="oct21.html#already-paid">the October 21 page</a>, nothing more to pay.</p>
 
     <form id="gfForm" novalidate>
       <div class="gf-step">
@@ -115,9 +121,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         <p class="gf-sum" id="gfSum">Pick two classes to see the price.</p>
         <button class="gf-go" id="gfGo" type="submit" disabled>Continue to payment</button>
         <p class="gf-msg" id="gfMsg" role="status" aria-live="polite"></p>
-        <p class="ch-terms">Use by June 30, 2027 &middot; full refund within 14 days if neither
-          class has been taken &middot; <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
       </div>
+      <p class="ch-terms">Use by June 30, 2027 &middot; full refund within 14 days if neither
+        class has been taken &middot; <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
     </form>
   </div>
 </main>
@@ -131,7 +137,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=20"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=4"></script>
+<script src="js/meta.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -144,6 +150,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
      rounds them, so the total on this page is the total Stripe charges. */
   var FN = "https://pmpaslevwimofohirves.supabase.co/functions/v1/stripe-checkout";
   var RATE = 0.75;
+  var WANT = (new URLSearchParams(location.search).get("c") || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
 
   /* Same list as choose.html: open, and with a $0 redeem twin in Cal.com to
      book it with afterwards. Only the ones with a future date are offered. */
@@ -207,6 +214,10 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     /* keep what she already picked, if it is still on offer */
     if (keepA && shown.indexOf(keepA) !== -1) mine.value = keepA;
     if (keepB && shown.indexOf(keepB) !== -1) gift.value = keepB;
+    /* Arrived from a quiz result (gift.html?c=<slug>): start with that class
+       for both of them. Only once, and only if it is on offer. */
+    if (WANT && shown.indexOf(WANT) !== -1 && !mine.value && !gift.value) { mine.value = WANT; gift.value = WANT; }
+    WANT = "";
     update();
   }
 
@@ -297,8 +308,13 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     update();
   });
 
-  render(fromFlags());
-  QuintaShop.dated(SELLABLE).then(function (d) { if (d) render(d); });
+  /* First draw: wait up to 3 seconds for Cal.com, so a class with no date to
+     book after paying is never shown and then pulled out from under her
+     (stress test, 7 Oct: Brand 101 appeared, then vanished with her tick).
+     Slower than that, list the open flags and let Cal.com correct them. */
+  var drawn = false;
+  QuintaShop.dated(SELLABLE).then(function (d) { drawn = true; render(d); });
+  setTimeout(function () { if (!drawn) render(fromFlags()); }, 3000);
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>

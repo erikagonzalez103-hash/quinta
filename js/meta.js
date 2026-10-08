@@ -176,7 +176,11 @@
 
     /* Back from Stripe with a session id: Purchase, once per session, under
        the id the server uses too. Nothing fires without a pending checkout
-       from this same browser - the server's event covers that case. */
+       from this same browser - the server's event covers that case.
+       v4 (7 Oct): only once Stripe says that session is PAID. A bank payment
+       comes back unpaid and may still fail; the server sends its Purchase
+       when the money clears, under the same id. If the check can't be made,
+       nothing fires here - the server's copy still counts the sale. */
     purchased: function (sessionId) {
       if (!sessionId || !/^cs_[A-Za-z0-9_]+$/.test(sessionId)) return;
       var done = [];
@@ -185,12 +189,18 @@
       var data = null;
       try { data = JSON.parse(sessionStorage.getItem(PENDING) || "null"); } catch (e) {}
       if (!data || !(data.value > 0)) return;
-      fire("Purchase", data, { eventID: sessionId });
-      done.push(sessionId);
-      try {
-        localStorage.setItem(FIRED, JSON.stringify(done.slice(-50)));
-        sessionStorage.removeItem(PENDING);
-      } catch (e) {}
+      fetch("https://pmpaslevwimofohirves.supabase.co/functions/v1/stripe-checkout", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: sessionId })
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
+        if (!s || s.paid !== true) return;
+        fire("Purchase", data, { eventID: sessionId });
+        done.push(sessionId);
+        try {
+          localStorage.setItem(FIRED, JSON.stringify(done.slice(-50)));
+          sessionStorage.removeItem(PENDING);
+        } catch (e) {}
+      }).catch(function () {});
     },
 
     /* For the server's Purchase: Meta's own browser ids, to match the sale

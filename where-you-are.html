@@ -104,11 +104,18 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 .wya-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);
   background:var(--cream);color:var(--ink);border-radius:8px;padding:13px 15px;min-height:52px;
   line-height:1.35;font-size:15px;font-family:inherit;cursor:pointer;transition:border-color .12s,background .12s}
-.wya-opt:hover,.wya-opt:focus-visible{border-color:var(--sage-deep);background:#fff;outline:2px solid transparent}
+.wya-opt:hover,.wya-opt:focus-visible{border-color:var(--sage-deep);background:#fff}
 .wya-opt[aria-checked="true"]{background:var(--sage-deep);color:var(--cream);border-color:var(--sage-deep)}
+.wya-opt:focus-visible,.wya-opt[aria-checked="true"]:focus-visible{outline:2px solid var(--sage-deep);outline-offset:3px}
+#next:disabled{opacity:.45;cursor:default}
+.wya-also{display:block;margin-top:12px;font-size:15px;color:var(--sage-deep);font-weight:600}
+.wya-mail{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.wya-mail-label{font-size:14px;color:var(--sage-deep);margin:0}
+.wya-mail .wya-mini button{background:none;color:var(--sage-deep);border:1px solid var(--sage-deep)}
 .wya-dot{border:1.5px solid currentColor;width:16px;height:16px;border-radius:50%;flex:none}
 .wya-opt[aria-checked="true"] .wya-dot{background:var(--cream);box-shadow:inset 0 0 0 4px var(--sage-deep)}
-.wya-card h2:focus{outline:2px solid var(--sage-deep);outline-offset:6px}
+.wya-card h2:focus{outline:none}
+.wya-card h2:focus-visible{outline:2px solid var(--sage-deep);outline-offset:6px}
 .wya-actions{display:flex;align-items:center;gap:14px;margin-top:auto;padding-top:24px;flex-wrap:wrap}
 .wya-back{border:0;background:none;color:var(--sage-deep);padding:10px 0;font-weight:600;
   font-family:inherit;font-size:15px;cursor:pointer;text-decoration:underline}
@@ -202,7 +209,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <script src="config.js?v=8"></script>
 <script src="classes.js?v=20"></script>
 <script src="app.js?v=7" defer></script>
-<script src="js/meta.js?v=4" defer></script>
+<script src="js/meta.js?v=5" defer></script>
 
 <script>
 /* ============================================================
@@ -218,7 +225,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   "use strict";
 
   var WORRIES = [
-    { label: "My books are a mess",          slug: "bookkeeping-2" },
+    { label: "My books are a mess",          slug: "bookkeeping-1" },   // Bookkeeping II has no dates; I does
     { label: "Not sure I charge enough",     slug: "pricing" },
     { label: "My setup might be wrong",      slug: "entity-setup" },
     { label: "Doing it all by hand",         slug: "module-1" },
@@ -242,18 +249,38 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
   var app = document.getElementById("app");
   var ON21 = {};          // class slug -> true when it has an October 21 seat on sale
+  var on21Ready = false;  // a result waits for that list (or 5 seconds) so its button never swaps under her
+  var OCT21_OPEN = Date.now() < Date.parse("2026-10-21T00:00:00-05:00");
+  /* The classes gift.html can sell. It only offers one with a date she can
+     book after paying, so the gift link is only shown once that is checked. */
+  var GIFTABLE = ["bookkeeping-1", "bookkeeping-2", "module-1", "module-2", "brand-101", "financial-planning",
+                  "certification", "trademarks"];
+  var redeemDated = {};   // slug -> Promise of true/false
   var loggedResult = null;
+  var pendingFocus = false;
   var step = 0;
   var answers = [null, null];
 
   /* ---------- where the visitor came from ---------- */
   var params = new URLSearchParams(location.search);
+  /* Tags on this page's own address win. Without them (the landing page's
+     lower quiz link, a return visit) use the ones js/meta.js kept from the ad
+     she arrived by - same key, same 30 days - so the quiz report still
+     knows paid traffic from organic. */
+  var STORED = (function () {
+    try {
+      var t = JSON.parse(localStorage.getItem("quinta_utm") || "null");
+      return t && t.at && Date.now() - t.at < 30 * 24 * 60 * 60 * 1000 ? t : {};
+    } catch (e) { return {}; }
+  })();
+  var fromUrl = !!params.get("utm_source");
+  function tag(k) { return fromUrl ? params.get(k) : (STORED[k] || null); }
   var CAMPAIGN = {
-    utm_source:   params.get("utm_source"),
-    utm_medium:   params.get("utm_medium"),
-    utm_campaign: params.get("utm_campaign"),
-    utm_content:  params.get("utm_content"),
-    utm_term:     params.get("utm_term"),
+    utm_source:   tag("utm_source"),
+    utm_medium:   tag("utm_medium"),
+    utm_campaign: tag("utm_campaign"),
+    utm_content:  tag("utm_content"),
+    utm_term:     fromUrl ? params.get("utm_term") : null,
     referrer:     document.referrer || null
   };
 
@@ -415,7 +442,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       }
       function fail() {
         btn.disabled = false;
-        btn.textContent = isOpen ? "Send it" : "Tell me";
+        btn.textContent = "Email me";
         msg.className = "wya-msg bad";
         msg.textContent = "Something hiccuped saving that. Please try again — or email hello@quintaand.co and we'll add you by hand.";
       }
@@ -452,16 +479,13 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
                       : calOpen ? ("classes/" + worry.slug + ".html")
                       : ("waitlist.html?c=" + encodeURIComponent(worry.slug) + "&src=where-you-are"));
     var button = on21 ? "Book October 21" : isOpen ? "See dates &amp; book" : "Join the waitlist";
-    var otherDates = "";   // classes.js "open" now counts the 21st too, so a link here could open an empty calendar
-    /* The Week 2 posts say "buy one and gift one at 25% off" right next to
-       this link, so the offer has to be one tap away from the result. */
-    if (isOpen) {
-      otherDates = '<a class="wya-back" style="text-decoration:underline" href="' +
-        withAttribution("gift.html") + '">Or buy one, gift one at 25% off</a>';
-    }
+    /* A class with nothing to book yet still gets a paid next step: the day
+       itself (stress test, 7 Oct - most answers used to end on a waitlist). */
+    var also = !isOpen && OCT21_OPEN
+      ? '<a class="wya-also" href="' + withAttribution("oct21.html") + '">While you wait: see what’s on October 21 →</a>' : "";
     var where21 = on21 && ON21[worry.slug].onlineOnly ? "live online" : "at kiln in Dallas or live online";
     var copy = direct
-      ? (direct.copy || "You came from " + direct.who + "’s poll. This class gives that problem a clear place to begin.")
+      ? (direct.copy || "You came from " + direct.who + "’s poll. This is the class " + direct.who + " teaches.")
       : "You said “" + worry.label + ".” This class gives that problem a clear place to begin.";
 
     app.innerHTML =
@@ -477,18 +501,24 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
           ? (direct && direct.takeaway ? direct.takeaway + " " : "") + (on21
             ? "It's on Wednesday, October 21 at Fork, Femme & Foundations, " + where21 + ". Pick it, and add a class in another block for 15% off."
             : "Go straight to the class, see the dates, and book your seat.")
-          : "This one isn't on the calendar yet. Leave your email and you'll hear first.") + '</span>' +
-        '<form id="wyaMini" class="wya-mini" novalidate>' +
-          '<label class="sr-only" for="wyaEmail">Your email</label>' +
-          '<input id="wyaEmail" type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" required>' +
-          '<button class="btn btn-solid" type="submit">' + (isOpen ? "Send it" : "Tell me") + '</button>' +
-        '</form>' +
-        '<p class="wya-msg" id="wyaMsg" role="status" aria-live="polite"></p>' +
+          : "This one isn't on the calendar yet. Join the waitlist and you'll hear first.") + '</span>' +
       '</div>' +
+      /* The button first: it is what she came for. The email is the quieter
+         option under it, and says what it sends. */
       '<div class="wya-actions">' +
-        '<a class="btn btn-solid" id="wyaGo" href="' + href + '">' + button + '</a>' + otherDates +
+        '<a class="btn btn-solid" id="wyaGo" href="' + href + '">' + button + '</a>' +
+        '<span id="wyaGift"></span>' +
         '<button class="wya-back" type="button" id="again">' + (direct ? "Take the full quiz" : "Start again") + '</button>' +
-      '</div>' +
+      '</div>' + also +
+      (isOpen
+        ? '<div class="wya-mail"><p class="wya-mail-label">Not ready to book? We’ll email you the class details.</p>' +
+          '<form id="wyaMini" class="wya-mini" novalidate>' +
+            '<label class="sr-only" for="wyaEmail">Your email</label>' +
+            '<input id="wyaEmail" type="email" name="email" autocomplete="email" placeholder="you@yourbusiness.com" required>' +
+            '<button class="btn" type="submit">Email me</button>' +
+          '</form>' +
+          '<p class="wya-msg" id="wyaMsg" role="status" aria-live="polite"></p></div>'
+        : '<p class="wya-msg" id="wyaMsg" role="status" aria-live="polite"></p>') +
       '<p class="wya-fine">Your answers help us decide which classes to run next. We never sell them, and an email is only stored if you give us one. <a href="privacy.html">Privacy</a>.</p>';
 
     // The card is redrawn once the October 21 list arrives - count it once.
@@ -501,6 +531,33 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       route = null; loggedResult = null; step = 0; answers[0] = null; answers[1] = null; render(true);
     };
     wireEmail(cls, worry.slug, isOpen);
+
+    /* "Buy one, gift one" only for a class the gift page can actually sell:
+       one of its classes, with a date to book after paying (stress test,
+       7 Oct: Brand 101 and Landlord showed the link and the gift page had
+       neither). The Week 2 posts make this offer, so it stays one tap away
+       wherever it is real. */
+    if (isOpen && GIFTABLE.indexOf(worry.slug) !== -1) {
+      giftable(worry.slug).then(function (ok) {
+        var box = document.getElementById("wyaGift");
+        if (!ok || !box) return;
+        box.innerHTML = '<a class="wya-back" style="text-decoration:underline" href="' +
+          withAttribution("gift.html?c=" + encodeURIComponent(worry.slug)) + '">Or buy one, gift one at 25% off</a>';
+      });
+    }
+  }
+
+  function giftable(slug) {
+    if (!redeemDated[slug]) {
+      var today = new Date(), end = new Date(today.getTime() + 150 * 86400000);
+      var iso = function (d) { return d.toISOString().slice(0, 10); };
+      redeemDated[slug] = fetch("https://api.cal.com/v2/slots?eventTypeSlug=" + encodeURIComponent(slug + "-redeem") +
+        "&username=quintaandco&start=" + iso(today) + "&end=" + iso(end), { headers: { "cal-api-version": "2024-09-04" } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { return !!(d && d.data && Object.keys(d.data).length); })
+        .catch(function () { return false; });
+    }
+    return redeemDated[slug];
   }
 
   /* After each step, move focus to the new question so keyboard and
@@ -511,6 +568,11 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   }
 
   function render(moveFocus) {
+    if ((route || step === 2) && !on21Ready) {
+      app.innerHTML = '<p class="wya-help" role="status">Finding your class…</p>';
+      pendingFocus = pendingFocus || !!moveFocus;
+      return;
+    }
     if (route) { renderResult(route); if (moveFocus) focusHeading(); return; }
     if (step === 2) { renderResult(); if (moveFocus) focusHeading(); return; }
     var q = questionForStep();
@@ -568,25 +630,36 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     if (moveFocus) focusHeading();
   }
 
-  /* Which classes are on sale for 21 October - asked once, then the card is
-     redrawn if it is already showing a result (unless she has started typing
-     an email). Until sales close at midnight going into the day. */
-  if (Date.now() < Date.parse("2026-10-21T00:00:00-05:00")) {
-    fetch("https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/oct21_sessions", {
-      method: "POST",
-      headers: { apikey: "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf",
-                 Authorization: "Bearer sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf",
-                 "Content-Type": "application/json" },
-      body: "{}"
-    }).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+  /* Which classes are on sale for 21 October. A result is not drawn until
+     this answers (or 5 seconds pass), so the button can't flip from "See
+     dates & book" to "Book October 21" under her finger on a slow phone
+     (stress test, 7 Oct). One retry if the first ask fails. */
+  function ready() {
+    if (on21Ready) return;
+    on21Ready = true;
+    var typing = document.getElementById("wyaEmail");
+    if ((route || step === 2) && !(typing && typing.value)) { render(pendingFocus); pendingFocus = false; }
+  }
+  if (OCT21_OPEN) {
+    var ask = function () {
+      return fetch("https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/oct21_sessions", {
+        method: "POST",
+        headers: { apikey: "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf",
+                   Authorization: "Bearer sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf",
+                   "Content-Type": "application/json" },
+        body: "{}"
+      }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    };
+    ask().catch(function () { return ask(); }).then(function (rows) {
       (rows || []).forEach(function (s) {
         if (!s || !(s.seats_left > 0)) return;
         var o = ON21[s.class_slug] || (ON21[s.class_slug] = { onlineOnly: true });
         if (s.format !== "online") o.onlineOnly = false;   // any in-room session means kiln is an option
       });
-      var typing = document.getElementById("wyaEmail");
-      if ((route || step === 2) && !(typing && typing.value)) render();
-    }).catch(function () {});
+    }).catch(function () {}).then(ready);
+    setTimeout(ready, 5000);
+  } else {
+    on21Ready = true;
   }
 
   logEvent("start");

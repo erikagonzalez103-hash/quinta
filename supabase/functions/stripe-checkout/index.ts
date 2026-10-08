@@ -220,6 +220,23 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    /* PAID YET? Asked by js/meta.js when Stripe sends her back, so the browser
+       tells Meta "Purchase" only for money that has actually arrived. A bank
+       payment comes back unpaid; the server reports it when it clears
+       (stripe-webhook). Answers yes/no and nothing else, and only for a real
+       Checkout session id, which can't be guessed. */
+    if (body?.status !== undefined) {
+      const sid = String(body.status || "");
+      if (!/^cs_(live|test)_[A-Za-z0-9]+$/.test(sid)) return json({ paid: false });
+      const r = await fetch(`https://api.stripe.com/v1/checkout/sessions/${sid}`, {
+        headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+      });
+      if (!r.ok) return json({ paid: false });
+      const s = await r.json();
+      return json({ paid: s.payment_status === "paid" });
+    }
+
     const offer = String(body?.offer || "");
     const isGift = offer === "gift";
     const isOct21 = offer === "oct21";

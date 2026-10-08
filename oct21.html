@@ -56,6 +56,15 @@
 .od-msg.bad{color:#9C3B2E}
 .od-msg.good{color:var(--sage-deep)}
 .od-terms{font-size:13px;line-height:1.55;color:var(--sage-deep);margin:10px 0 0;text-align:center}
+.od-code:empty,.od-msg:empty{display:none}
+/* On a short phone (iPhone SE) a sticky bar holding the total, the discount
+   line and the button covered almost half the screen. There it sits at the
+   end of the form instead, like any other form's button. */
+@media (max-height:600px){.od-bar{position:static}}
+.od-about{font-size:13.5px;color:var(--sage-deep);text-decoration:underline;white-space:nowrap}
+.od-paid{font-size:15px;line-height:1.55;color:var(--ink);margin:0 0 22px}
+.od-paid a{color:var(--moss);font-weight:600}
+.od-retry{margin-top:10px}
 .od-terms a{color:var(--sage-deep)}
 .od-done{border:1px solid var(--line);border-radius:12px;background:#fff;padding:22px;margin:0 0 26px}
 .od-done h2{font-family:var(--display);font-weight:500;font-size:22px;color:var(--moss);margin:0 0 6px}
@@ -114,6 +123,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     <p class="od-lead">Pick a class in each block you can come to — at kiln in Dallas or online.
       Two classes are 15% off, three are 25% off, applied for you.</p>
     <p class="od-note">Ten seats per class, in the room and online together.</p>
+    <p class="od-paid" id="odPaidLine">Already paid for a class (a bundle, a gift, or classes you chose)?
+      <a href="#already-paid">Book your seat here</a> &mdash; nothing more to pay.</p>
 
     <!-- The two-person minimum, said where she decides, not only in the
          policies. Same promise as policies.html#... "If a class doesn't fill"
@@ -132,23 +143,23 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     </div>
 
     <form id="odForm" novalidate>
-      <div id="odBlocks"><p class="od-note">Loading the day&hellip;</p></div>
-
       <p class="od-bhead" style="margin-top:6px">How are you joining?</p>
       <div class="od-how" role="radiogroup" aria-label="How are you joining?">
         <label><input type="radio" name="how" value="in-person" checked>In person at kiln, Dallas</label>
         <label><input type="radio" name="how" value="online">Online &mdash; your teacher sends the link</label>
       </div>
-      <p class="od-note" id="odHowNote" style="margin:10px 0 0" aria-live="polite"></p>
+      <p class="od-note" id="odHowNote" style="margin:10px 0 18px" aria-live="polite"></p>
+
+      <div id="odBlocks"><p class="od-note">Loading the day&hellip;</p></div>
 
       <div class="od-bar">
-        <p class="od-sum" id="odSum">Nothing picked yet.</p>
+        <p class="od-sum" id="odSum" aria-live="polite">Nothing picked yet.</p>
         <p class="od-code" id="odCode"></p>
         <button class="od-go" id="odGo" type="submit" disabled>Pick a class to continue</button>
         <p class="od-msg" id="odMsg" role="status" aria-live="polite"></p>
-        <p class="od-terms">Can't come after all? Cancel 24 hours ahead and the class stays yours &middot;
-          <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
       </div>
+      <p class="od-terms">Can't come after all? Cancel 24 hours ahead and the class stays yours &middot;
+        <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
     </form>
 
     <section class="od-redeem" id="already-paid" aria-labelledby="odRTitle">
@@ -184,7 +195,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=20"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=4"></script>
+<script src="js/meta.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -231,6 +242,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     return null;
   }
   function cents(slug) { var c = bySlug(slug); return Math.round(Number((c && c.price) || 0) * 100); }
+  /* The name on the class page, the quiz and Stripe - the day's list has
+     short ones ("Module 1", "Get Certified") that match none of them. */
+  function nameOf(s) { var c = bySlug(s.class_slug); return (c && c.name) || s.class_name; }
 
   var el = function (id) { return document.getElementById(id); };
   var blocksEl = el("odBlocks"), sum = el("odSum"), codeLine = el("odCode"), go = el("odGo"), msg = el("odMsg");
@@ -263,13 +277,16 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         return '<label class="od-row' + (full ? " is-full" : "") + '">' +
           '<input type="checkbox" name="s" value="' + esc(s.session_id) + '" data-block="' + b.key + '"' +
             (full ? " disabled" : "") + (keep.indexOf(s.session_id) !== -1 && !full ? " checked" : "") + '>' +
-          '<span class="od-body"><span class="od-name">' + esc(s.class_name) + '</span>' +
-            '<span class="od-meta">' + esc(clock(s.start_time)) + who + mode + '</span></span>' +
+          '<span class="od-body"><span class="od-name">' + esc(nameOf(s)) + '</span>' +
+            '<span class="od-meta">' + esc(clock(s.start_time)) + who + mode +
+            (bySlug(s.class_slug) ? ' &middot; <a class="od-about" href="classes/' + esc(s.class_slug) + '.html" target="_blank" rel="noopener">About this class</a>' : "") +
+            '</span></span>' +
           '<span class="od-price">' + QuintaShop.money(cents(s.class_slug)) +
             '<span class="od-seats">' + (full ? "Full" : s.seats_left + (s.seats_left === 1 ? " seat" : " seats") + " left") + '</span></span>' +
           '</label>';
       }).join("");
-      return '<div class="od-block"><p class="od-bhead">' + b.label + '</p>' +
+      // A named group, so a screen reader hears "10am block" with its classes.
+      return '<div class="od-block" role="group" aria-labelledby="odB' + b.key + '"><p class="od-bhead" id="odB' + b.key + '">' + b.label + '</p>' +
         (rows || '<p class="od-empty">Classes for this block are still going up.</p>') + '</div>';
     }).join("");
     update();
@@ -287,7 +304,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     /* A teacher can run her session online only. Whatever she picks for the
        day, that one is online - say so before she pays, not in the email. */
     var onlineOnly = chosen.filter(function (s) { return s.format === "online"; })
-      .map(function (s) { return s.class_name; });
+      .map(function (s) { return nameOf(s); });
     el("odHowNote").textContent = onlineOnly.length
       ? onlineOnly.join(" and ") + (onlineOnly.length === 1 ? " runs" : " run") +
         " online only, so you'll join " + (onlineOnly.length === 1 ? "that one" : "those") +
@@ -296,7 +313,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     var total = chosen.reduce(function (t, s) { return t + cents(s.class_slug); }, 0);
     if (!chosen.length) {
       sum.textContent = "Nothing picked yet.";
-      codeLine.textContent = "Pick one more and it's 15% off; three and it's 25%.";
+      codeLine.textContent = "Two classes are 15% off; three are 25% off.";
       go.disabled = true; go.textContent = "Pick a class to continue";
       return;
     }
@@ -314,13 +331,18 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   /* One class per block - she can't be in two rooms at once. Ticking a second
      class in the same block swaps it in, rather than refusing. */
   blocksEl.addEventListener("change", function (ev) {
-    var box = ev.target;
+    var box = ev.target, swapped = false;
     if (box && box.checked) {
       Array.prototype.forEach.call(blocksEl.querySelectorAll('input[data-block="' + box.getAttribute("data-block") + '"]'), function (o) {
-        if (o !== box) o.checked = false;
+        if (o !== box && o.checked) { o.checked = false; swapped = true; }
       });
     }
+    msg.className = "od-msg";
     msg.textContent = "";
+    if (swapped) {
+      var sw = day.filter(function (x) { return x.session_id === box.value; })[0];
+      if (sw) msg.textContent = "One class per block: " + nameOf(sw) + " is now your " + clock(sw.start_time) + " class.";
+    }
     update();
   });
 
@@ -373,10 +395,18 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   function renderRedeem() {
     var open = day.filter(function (s) { return s.seats_left > 0; });
     rSel.innerHTML = '<option value="">Choose a class…</option>' + open.map(function (s) {
-      return '<option value="' + esc(s.session_id) + '">' + esc(clock(s.start_time)) + " — " + esc(s.class_name) +
+      return '<option value="' + esc(s.session_id) + '">' + esc(clock(s.start_time)) + " — " + esc(nameOf(s)) +
         (s.format === "online" ? " (online only)" : "") + "</option>";
     }).join("");
   }
+  // An online-only session can't be joined at kiln: switch the choice for her.
+  rSel.addEventListener("change", function () {
+    var s = day.filter(function (x) { return x.session_id === rSel.value; })[0];
+    if (s && s.format === "online") {
+      var on = document.querySelector('input[name="rhow"][value="online"]');
+      if (on) on.checked = true;
+    }
+  });
   el("odRForm").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var email = el("odREmail").value.trim(), session = rSel.value;
@@ -411,12 +441,20 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   });
 
   var scrolled = false;
+  /* One ask, given up after 10 seconds - on a weak signal it used to hang on
+     "Loading the day..." forever (stress test, 7 Oct). */
+  function ask() {
+    return Promise.race([
+      fetch(SB + "/rest/v1/rpc/oct21_sessions", {
+        method: "POST",
+        headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" },
+        body: "{}"
+      }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
+      new Promise(function (_, no) { setTimeout(function () { no("timeout"); }, 10000); })
+    ]);
+  }
   function load() {
-    fetch(SB + "/rest/v1/rpc/oct21_sessions", {
-      method: "POST",
-      headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" },
-      body: "{}"
-    }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (rows) {
+    ask().catch(function () { return ask(); }).then(function (rows) {
       day = Array.isArray(rows) ? rows : [];
       render(); renderRedeem();
       /* Buyer emails and the bundle page link to #already-paid. The classes
@@ -428,8 +466,15 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       }
     }).catch(function (e) {
       console.error(e);
-      blocksEl.innerHTML = '<p class="od-note">We couldn’t load the day just now. Refresh, or email ' +
-        '<a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>';
+      blocksEl.innerHTML = '<p class="od-note">We couldn’t load the day just now — usually a weak signal. ' +
+        'Try again, or email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a>.</p>' +
+        '<button class="od-ghost od-retry" type="button" id="odRetry">Try again</button>';
+      rSel.innerHTML = '<option value="">Couldn’t load the classes — tap Try again above</option>';
+      el("odRetry").addEventListener("click", function () {
+        blocksEl.innerHTML = '<p class="od-note">Loading the day&hellip;</p>';
+        rSel.innerHTML = '<option value="">Loading&hellip;</option>';
+        load();
+      });
     });
   }
 

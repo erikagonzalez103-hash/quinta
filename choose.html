@@ -49,6 +49,10 @@
 .ch-msg.bad{color:#9C3B2E}
 .ch-terms{font-size:13px;line-height:1.55;color:var(--sage-deep);margin:12px 0 0;text-align:center}
 .ch-terms a{color:var(--sage-deep)}
+.ch-msg:empty,.ch-code:empty{display:none}
+.oct21-note{font-size:15px;line-height:1.55;color:var(--ink);background:#EEF2EC;border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;margin:0 0 26px}
+.oct21-note a{color:var(--moss);font-weight:600}
 </style>
 <!-- Meta Pixel -->
 <script>
@@ -85,6 +89,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       bundle — pick whatever you actually need.</p>
     <p class="ch-note">You pay now and pick your dates afterwards, any time up to
       June 30, 2027. We'll email you a booking link for each class.</p>
+    <p class="oct21-note" id="chOct21">Coming on <strong>October 21</strong>? <a href="oct21.html">Book the day here</a>, with the
+      same 15% and 25% off. Classes you buy on this page can be used on the day too.</p>
 
     <form id="chForm" novalidate>
       <div id="chList"><p class="ch-note">Loading classes…</p></div>
@@ -94,9 +100,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         <p class="ch-code" id="chCode"></p>
         <button class="ch-go" id="chGo" type="submit" disabled>Pick two to continue</button>
         <p class="ch-msg" id="chMsg" role="status" aria-live="polite"></p>
-        <p class="ch-terms">Use by June 30, 2027 &middot; full refund within 14 days if you haven't
-          taken a class &middot; <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
       </div>
+      <p class="ch-terms">Use by June 30, 2027 &middot; full refund within 14 days if you haven't
+        taken a class &middot; <a href="policies.html#classes-paid-for-in-advance">how it works</a></p>
     </form>
   </div>
 </main>
@@ -110,7 +116,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
 <script src="classes.js?v=20"></script>
 <script src="js/shop.js?v=1"></script>
-<script src="js/meta.js?v=4"></script>
+<script src="js/meta.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -170,6 +176,12 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     var shown = SELLABLE.filter(function (slug) {
       return bySlug(slug) && (dates === null || dates[slug]);
     });
+    var dropped = keep.filter(function (slug) { return shown.indexOf(slug) === -1; });
+    if (dropped.length) {
+      msg.className = "ch-msg";
+      msg.textContent = dropped.map(function (s) { return bySlug(s).name; }).join(", ") +
+        (dropped.length > 1 ? " have" : " has") + " no dates to book yet, so we've taken it off your list.";
+    }
 
     if (shown.length < 2) {
       list.innerHTML = '<p class="ch-note">Not enough classes have dates on the calendar ' +
@@ -304,8 +316,13 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     update();
   });
 
-  render(fromFlags());
-  QuintaShop.dated(SELLABLE).then(function (d) { if (d) render(d); });
+  /* First draw: wait up to 3 seconds for Cal.com, so a class with no date to
+     book after paying is never shown and then pulled out from under her
+     (stress test, 7 Oct: Brand 101 appeared, then vanished with her tick).
+     Slower than that, list the open flags and let Cal.com correct them. */
+  var drawn = false;
+  QuintaShop.dated(SELLABLE).then(function (d) { drawn = true; render(d); });
+  setTimeout(function () { if (!drawn) render(fromFlags()); }, 3000);
 })();
 </script>
 <script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
