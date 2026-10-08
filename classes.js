@@ -165,7 +165,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: false,  // WAITLIST since 30 Sep: Tara's September dates passed. Set true when she adds new ones.
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping II — Prep for your bookkeeper",
     price: 99,
     venue: "Zoom",
