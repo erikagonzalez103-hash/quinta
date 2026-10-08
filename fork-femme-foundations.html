@@ -82,6 +82,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
    styles.css so a one-page campaign doesn't force a cache bump across
    every page on the site. ===== */
 .fff-hero{border-bottom:1px solid var(--line);padding:clamp(40px,7vw,86px) 0 clamp(34px,5vw,60px)}
+#bundles{scroll-margin-top:96px}
+.skip{position:absolute;left:-9999px;top:8px;z-index:100;background:var(--cream);color:var(--moss);padding:10px 14px;border:2px solid var(--sage-deep);border-radius:8px}
+.skip:focus{left:16px}
 .fff-kicker{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;
   font-weight:600;color:var(--sage-deep);margin:0 0 26px}
@@ -196,6 +199,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
 <header>
   <div class="bar">
@@ -212,7 +216,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   </div>
 </header>
 
-<main>
+<main id="main">
 
   <!-- FIRST SCREEN (Oct 2026 paid social). The ad ends on "Help us get
        there. Buy a class. Count toward the goal." - this is meant to read as
@@ -238,7 +242,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
        links to her class page when it has dates, or its waitlist when not. -->
   <section class="fff-sec fff-facsec" aria-label="Who's teaching">
     <div class="wrap">
-      <p class="fff-kicker" style="margin-bottom:18px"><span>Who's teaching</span></p>
+      <p class="fff-kicker" role="heading" aria-level="2" style="margin-bottom:18px"><span>Who's teaching</span></p>
       <div class="fff-fac" id="fffFaculty"></div>
     </div>
   </section>
@@ -307,9 +311,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
           your own classes and the discount is applied for you. Nothing to type; you'll see
           it on the payment page. Bundle prices above are already discounted too.</p>
         <p style="margin:0 0 14px"><a class="btn btn-solid" href="choose.html">Choose your classes</a></p>
-        <p style="margin:0;font-size:14px;line-height:1.55;color:var(--sage-deep)">Gifting
-          a seat needs no code — the price is worked out for you.
-          <a href="gift.html">Buy one, gift one</a>.</p>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:var(--sage-deep)">Giving a class
+          to someone? <a href="gift.html">Buy one, gift one</a>: hers is 25% off, worked out for you.</p>
       </div>
     </div>
   </section>
@@ -514,8 +517,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         '<h3 class="fff-bname">' + esc(b.name) + '</h3>' +
         (b.blurb ? '<p class="fff-blurb">' + esc(b.blurb) + '</p>' : "") +
         '<p class="fff-includes">' + esc(names) + '</p>' +
-        '<p class="fff-price">$' + b.price + '</p>' +
-        '<p class="fff-was"><s>$' + b.full + '</s> &nbsp;save $' + (b.full - b.price) + '</p>' +
+        '<p class="fff-price">$' + b.price.toLocaleString("en-US") + '</p>' +
+        '<p class="fff-was"><s>$' + b.full.toLocaleString("en-US") + '</s> &nbsp;save $' + (b.full - b.price).toLocaleString("en-US") + '</p>' +
         (ready ? "" : '<p class="fff-soon" style="margin-bottom:8px">Dates going up shortly — leave your email and you\'ll hear first.</p>') +
         action +
       '</div>';
@@ -620,7 +623,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       var href = open ? "classes/" + f.slug + ".html"
                       : "waitlist.html?c=" + encodeURIComponent(f.slug) + "&src=fff";
       return '<a class="fff-person" href="' + href + '">' +
-          '<img src="images/faculty/' + f.key + '.jpg" alt="' + esc(f.name) + '" width="112" height="112">' +
+          '<img src="images/faculty/' + f.key + '.jpg" alt="" width="112" height="112">' +
           '<span class="fff-pname">' + esc(f.name) + '</span>' +
           '<span class="fff-pclass">' + esc(f.cls) + (open ? "" : " · waitlist open") + '</span>' +
           '<span class="fff-pline">' + esc(f.line) + '</span>' +

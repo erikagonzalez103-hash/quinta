@@ -171,7 +171,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   <div class="wya-main">
     <div class="wya-intro">
       <p class="label" style="color:var(--sage-deep);margin:0 0 20px">Where you are</p>
-      <h1>What is costing you the most <em>right now?</em></h1>
+      <h1>What is costing you the most <em>right&nbsp;now?</em></h1>
       <p>Two quick questions. One useful place to begin.</p>
       <p class="wya-note">No score. No email required.</p>
     </div>
@@ -415,7 +415,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       var input = document.getElementById("wyaEmail");
       var msg = document.getElementById("wyaMsg");
       var btn = form.querySelector("button");
-      var email = (input.value || "").trim();
+      var email = (input.value || "").trim().toLowerCase();
       msg.className = "wya-msg";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         msg.className = "wya-msg bad";

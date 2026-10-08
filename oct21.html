@@ -119,7 +119,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     </div>
 
     <p class="od-kicker">Fork, Femme &amp; Foundations</p>
-    <h1 class="od-h1">Wednesday, October 21.</h1>
+    <h1 class="od-h1">Wednesday, October&nbsp;21.</h1>
     <p class="od-lead">Pick a class in each block you can come to — at kiln in Dallas or online.
       Two classes are 15% off, three are 25% off, applied for you.</p>
     <p class="od-note">Ten seats per class, in the room and online together.</p>
@@ -150,7 +150,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       </div>
       <p class="od-note" id="odHowNote" style="margin:10px 0 18px" aria-live="polite"></p>
 
-      <div id="odBlocks"><p class="od-note">Loading the day&hellip;</p></div>
+      <div id="odBlocks" style="min-height:360px"><p class="od-note">Loading the day&hellip;</p></div>
 
       <div class="od-bar">
         <p class="od-sum" id="odSum" aria-live="polite">Nothing picked yet.</p>
@@ -164,12 +164,13 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
     <section class="od-redeem" id="already-paid" aria-labelledby="odRTitle">
       <h2 id="odRTitle">Already paid for a class?</h2>
-      <p class="od-note">From a bundle, a gift, or classes you chose together. Use the email you bought
-        with, pick the session, and your seat is booked — nothing more to pay.</p>
+      <p class="od-note">From a bundle, a gift, or classes you chose together. Use the email your class
+        is under, pick the session, and your seat is booked — nothing more to pay.</p>
       <form id="odRForm" novalidate>
         <div class="od-field">
-          <label for="odREmail">The email you bought with</label>
+          <label for="odREmail">The email your class is under</label>
           <input id="odREmail" type="email" inputmode="email" autocomplete="email">
+          <p class="od-note" style="margin:6px 0 0;font-size:14px">Given a class? Use the email your gift came to.</p>
         </div>
         <div class="od-field">
           <label for="odRSession">Which class on October 21</label>
@@ -250,8 +251,10 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   var blocksEl = el("odBlocks"), sum = el("odSum"), codeLine = el("odCode"), go = el("odGo"), msg = el("odMsg");
   var day = [];
 
-  if (/[?&]booked=1/.test(location.search)) {
+  var BACK = /[?&]booked=1/.test(location.search) && /^cs_/.test(new URLSearchParams(location.search).get("s") || "");
+  if (BACK) {
     el("odDone").hidden = false;
+    try { sessionStorage.removeItem("od_picks"); } catch (e) {}
     // Back from Stripe: Meta's Purchase, once, under Stripe's session id.
     if (window.QuintaMeta) QuintaMeta.purchased(new URLSearchParams(location.search).get("s"));
   }
@@ -359,6 +362,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     var want = p.length >= 3 ? "FFF25" : p.length === 2 ? "FFF15" : null;
     go.disabled = true; go.textContent = "Taking you to payment…";
     msg.className = "od-msg"; msg.textContent = "";
+    // If she comes Back from Stripe, put her picks back (they used to be lost).
+    try { sessionStorage.setItem("od_picks", JSON.stringify({ p: p, how: how })); } catch (e) {}
 
     fetch(CHECKOUT, {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -412,6 +417,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     var email = el("odREmail").value.trim(), session = rSel.value;
     var how = (document.querySelector('input[name="rhow"]:checked') || {}).value || "in-person";
     rMsg.className = "od-msg";
+    if (!email) { rMsg.className = "od-msg bad"; rMsg.textContent = "Enter the email your class is under."; el("odREmail").focus(); return; }
     if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) { rMsg.className = "od-msg bad"; rMsg.textContent = "That email doesn't look right."; return; }
     if (!session) { rMsg.className = "od-msg bad"; rMsg.textContent = "Pick a class."; return; }
     rGo.disabled = true; rGo.textContent = "Booking…"; rMsg.textContent = "";
@@ -429,7 +435,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       }
       rMsg.className = "od-msg bad";
       rMsg.textContent =
-        d && d.error === "nothing_owed" ? "We can't find a " + (d.class_name || "class") + " you've already paid for under that email. Check it's the one you bought with, or email hello@quintaand.co." :
+        d && d.error === "nothing_owed" ? "We don't see " + (d.class_name ? "“" + d.class_name + "”" : "that class") + " already paid for under that email. Check it's the one your class is under, or email hello@quintaand.co." :
         d && d.error === "full" ? "That class has just filled up — pick another." :
         d && d.error === "already_used" ? "That class has already been booked." :
         d && d.error === "closed" ? "Booking for October 21 has closed." :
@@ -439,6 +445,19 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       rMsg.className = "od-msg bad"; rMsg.textContent = "That didn't go through. Check your signal and try again.";
     });
   });
+
+  function restorePicks() {
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem("od_picks") || "null"); } catch (e) {}
+    if (!saved || BACK || picked().length) return;
+    (saved.p || []).forEach(function (id) {
+      var box = blocksEl.querySelector('input[value="' + String(id).replace(/[^a-z0-9-]/gi, "") + '"]');
+      if (box && !box.disabled) box.checked = true;
+    });
+    var how = document.querySelector('input[name="how"][value="' + (saved.how === "online" ? "online" : "in-person") + '"]');
+    if (how) how.checked = true;
+    update();
+  }
 
   var scrolled = false;
   /* One ask, given up after 10 seconds - on a weak signal it used to hang on
@@ -457,6 +476,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     ask().catch(function () { return ask(); }).then(function (rows) {
       day = Array.isArray(rows) ? rows : [];
       render(); renderRedeem();
+      restorePicks();
       /* Buyer emails and the bundle page link to #already-paid. The classes
          above it load after the browser has already jumped, which pushes
          the form back down out of sight - so jump again once they're in. */

@@ -140,7 +140,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   var OCT21_NOTE = OCT21_OPEN
     ? '<p class="bd-oct21"><strong>Want Wednesday, October 21?</strong> That day isn’t in ' +
       'the calendar links — <a href="' + OCT21_LINK + '">book your class on October 21 here</a> ' +
-      'with the email you bought with. Nothing more to pay.</p>'
+      'with the email your class is under. Nothing more to pay.</p>'
     : "";
 
   /* Which classes run on the 21st with a seat left - so a class with no
@@ -221,7 +221,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 
   var b = BUNDLES[key];
   if (!b) {
-    lost("This link is missing its bundle name, so we can’t tell which classes are yours.");
+    lost("We don’t recognise this bundle link, so we can’t tell which classes are yours.");
     return;
   }
 
@@ -253,9 +253,17 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         if (!btn) return;
         var what = row.querySelector(".bd-what");
         if (dates[slug]) {
-          if (what) what.textContent = (what.textContent ? what.textContent + " " : "") +
-            "Next date: " + QuintaShop.prettyDay(dates[slug]) + "." +
-            (on21[slug] ? " Also on October 21." : "");
+          if (what) {
+            what.textContent = (what.textContent ? what.textContent + " " : "") +
+              "Next date: " + QuintaShop.prettyDay(dates[slug]) + ".";
+            if (on21[slug]) {
+              var a21 = document.createElement("a");
+              a21.href = OCT21_LINK; a21.textContent = "October 21";
+              what.appendChild(document.createTextNode(" Also on "));
+              what.appendChild(a21);
+              what.appendChild(document.createTextNode("."));
+            }
+          }
           return;
         }
         if (on21[slug]) {

@@ -243,7 +243,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       go.disabled = false;
       go.textContent = "Continue to payment";
     } else {
-      codeLine.textContent = "Add one more and it’s 15% off.";
+      codeLine.innerHTML = "Add one more and it’s 15%&nbsp;off. Just want this one? " +
+        '<a href="classes/' + esc(p[0]) + '.html">Book it on its class page</a>.';
       go.disabled = true;
       go.textContent = "Pick two to continue";
     }
