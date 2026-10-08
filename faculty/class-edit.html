@@ -406,6 +406,17 @@
         var o = document.createElement("option"); o.value = c.slug; o.textContent = c.name; sel.appendChild(o);
       });
       if (mine.length > 1) $("pick-row").style.display = "block";
+      /* Mark the classes someone has edited here, with who and when, so Erika
+         can see at a glance what changed (8 Oct). */
+      sb.from("class_edits").select("slug,edited_by_name,updated_at").then(function (r) {
+        (r && r.data || []).forEach(function (e) {
+          var o = sel.querySelector('option[value="' + e.slug + '"]');
+          if (!o) return;
+          var day = "";
+          try { day = new Date(e.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }); } catch (x) {}
+          o.textContent = bySlug[e.slug].name + "  ✎ edited" + (e.edited_by_name ? " by " + e.edited_by_name : "") + (day ? ", " + day : "");
+        });
+      });
       var want = new URLSearchParams(location.search).get("c");
       if (want && bySlug[want] && mine.some(function (c) { return c.slug === want; })) sel.value = want;
       sel.addEventListener("change", function () {

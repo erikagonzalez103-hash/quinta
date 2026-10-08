@@ -154,12 +154,24 @@ export function salesCard(todayRows, allRows, sinceLabel) {
     (all.length ? block(all) : quiet("No sales yet.")));
 }
 
+/* A section that throws becomes a note saying so - the rest of the report
+   still goes out. On 7 and 8 Oct 2026 one bad section stopped the whole email
+   two mornings running, and silence read as "no report", not "broken". */
+function safe(title, build) {
+  try { return build(); } catch (e) {
+    console.error(`section "${title}" failed:`, e && e.stack || e);
+    return card(title, `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">This section hit an error and was skipped: ${esc(e && e.message || e)}</p>`);
+  }
+}
+
 export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
                               waitlistUnreadable = false, kitRows = null, salesToday = [], salesAll = [] }) {
   const parts = [];
+  // Names are compared and printed below; a faculty row with no name at all must not break that.
+  faculty = (faculty || []).map((f) => ({ ...f, name: String(f.name || f.email || "(no name)") }));
 
   // --- Sales by source (first: it's the number the campaign is judged on) ---
-  parts.push(salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)"));
+  parts.push(safe("Sales by source", () => salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)")));
 
   // --- The Swarm ---
   //
@@ -167,6 +179,7 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   // when nobody posts hides exactly the thing worth seeing: WHO didn't. The
   // note explains the silence; the list names it.
   const posted = Object.keys(posts);
+  parts.push(safe("The Swarm today", () => {
   const roster = faculty
     .map((f) => ({ f, n: posts[f.email] || 0 }))
     .sort((a, b) => b.n - a.n || a.f.name.localeCompare(b.f.name))
@@ -177,16 +190,17 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   const swarmNote = posted.length
     ? ""
     : quiet("Nobody marked a post done today. If the faculty are posting without ticking the box, the board can't tell — worth a nudge in the group text.") + '<div style="height:12px"></div>';
-  parts.push(card("The Swarm today",
+  return card("The Swarm today",
     faculty.length ? swarmNote + roster
-                   : quiet("No faculty records to report on.")));
+                   : quiet("No faculty records to report on."));
+  }));
 
   // --- This week's kit (only once kit_events exists) ---
-  const kit = kitCard(kitRows, faculty, "Week 2 kit — who has it");
+  const kit = safe("Week 2 kit — who has it", () => kitCard(kitRows, faculty, "Week 2 kit — who has it"));
   if (kit) parts.push(kit);
 
   // --- Signups ---
-  parts.push(card("Signups today",
+  parts.push(safe("Signups today", () => card("Signups today",
     signups.length
       ? signups.map((s) => row(
           `${esc(s.name || s.email)} — <span style="color:#5A5E55;">${esc(s.class_name || "All classes")}</span>`,
@@ -198,16 +212,19 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
       : waitlistUnreadable
         ? `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The waitlist could not be read — this is NOT "no signups".</p>
            <p style="margin:8px 0 0 0;line-height:1.65;color:#5A5E55;">Supabase refused the read. Almost always a bad SUPABASE_SERVICE_ROLE_KEY: a publishable key hits row-level security and is refused, a secret key is not. Signups are still being saved, and nobody has been emailed about them.</p>`
-        : quiet("No signups today.")));
+        : quiet("No signups today."))));
 
   // --- Referral standings ---
-  const top = referrals.filter((r) => r.signups > 0);
-  parts.push(card("Referral standings",
+  parts.push(safe("Referral standings", () => {
+  const top = (referrals || []).filter((r) => r.signups > 0);
+  return card("Referral standings",
     top.length
       ? top.slice(0, 10).map((r) => row(esc(r.ref), `${r.signups}`)).join("")
-      : quiet("No referral code has brought in a signup yet. Every waitlist row so far arrived with no code attached — worth checking that the faculty links in bios actually carry ?ref=.")));
+      : quiet("No referral code has brought in a signup yet. Every waitlist row so far arrived with no code attached — worth checking that the faculty links in bios actually carry ?ref="));
+  }));
 
   // --- Schedule ---
+  parts.push(safe("The schedule", () => {
   const scheduleInner = [];
   if (sessionsToday.length) {
     scheduleInner.push(`<div style="margin-bottom:10px;font-size:14px;color:#5A5E55;">Dates added today:</div>`);
@@ -227,7 +244,8 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
       </div>`);
   }
   if (!scheduleInner.length) scheduleInner.push(quiet("No dates added today, and nothing scheduled is failing to be bookable."));
-  parts.push(card("The schedule", scheduleInner.join("")));
+  return card("The schedule", scheduleInner.join(""));
+  }));
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quinta — ${esc(prettyDay(now))}</title></head>
 <body style="font-family:Georgia,'Times New Roman',serif;background:#FAFAF6;color:#2F332E;margin:0;padding:24px;">
@@ -371,5 +389,9 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   run({ fetch: globalThis.fetch, env: { ...process.env, DRY_RUN: process.argv.includes("--dry-run") ? "1" : "" } })
-    .catch((e) => { console.error("FAILED:", e.message); process.exit(1); });
+    .catch((e) => {
+      console.error("FAILED:", e.message);
+      if (process.env.GITHUB_ACTIONS) console.log(`::error title=Daily report not sent::${String(e.message).replace(/\r?\n/g, " ").slice(0, 400)}`);
+      process.exit(1);
+    });
 }
