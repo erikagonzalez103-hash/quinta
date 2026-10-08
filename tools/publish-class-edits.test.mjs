@@ -70,13 +70,17 @@ assert.equal(readFileSync(join(root, "classes.js"), "utf-8"), src, "dry run wrot
 assert.equal(minutesOf("90 minutes · live, small group"), 90);
 assert.equal(minutesOf("Live, small group"), null);
 assert.equal(withMinutes("90 minutes · live, small group", 120), "120 minutes · live, small group");
-const s9 = applyEdit(src, "trademarks", { ...w1, minutes: 120 });
+// Uses whatever length Trademarks has today (it went 90 -> 120 on 7 Oct and
+// broke a check that assumed 90), and a different one for the change.
+const cur9 = minutesOf(before.trademarks.format), other9 = cur9 === 120 ? 90 : 120;
+const s9 = applyEdit(src, "trademarks", { ...w1, minutes: other9 });
 const t9 = after(s9).trademarks;
-assert.equal(t9.format, "120 minutes · live, small group");
-assert.equal(differs(t9, { ...w1, minutes: 120 }), false);
+assert.equal(t9.format, `${other9} minutes · live, small group`);
+assert.equal(differs(t9, { ...w1, minutes: other9 }), false);
 assert.equal(after(applyEdit(src, "trademarks", { ...w1, minutes: null })).trademarks.format, before.trademarks.format, "no minutes = length untouched");
 assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: null }), false);
-assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: 90 }), false, "same length is not a change");
+assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: cur9 }), false, "same length is not a change");
+assert.equal(lengthDiffers(before.trademarks, { ...w1, minutes: other9 }), true, "a different length is a change");
 
 // 10. Which Cal.com events a length change touches.
 const ev = [
@@ -91,7 +95,7 @@ assert.deepEqual(lengthTargets(ev, "funding").map((e) => e.id), [6], "never the 
 assert.deepEqual(lengthTargets(ev, "nope"), []);
 
 // 11. A length change with no Cal.com key publishes the words but not the length.
-const rows11 = [{ slug: "trademarks", description: w1.desc, covers: w1.covers, walkout: w1.walkout, prereq: w1.prereq, minutes: 120 }];
+const rows11 = [{ slug: "trademarks", description: w1.desc, covers: w1.covers, walkout: w1.walkout, prereq: w1.prereq, minutes: other9 }];
 const res11 = await run({ root, fetchImpl: async () => ({ ok: true, json: async () => rows11 }), dryRun: true, log: () => {}, env: {} });
 assert.equal(res11.changes.length, 1);
 
