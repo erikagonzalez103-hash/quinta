@@ -184,7 +184,7 @@
       script: "You'll spend $1,000 on an ad campaign that might not bring in a single sale. But will you spend under $200 learning where the rest of your money goes? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Bookkeeping I: Set Up QuickBooks as part of Fork, Femme and Foundations. You'll leave knowing what every dollar actually made you. More information below.",
       caption: "Before you spend another $1,000 on ads, invest in the business's biggest asset: you. On October 21 I'm teaching Bookkeeping I: Set Up QuickBooks for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=tara" },
     // Handoff had "$[price]"; Erika: use Module 1 pricing ($150, classes.js), 13 Oct.
-    { key: "erika", name: "Erika", cls: "Module 1: Your First AI Workflow",
+    { key: "erika", name: "Erika", cls: "Module 1: Your First AI Workflow", selfie: true,   // 13 Oct: her selfie reel is in
       script: "You'll pay for AI tools every month. But will you spend $150 learning to make them actually do the work? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Module 1: Your First AI Workflow as part of Fork, Femme and Foundations. You'll leave with one real workflow running in your business. More information below.",
       caption: "Before you pay for one more AI tool, learn to make the ones you have do the work. On October 21 I'm teaching Module 1: Your First AI Workflow for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=erika" },
     { key: "nik", name: "Nik", cls: "Trademarks",
@@ -341,7 +341,9 @@
     });
   }
 
-  var REEL_V = 1;   // bump when a teacher's reel file is replaced
+  /* Set selfie: true on her PEOPLE entry when her reel becomes her own
+     video (it has sound, so the page shows player controls). */
+  var REEL_V = 2;   // bump when a teacher's reel file is replaced (2: Erika's selfie, 13 Oct)
   function reelSrc(k) { return "kit/week3/reels/week3-reel-" + k + ".mp4?v=" + REEL_V; }
   function reelPoster(k) { return "kit/week3/reels/week3-reel-" + k + ".jpg?v=" + REEL_V; }
 
@@ -362,10 +364,12 @@
       '</div>' +
 
       '<h2>Your reel</h2>' +
-      '<p>This is your finished reel: your headshot in the square, and your five cards changing underneath. It\'s ready to post. If you upload a selfie video, Erika will put your new version right here.</p>' +
-      '<video class="reel" src="' + reelSrc(p.key) + '" poster="' + reelPoster(p.key) + '" autoplay muted loop playsinline preload="metadata" ' +
+      (p.selfie
+        ? '<p>This is your finished reel: your video in the square, and your five cards changing underneath. It\'s ready to post. Tap the video to hear it.</p>'
+        : '<p>This is your finished reel: your headshot in the square, and your five cards changing underneath. It\'s ready to post. If you upload a selfie video, Erika will put your new version right here.</p>') +
+      '<video class="reel" src="' + reelSrc(p.key) + '" poster="' + reelPoster(p.key) + '" autoplay muted loop playsinline preload="metadata"' + (p.selfie ? ' controls' : '') + ' ' +
         'aria-label="' + esc(p.name) + '’s Week 3 reel"></video>' +
-      '<p class="reel-meta">25 sec · tall · no sound</p>' +
+      '<p class="reel-meta">' + (p.selfie ? 'Tall · with sound' : '25 sec · tall · no sound') + '</p>' +
       '<div class="acts reel-acts"><a class="btn-sm solid" href="' + reelSrc(p.key) + '" download="Fork-Femme-Foundations-' + p.key + '-week3-reel.mp4" data-log="' + p.key + ':reel" data-photos>Save my reel to Photos</a></div>' +
       '<p class="note">Tap <strong>Save my reel to Photos</strong>, then tap <strong>Save Video</strong> in the menu that pops up. It goes into your Photos, ready for Instagram.</p>' +
 
