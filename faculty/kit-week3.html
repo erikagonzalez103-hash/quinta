@@ -116,7 +116,7 @@
         <li><strong>Keep your head and shoulders centered.</strong> Your video gets cropped to a square, so stay in the middle of the screen.</li>
         <li><strong>Open your phone's Camera, switch to Video,</strong> tap the flip icon (two curved arrows) so you can see yourself, and press the red button. Aim for about 25 seconds. Press the red button again to stop. If you stumble, just start over. It's fine to record a few takes and send the best one.</li>
         <li><strong>Upload your video to the Week 3 folder.</strong> Tap the <strong>Upload my video</strong> button below. It opens a Google Drive folder. Tap <strong>+</strong>, then <strong>Upload</strong>, and pick your video. Name it with your first name (for example, <em>Tara</em>).</li>
-        <li><strong>Erika sends back your finished reel,</strong> with your cards added, ready to post. It will also appear under <strong>Download my reel</strong> on this page.</li>
+        <li><strong>Erika sends back your finished reel,</strong> with your cards added, ready to post. It will also appear under <strong>Your reel</strong> on this page.</li>
       </ol>
       <div class="acts"><a class="btn-sm solid" href="https://drive.google.com/drive/folders/1arDnKLTxfs67tc-YB_CmzzXjq7NtT_x5" target="_blank" rel="noopener">Upload my video</a></div>
 
@@ -134,7 +134,7 @@
 
       <h2>How to post your reel</h2>
       <ol class="kit-steps">
-        <li><strong>Save your reel to your phone.</strong> Tap <strong>Download my reel</strong> above. On an iPhone, if the video opens on its own page instead, tap the share icon (the square with an arrow pointing up), then <strong>Save Video</strong>. If Erika texted you a finished version, you can save that one instead: tap it in Messages, then the share icon, then <strong>Save Video</strong>.</li>
+        <li><strong>Save your reel to your Photos.</strong> Tap <strong>Save my reel to Photos</strong> above, then tap <strong>Save Video</strong>. If Erika texted you a finished version, you can save that one instead: tap it in Messages, then the share icon (the square with an arrow pointing up), then <strong>Save Video</strong>.</li>
         <li>Open Instagram, tap <strong>+</strong> at the bottom of the screen, choose <strong>Reel</strong>, and pick the video.</li>
         <li>Tap <strong>Next</strong>, then tap the caption box and paste your caption (use the <strong>Copy the caption</strong> button above).</li>
         <li>Tap <strong>Share</strong>.</li>
@@ -150,15 +150,15 @@
         <div>
           <video src="kit/week3/fork-femme-foundations-250k-story-1080x1920.mp4#t=0.1" controls playsinline preload="metadata"></video>
           <p>Tall · for a Reel or your Story</p>
-          <a class="btn-sm solid" href="kit/week3/fork-femme-foundations-250k-story-1080x1920.mp4" download="Fork-Femme-Foundations-250k-story.mp4" data-log="campaign-story">Download the tall video</a>
+          <a class="btn-sm solid" href="kit/week3/fork-femme-foundations-250k-story-1080x1920.mp4" download="Fork-Femme-Foundations-250k-story.mp4" data-log="campaign-story" data-photos>Save the tall video</a>
         </div>
         <div>
           <video src="kit/week3/fork-femme-foundations-250k-feed-1080x1350.mp4#t=0.1" controls playsinline preload="metadata"></video>
           <p>Shorter · for a regular feed post</p>
-          <a class="btn-sm" href="kit/week3/fork-femme-foundations-250k-feed-1080x1350.mp4" download="Fork-Femme-Foundations-250k-feed.mp4" data-log="campaign-feed">Download the feed video</a>
+          <a class="btn-sm" href="kit/week3/fork-femme-foundations-250k-feed-1080x1350.mp4" download="Fork-Femme-Foundations-250k-feed.mp4" data-log="campaign-feed" data-photos>Save the feed video</a>
         </div>
       </div>
-      <p class="note">On an iPhone, if a video opens on its own page instead of downloading, tap the share icon (the square with an arrow pointing up), then <strong>Save Video</strong>.</p>
+      <p class="note">Tap <strong>Save</strong> under a video, then tap <strong>Save Video</strong> in the menu that pops up. It goes into your Photos.</p>
 
       <p class="kit-note">If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
     </div>
@@ -224,28 +224,36 @@
     });
   }
 
-  /* Copy that still works in the in-app browsers faculty open this in, where
-     navigator.clipboard often isn't there. Same as kit-week2.html. */
+  /* Copy that still works on iPhones and in the in-app browsers faculty
+     open this in. 13 Oct (Erika: Copy the caption not working): the old
+     order tried navigator.clipboard first and only fell back after it
+     failed - by then the tap had "expired" on iPhone, so the fallback failed
+     too. Now the old-style copy runs first, synchronously inside the tap
+     (clipboard.js's recipe: a readonly textarea at the current scroll spot,
+     so no keyboard and no jump), and navigator.clipboard is the second try,
+     still started inside the same tap. A copy that fails both ways shows
+     the text to press-and-hold, never a false "Copied". */
   function copyText(text) {
-    function legacy() {
+    var ok = false;
+    try {
       var ta = document.createElement("textarea");
       ta.value = text;
-      ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "0";
-      ta.style.opacity = "0"; ta.style.fontSize = "16px";   // 16px: iPhone won't zoom
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:absolute;left:-9999px;top:" + (window.pageYOffset || 0) +
+        "px;font-size:16px;border:0;padding:0;margin:0";   // 16px: iPhone won't zoom
       document.body.appendChild(ta);
-      ta.focus(); ta.select();
-      try { ta.setSelectionRange(0, text.length); } catch (e) {}
-      var ok = false;
-      try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
       document.body.removeChild(ta);
-      return ok;
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (e) { ok = false; }
+    if (ok) return Promise.resolve();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try { return navigator.clipboard.writeText(text); } catch (e) {}
     }
-    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext !== false) {
-      return navigator.clipboard.writeText(text).catch(function () {
-        if (!legacy()) throw new Error("copy blocked");
-      });
-    }
-    return legacy() ? Promise.resolve() : Promise.reject(new Error("copy blocked"));
+    return Promise.reject(new Error("copy blocked"));
   }
   /* Copying was blocked: put the text right under the button, selected, with
      how to copy it by hand. Works everywhere, keeps line breaks. */
@@ -295,6 +303,44 @@
     });
   }
 
+  /* SAVE TO PHOTOS. On an iPhone a download link always lands in Files
+     (Erika, 13 Oct). The share sheet is the one way a web page can offer
+     "Save Video" into Photos, so on a phone each a[data-photos] fetches its
+     video ahead of time and a tap opens the share sheet with it attached.
+     The file has to be ready before the tap - sharing after a fetch inside
+     the tap is refused - so the button says so until it is. Where sharing
+     files isn't supported (most in-app browsers, computers), the link stays
+     an ordinary download. */
+  var canSharePhotos = (function () {
+    try {
+      return !!(navigator.share && navigator.canShare && window.fetch && window.File &&
+        window.matchMedia && window.matchMedia("(pointer:coarse)").matches &&
+        navigator.canShare({ files: [new File([""], "t.mp4", { type: "video/mp4" })] }));
+    } catch (e) { return false; }
+  })();
+  function wirePhotos(a) {
+    if (!canSharePhotos || a.dataset.photosWired) return;
+    a.dataset.photosWired = "1";
+    var url = a.getAttribute("href"), name = a.getAttribute("download") || "video.mp4";
+    var label = a.textContent, file = null, failed = false, waiting = false;
+    fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function (b) {
+        var f = new File([b], name, { type: "video/mp4" });
+        if (navigator.canShare({ files: [f] })) file = f; else failed = true;
+      })
+      .catch(function () { failed = true; })
+      .then(function () { if (waiting) { waiting = false; a.textContent = label; } });
+    a.addEventListener("click", function (ev) {
+      if (failed) return;                         // plain download instead
+      ev.preventDefault();
+      if (!file) { waiting = true; a.textContent = "One moment, then tap again…"; return; }
+      navigator.share({ files: [file] }).catch(function (e) {
+        if (e && e.name === "AbortError") return; // she closed the share sheet
+        failed = true; a.click();                 // fall back to the download
+      });
+    });
+  }
+
   var REEL_V = 1;   // bump when a teacher's reel file is replaced
   function reelSrc(k) { return "kit/week3/reels/week3-reel-" + k + ".mp4?v=" + REEL_V; }
   function reelPoster(k) { return "kit/week3/reels/week3-reel-" + k + ".jpg?v=" + REEL_V; }
@@ -320,7 +366,8 @@
       '<video class="reel" src="' + reelSrc(p.key) + '" poster="' + reelPoster(p.key) + '" autoplay muted loop playsinline preload="metadata" ' +
         'aria-label="' + esc(p.name) + '’s Week 3 reel"></video>' +
       '<p class="reel-meta">25 sec · tall · no sound</p>' +
-      '<div class="acts reel-acts"><a class="btn-sm solid" href="' + reelSrc(p.key) + '" download="Fork-Femme-Foundations-' + p.key + '-week3-reel.mp4" data-log="' + p.key + ':reel">Download my reel</a></div>' +
+      '<div class="acts reel-acts"><a class="btn-sm solid" href="' + reelSrc(p.key) + '" download="Fork-Femme-Foundations-' + p.key + '-week3-reel.mp4" data-log="' + p.key + ':reel" data-photos>Save my reel to Photos</a></div>' +
+      '<p class="note">Tap <strong>Save my reel to Photos</strong>, then tap <strong>Save Video</strong> in the menu that pops up. It goes into your Photos, ready for Instagram.</p>' +
 
       '<h2>Your caption</h2>' +
       '<p>You\'ll paste this under your video when you post it. Your link is already in it.</p>' +
@@ -332,6 +379,7 @@
         '</div>' +
       '</div>';
 
+    Array.prototype.forEach.call(box.querySelectorAll("a[data-photos]"), wirePhotos);
     Array.prototype.forEach.call(box.querySelectorAll("[data-copy-text]"), function (b) {
       wireCopy(b, function () { return b.getAttribute("data-copy-text"); });
     });
@@ -376,6 +424,7 @@
         document.getElementById("admin-picker").style.display = "block";
       }
       render(find(start), isAdmin);
+      Array.prototype.forEach.call(document.querySelectorAll(".vids a[data-photos]"), wirePhotos);
       signedIn = true;
       logKit("open", first);
     });
