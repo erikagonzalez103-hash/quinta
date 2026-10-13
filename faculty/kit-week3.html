@@ -13,7 +13,7 @@
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <style>
 /* Same look as kit-week2.html. Built for a phone first. Unlike Week 2, each
-   teacher sees only her own script, cards and caption. */
+   teacher sees only her own script, reel and caption. */
 .kit-wrap{max-width:760px}
 .kit-meta{font-size:15.5px;line-height:1.7;color:var(--ink);margin:18px 0 0}
 .kit-meta strong{color:var(--moss)}
@@ -43,34 +43,22 @@
 .cap .lnk{font-size:15px;word-break:break-all;margin:0 0 4px}
 .note{font-size:14.5px;background:#EEF2EC;border-radius:8px;padding:11px 13px;margin:12px 0 0}
 .note.admin{background:#FBF3E4;border:1px solid #E8D6B0}
-/* The preview: her five cards over a stand-in for her video, 5 seconds
-   each, 25 seconds round - the same timing tools/compose.py renders. The
-   square window sits at 100,230 and is 880 wide on the 1080x1920 card. */
-.pv{position:relative;width:100%;max-width:300px;aspect-ratio:9/16;margin:20px auto 0;
-  border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#FAFAF6}
-.pv .you{position:absolute;left:9.259%;top:11.979%;width:81.481%;height:45.833%;
-  background:linear-gradient(160deg,#DCE4DD,#C3D0C6);display:grid;place-items:center;text-align:center;
-  font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--moss)}
-.pv img{position:absolute;inset:0;width:100%;height:100%;opacity:0;animation:pvcard 25s infinite}
-.pv img:nth-of-type(1){animation-delay:0s}
-.pv img:nth-of-type(2){animation-delay:5s}
-.pv img:nth-of-type(3){animation-delay:10s}
-.pv img:nth-of-type(4){animation-delay:15s}
-.pv img:nth-of-type(5){animation-delay:20s}
-@keyframes pvcard{0%{opacity:0}1.2%{opacity:1}18.8%{opacity:1}20%{opacity:0}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){ .pv img{animation:none} .pv img:nth-of-type(1){opacity:1} }
-.pv-meta{text-align:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.13em;
+/* Her finished reel (kit/week3/reels/week3-reel-<key>.mp4), playing on a
+   loop. When Erika makes her selfie version it replaces the same file -
+   replace its .jpg cover too, and bump REEL_V below so phones don't keep
+   the old one. */
+.reel{display:block;width:100%;max-width:300px;aspect-ratio:9/16;margin:20px auto 0;
+  border:1px solid var(--line);border-radius:14px;background:#FAFAF6;object-fit:cover}
+.reel-meta{text-align:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.13em;
   font-size:11px;color:var(--sage-deep);margin:10px 0 0}
-.thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0 0}
-.thumbs a{display:block;text-decoration:none;text-align:center;font-size:12.5px;color:var(--sage-deep)}
-.thumbs img{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;display:block;background:#FAFAF6;margin:0 0 4px}
+.reel-acts{justify-content:center}
 .vids{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 0}
 .vids video{width:100%;border:1px solid var(--line);border-radius:10px;display:block;background:#000}
 .vids p{font-size:13.5px;margin:6px 0 8px;color:var(--sage-deep)}
 .picker{margin:14px 0 0}
 .picker select{font:inherit;font-size:16px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .kit-note{font-size:13.5px;line-height:1.6;color:var(--sage-deep);margin-top:34px}
-@media(max-width:520px){ .vids{grid-template-columns:1fr} .thumbs{gap:5px} }
+@media(max-width:520px){ .vids{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -95,11 +83,11 @@
   <section class="detail wrap" id="kit" style="display:none">
     <div class="kit-wrap">
       <p class="phase-label">Faculty Portal · Private</p>
-      <h1>Week 3 Kit · Your selfie video</h1>
+      <h1>Week 3 Kit · Your reel</h1>
 
       <p class="kit-meta"><strong>Record and upload your video:</strong> today, Tuesday, October 13<br>
         <strong>Your finished video goes up:</strong> tomorrow, Wednesday, October 14. We're one week out from October 21.<br>
-        <strong>Time it takes:</strong> about 15 minutes to record, and 5 to post.</p>
+        <strong>Time it takes:</strong> about 5 minutes to post your reel, plus about 15 if you record a selfie version.</p>
 
       <div id="admin-picker" class="picker" style="display:none">
         <label for="who-select"><strong>Erika only:</strong> see the page as </label>
@@ -114,7 +102,7 @@
         </div>
         <div class="post">
           <p class="n">Post 2 · this kit</p>
-          <p><strong>A selfie video, about 25 seconds.</strong> You read a short script to your phone. Your video sits in a square at the top, and five Fork, Femme &amp; Foundations cards change underneath it. You only film yourself talking. Erika adds the cards and sends it back finished.</p>
+          <p><strong>Your reel, about 25 seconds.</strong> Your finished reel is already below, with your headshot in the square and five Fork, Femme &amp; Foundations cards changing underneath it. It's ready to post as it is. If you'd like it to be you talking instead, record a short selfie video and upload it. Erika adds the cards and puts your new version in the same spot.</p>
         </div>
       </div>
 
@@ -127,25 +115,26 @@
         <li><strong>Face a window</strong> so light falls on your face. Avoid a bright window behind you.</li>
         <li><strong>Keep your head and shoulders centered.</strong> Your video gets cropped to a square, so stay in the middle of the screen.</li>
         <li><strong>Open your phone's Camera, switch to Video,</strong> tap the flip icon (two curved arrows) so you can see yourself, and press the red button. Aim for about 25 seconds. Press the red button again to stop. If you stumble, just start over. It's fine to record a few takes and send the best one.</li>
-        <li><strong>Upload your video to the faculty shared drive</strong> today. Erika will send it back finished, with your cards added, ready to post tomorrow. The steps are just below.</li>
+        <li><strong>Upload your video to the Week 3 folder.</strong> Tap the <strong>Upload my video</strong> button below. It opens a Google Drive folder. Tap <strong>+</strong>, then <strong>Upload</strong>, and pick your video. Name it with your first name (for example, <em>Tara</em>).</li>
+        <li><strong>Erika sends back your finished reel,</strong> with your cards added, ready to post. It will also appear under <strong>Download my reel</strong> on this page.</li>
       </ol>
+      <div class="acts"><a class="btn-sm solid" href="https://drive.google.com/drive/folders/1arDnKLTxfs67tc-YB_CmzzXjq7NtT_x5" target="_blank" rel="noopener">Upload my video</a></div>
 
-      <h3>Uploading your video to the shared drive</h3>
-      <p>On a phone, this works best in the <strong>Google Drive app</strong>. If you don't have it, download it from the App Store or Google Play and sign in with your Google account.</p>
+      <h3>Uploading on a phone, step by step</h3>
+      <p>This works best in the <strong>Google Drive app</strong>. If you don't have it, download it from the App Store or Google Play and sign in with your Google account.</p>
       <ol class="kit-steps">
-        <li>Tap <strong>Open the shared drive</strong> below. If your phone asks, choose to open it in the <strong>Drive</strong> app.</li>
+        <li>Tap <strong>Upload my video</strong> above. If your phone asks, choose to open it in the <strong>Drive</strong> app. You'll see a folder called <em>Week 3 Selfie Videos</em>.</li>
         <li>Tap the <strong>+</strong> button (bottom right corner).</li>
         <li>Tap <strong>Upload</strong>, then <strong>Photos and Videos</strong>.</li>
         <li>Pick your video and tap <strong>Upload</strong>. Leave the app open until it says the upload is finished. A video can take a minute or two.</li>
-        <li><strong>Text Erika</strong> "uploaded" so she knows to look for it.</li>
+        <li>Rename it with your first name: tap the <strong>three dots</strong> next to your video, tap <strong>Rename</strong>, type your first name, and tap <strong>OK</strong>.</li>
       </ol>
-      <div class="acts"><a class="btn-sm solid" href="https://drive.google.com/drive/folders/1L0hmQ6aRD2_IS9noDzQY0Z7dGEMzigXR?usp=sharing" target="_blank" rel="noopener" data-log="drive">Open the shared drive</a></div>
       <p class="note">Can't get the upload to work? Text the video straight to Erika instead. In your Messages app, open your conversation with Erika, tap the <strong>+</strong> or the photo icon next to the text box, pick your video, and tap send.</p>
       <div class="kit-tip"><strong>How to copy and paste on a phone:</strong> On this page, tap a <strong>Copy</strong> button. Then, in the app, press and hold your finger in the empty text box until a small menu appears, and tap <strong>Paste</strong>.</div>
 
-      <h2>How to post it (once Erika sends it back)</h2>
+      <h2>How to post your reel</h2>
       <ol class="kit-steps">
-        <li><strong>Save the finished video</strong> Erika sends you to your phone. In Messages, tap the video, then tap the share icon (the square with an arrow pointing up) and tap <strong>Save Video</strong>. On Android, tap the three dots and tap <strong>Save</strong>.</li>
+        <li><strong>Save your reel to your phone.</strong> Tap <strong>Download my reel</strong> above. On an iPhone, if the video opens on its own page instead, tap the share icon (the square with an arrow pointing up), then <strong>Save Video</strong>. If Erika texted you a finished version, you can save that one instead: tap it in Messages, then the share icon, then <strong>Save Video</strong>.</li>
         <li>Open Instagram, tap <strong>+</strong> at the bottom of the screen, choose <strong>Reel</strong>, and pick the video.</li>
         <li>Tap <strong>Next</strong>, then tap the caption box and paste your caption (use the <strong>Copy the caption</strong> button above).</li>
         <li>Tap <strong>Share</strong>.</li>
@@ -186,8 +175,9 @@
   "use strict";
 
   /* Each teacher's Week 3 script and caption, word for word from the 13 Oct
-     handoff. Her cards are kit/week3/cards/<key>-card-1..5.png and her zip is
-     kit/week3/<key>-week3-cards.zip. Links resolve in go/whereyouare
+     handoff. Her reel is
+     kit/week3/reels/week3-reel-<key>.mp4 (no card PNGs in the portal - the
+     handoff's tools/reel-builder stays with Erika). Links resolve in go/whereyouare
      (Joshlyn's goes to her waitlist). `check` is shown to Erika only. */
   var PEOPLE = [
     { key: "tara", name: "Tara", cls: "Bookkeeping I: Set Up QuickBooks",
@@ -305,16 +295,17 @@
     });
   }
 
-  function cardSrc(k, i) { return "kit/week3/cards/" + k + "-card-" + i + ".png"; }
+  var REEL_V = 1;   // bump when a teacher's reel file is replaced
+  function reelSrc(k) { return "kit/week3/reels/week3-reel-" + k + ".mp4?v=" + REEL_V; }
+  function reelPoster(k) { return "kit/week3/reels/week3-reel-" + k + ".jpg?v=" + REEL_V; }
 
   function render(p, isAdmin) {
     var box = document.getElementById("mine");
     if (!p) {
-      box.innerHTML = '<h2>Your script</h2><p class="note">Your Week 3 script and cards aren\'t on this page yet. ' +
+      box.innerHTML = '<h2>Your script</h2><p class="note">Your Week 3 script and reel aren\'t on this page yet. ' +
         'Email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and Erika will send them over.</p>';
       return;
     }
-    var nums = [1, 2, 3, 4, 5];
     box.innerHTML =
       (isAdmin && p.check ? '<p class="note admin"><strong>Before publishing (only you see this):</strong> ' + p.check + '</p>' : "") +
 
@@ -324,20 +315,12 @@
         '<div class="acts"><button class="btn-sm solid" type="button" data-copy-from="w3-script" data-log="' + p.key + ':script">Copy the script</button></div>' +
       '</div>' +
 
-      '<h2>What your finished video will look like</h2>' +
-      '<p>Your video goes in the square at the top. These five cards change underneath it while you talk, about five seconds each. Erika adds them for you.</p>' +
-      '<div class="pv" role="img" aria-label="' + esc(p.name) + '’s five cards, changing every five seconds">' +
-        '<div class="you">Your video<br>goes here</div>' +
-        nums.map(function (i) { return '<img src="' + cardSrc(p.key, i) + '" alt="" width="1080" height="1920">'; }).join("") +
-      '</div>' +
-      '<p class="pv-meta">25 sec · 1080×1920 · tall</p>' +
-      '<p style="margin:22px 0 0">Your five cards (tap one to save it):</p>' +
-      '<div class="thumbs">' + nums.map(function (i) {
-        return '<a href="' + cardSrc(p.key, i) + '" download="Fork-Femme-Foundations-' + p.key + '-card-' + i + '.png" data-log="' + p.key + ':card-' + i + '">' +
-          '<img src="' + cardSrc(p.key, i) + '" alt="Card ' + i + '" width="1080" height="1920" loading="lazy">Card ' + i + '</a>';
-      }).join("") + '</div>' +
-      '<div class="acts"><a class="btn-sm" href="kit/week3/' + p.key + '-week3-cards.zip" download="Fork-Femme-Foundations-' + p.key + '-week3-cards.zip" data-log="' + p.key + ':zip">Download all five (zip)</a></div>' +
-      '<p class="note">You don\'t need the cards to record. They\'re here if you\'d like to see them up close or keep a copy. On an iPhone, if a card opens on its own page, press and hold it, then tap <strong>Save to Photos</strong>.</p>' +
+      '<h2>Your reel</h2>' +
+      '<p>This is your finished reel: your headshot in the square, and your five cards changing underneath. It\'s ready to post. If you upload a selfie video, Erika will put your new version right here.</p>' +
+      '<video class="reel" src="' + reelSrc(p.key) + '" poster="' + reelPoster(p.key) + '" autoplay muted loop playsinline preload="metadata" ' +
+        'aria-label="' + esc(p.name) + '’s Week 3 reel"></video>' +
+      '<p class="reel-meta">25 sec · tall · no sound</p>' +
+      '<div class="acts reel-acts"><a class="btn-sm solid" href="' + reelSrc(p.key) + '" download="Fork-Femme-Foundations-' + p.key + '-week3-reel.mp4" data-log="' + p.key + ':reel">Download my reel</a></div>' +
 
       '<h2>Your caption</h2>' +
       '<p>You\'ll paste this under your video when you post it. Your link is already in it.</p>' +
