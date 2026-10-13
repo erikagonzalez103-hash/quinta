@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 3 Kit · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<style>
+/* Same look as kit-week2.html. Built for a phone first. Unlike Week 2, each
+   teacher sees only her own script, cards and caption. */
+.kit-wrap{max-width:760px}
+.kit-meta{font-size:15.5px;line-height:1.7;color:var(--ink);margin:18px 0 0}
+.kit-meta strong{color:var(--moss)}
+.kit-wrap h2{margin-top:44px}
+.kit-wrap h3{font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--moss);margin:30px 0 8px}
+.kit-wrap p,.kit-wrap li{font-size:15.5px;line-height:1.65;color:var(--ink)}
+.kit-steps{counter-reset:s;list-style:none;padding:0;margin:18px 0 0}
+.kit-steps li{counter-increment:s;position:relative;padding-left:38px;margin-bottom:13px}
+.kit-steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:25px;height:25px;
+  border-radius:50%;background:var(--sage-deep);color:var(--cream);display:grid;place-items:center;
+  font-family:var(--label);font-size:12px;font-weight:600}
+.kit-tip{background:#EEF2EC;border-left:3px solid var(--sage);border-radius:0 8px 8px 0;
+  padding:15px 18px;margin:20px 0 0}
+.posts{display:grid;gap:12px;margin:18px 0 0}
+.post{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:16px 18px}
+.post .n{font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:10.5px;
+  font-weight:600;color:var(--sage-deep);margin:0 0 4px}
+.post p{margin:0}
+/* styles.css has no .btn-sm - portal.html keeps its own copy, so this does too. */
+.btn-sm{display:inline-block;padding:8px 15px;border-radius:999px;font-size:.88rem;line-height:1.3;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+.btn-sm.solid{background:var(--sage-deep);color:var(--cream)}
+.btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+.acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.cap{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:18px 20px;margin:16px 0 0}
+.cap pre{white-space:pre-wrap;font-family:inherit;font-size:15.5px;line-height:1.65;color:var(--ink);
+  margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px 16px}
+.cap .lnk{font-size:15px;word-break:break-all;margin:0 0 4px}
+.note{font-size:14.5px;background:#EEF2EC;border-radius:8px;padding:11px 13px;margin:12px 0 0}
+.note.admin{background:#FBF3E4;border:1px solid #E8D6B0}
+/* The preview: her five cards over a stand-in for her video, 5 seconds
+   each, 25 seconds round - the same timing tools/compose.py renders. The
+   square window sits at 100,230 and is 880 wide on the 1080x1920 card. */
+.pv{position:relative;width:100%;max-width:300px;aspect-ratio:9/16;margin:20px auto 0;
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#FAFAF6}
+.pv .you{position:absolute;left:9.259%;top:11.979%;width:81.481%;height:45.833%;
+  background:linear-gradient(160deg,#DCE4DD,#C3D0C6);display:grid;place-items:center;text-align:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--moss)}
+.pv img{position:absolute;inset:0;width:100%;height:100%;opacity:0;animation:pvcard 25s infinite}
+.pv img:nth-of-type(1){animation-delay:0s}
+.pv img:nth-of-type(2){animation-delay:5s}
+.pv img:nth-of-type(3){animation-delay:10s}
+.pv img:nth-of-type(4){animation-delay:15s}
+.pv img:nth-of-type(5){animation-delay:20s}
+@keyframes pvcard{0%{opacity:0}1.2%{opacity:1}18.8%{opacity:1}20%{opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){ .pv img{animation:none} .pv img:nth-of-type(1){opacity:1} }
+.pv-meta{text-align:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.13em;
+  font-size:11px;color:var(--sage-deep);margin:10px 0 0}
+.thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0 0}
+.thumbs a{display:block;text-decoration:none;text-align:center;font-size:12.5px;color:var(--sage-deep)}
+.thumbs img{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;display:block;background:#FAFAF6;margin:0 0 4px}
+.vids{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 0}
+.vids video{width:100%;border:1px solid var(--line);border-radius:10px;display:block;background:#000}
+.vids p{font-size:13.5px;margin:6px 0 8px;color:var(--sage-deep)}
+.picker{margin:14px 0 0}
+.picker select{font:inherit;font-size:16px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.kit-note{font-size:13.5px;line-height:1.6;color:var(--sage-deep);margin-top:34px}
+@media(max-width:520px){ .vids{grid-template-columns:1fr} .thumbs{gap:5px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="portal.html">Back to portal</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div id="gate" class="wrap">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <!-- Week 3, from the 13 Oct handoff. Week 2 (kit-week2.html) and Week 1
+       (kit.html) stay reachable from the portal card. -->
+  <section class="detail wrap" id="kit" style="display:none">
+    <div class="kit-wrap">
+      <p class="phase-label">Faculty Portal · Private</p>
+      <h1>Week 3 Kit · Your selfie video</h1>
+
+      <p class="kit-meta"><strong>Record and send your video to Erika by:</strong> Thursday, October 15<br>
+        <strong>Your finished video goes up by:</strong> Sunday, October 18<br>
+        <strong>Time it takes:</strong> about 15 minutes to record, and 5 to post.</p>
+
+      <div id="admin-picker" class="picker" style="display:none">
+        <label for="who-select"><strong>Erika only:</strong> see the page as </label>
+        <select id="who-select"></select>
+      </div>
+
+      <h2>This week, two posts</h2>
+      <div class="posts">
+        <div class="post">
+          <p class="n">Post 1</p>
+          <p><strong>Your poll results.</strong> You'll share what your Week 2 poll showed. Erika is putting this one together for you, so there's nothing to do yet (more at the bottom of this page).</p>
+        </div>
+        <div class="post">
+          <p class="n">Post 2 · this kit</p>
+          <p><strong>A selfie video, about 25 seconds.</strong> You read a short script to your phone. Your video sits in a square at the top, and five Fork, Femme &amp; Foundations cards change underneath it. You only film yourself talking. Erika adds the cards and sends it back finished.</p>
+        </div>
+      </div>
+
+      <div id="mine"></div>
+
+      <h2>How to record your video</h2>
+      <ol class="kit-steps">
+        <li><strong>Read your script a few times out loud.</strong> You don't need to memorize it. Say it in your own words.</li>
+        <li><strong>Hold your phone upright</strong> (tall, not sideways), at eye level, about an arm's length away.</li>
+        <li><strong>Face a window</strong> so light falls on your face. Avoid a bright window behind you.</li>
+        <li><strong>Keep your head and shoulders centered.</strong> Your video gets cropped to a square, so stay in the middle of the screen.</li>
+        <li><strong>Open your phone's Camera, switch to Video,</strong> tap the flip icon (two curved arrows) so you can see yourself, and press the red button. Aim for about 25 seconds. Press the red button again to stop. If you stumble, just start over. It's fine to record a few takes and send the best one.</li>
+        <li><strong>Text the video to Erika</strong> by Thursday, October 15. In your Messages app, open your conversation with Erika, tap the <strong>+</strong> or the photo icon next to the text box, pick your video, and tap send. She'll send it back finished, with your cards added, ready to post.</li>
+      </ol>
+      <div class="kit-tip"><strong>How to copy and paste on a phone:</strong> On this page, tap a <strong>Copy</strong> button. Then, in the app, press and hold your finger in the empty text box until a small menu appears, and tap <strong>Paste</strong>.</div>
+
+      <h2>How to post it (once Erika sends it back)</h2>
+      <ol class="kit-steps">
+        <li><strong>Save the finished video</strong> Erika sends you to your phone. In Messages, tap the video, then tap the share icon (the square with an arrow pointing up) and tap <strong>Save Video</strong>. On Android, tap the three dots and tap <strong>Save</strong>.</li>
+        <li>Open Instagram, tap <strong>+</strong> at the bottom of the screen, choose <strong>Reel</strong>, and pick the video.</li>
+        <li>Tap <strong>Next</strong>, then tap the caption box and paste your caption (use the <strong>Copy the caption</strong> button above).</li>
+        <li>Tap <strong>Share</strong>.</li>
+        <li><strong>Share each other's videos to your Story</strong> when you see them. Tap the paper-airplane icon under the video, then tap <strong>Add to story</strong>.</li>
+      </ol>
+
+      <h2>Your poll results post</h2>
+      <div class="kit-tip">Your poll results post is coming. Erika will send it once she has everyone's numbers.</div>
+
+      <h2>Want to share the $250,000 video too?</h2>
+      <p>This is the Fork, Femme &amp; Foundations ad, with the whole lineup. It's optional. If you'd like to share it, download it, then post it the same way as your own video. You can use the same caption.</p>
+      <div class="vids">
+        <div>
+          <video src="kit/week3/fork-femme-foundations-250k-story-1080x1920.mp4#t=0.1" controls playsinline preload="metadata"></video>
+          <p>Tall · for a Reel or your Story</p>
+          <a class="btn-sm solid" href="kit/week3/fork-femme-foundations-250k-story-1080x1920.mp4" download="Fork-Femme-Foundations-250k-story.mp4" data-log="campaign-story">Download the tall video</a>
+        </div>
+        <div>
+          <video src="kit/week3/fork-femme-foundations-250k-feed-1080x1350.mp4#t=0.1" controls playsinline preload="metadata"></video>
+          <p>Shorter · for a regular feed post</p>
+          <a class="btn-sm" href="kit/week3/fork-femme-foundations-250k-feed-1080x1350.mp4" download="Fork-Femme-Foundations-250k-feed.mp4" data-log="campaign-feed">Download the feed video</a>
+        </div>
+      </div>
+      <p class="note">On an iPhone, if a video opens on its own page instead of downloading, tap the share icon (the square with an arrow pointing up), then <strong>Save Video</strong>.</p>
+
+      <p class="kit-note">If something looks wrong — a price, a date, a class that's changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Each teacher's Week 3 script and caption, word for word from the 13 Oct
+     handoff. Her cards are kit/week3/cards/<key>-card-1..5.png and her zip is
+     kit/week3/<key>-week3-cards.zip. Links resolve in go/whereyouare
+     (Joshlyn's goes to her waitlist). `check` is shown to Erika only. */
+  var PEOPLE = [
+    { key: "tara", name: "Tara", cls: "Bookkeeping I: Set Up QuickBooks",
+      script: "You'll spend $1,000 on an ad campaign that might not bring in a single sale. But will you spend under $200 learning where the rest of your money goes? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Bookkeeping I: Set Up QuickBooks as part of Fork, Femme and Foundations. You'll leave knowing what every dollar actually made you. More information below.",
+      caption: "Before you spend another $1,000 on ads, invest in the business's biggest asset: you. On October 21 I'm teaching Bookkeeping I: Set Up QuickBooks for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=tara" },
+    // Handoff had "$[price]" for Erika to fill in. Module 1 is $150 in classes.js.
+    { key: "erika", name: "Erika", cls: "Module 1: Your First AI Workflow",
+      script: "You'll pay for AI tools every month. But will you spend $150 learning to make them actually do the work? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Module 1: Your First AI Workflow as part of Fork, Femme and Foundations. You'll leave with one real workflow running in your business. More information below.",
+      caption: "Before you pay for one more AI tool, learn to make the ones you have do the work. On October 21 I'm teaching Module 1: Your First AI Workflow for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=erika",
+      check: "Your script's price was blank in the handoff; it now says <strong>$150</strong>, Module 1's price on the site. Your card 1 says <em>under $300</em>." },
+    { key: "nik", name: "Nik", cls: "Trademarks",
+      script: "You'll spend $1,000 on apps and software you never budgeted for. But will you spend $300 learning what a trademark actually protects? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Trademarks as part of Fork, Femme and Foundations. We'll cover what to file, what it covers, and how to keep your mark once it's yours. More information below.",
+      caption: "Your business name is worth protecting. On October 21 I'm teaching Trademarks for Fork, Femme & Foundations, part of HER Texas's Fork and Femme: what to file, what it covers, and how to keep your mark. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=nik" },
+    { key: "stephanie", name: "Stephanie", cls: "Brand 101",
+      script: "You'll spend over $1,000 on a logo and a website. But will you spend under $200 learning to talk about your brand the way an agency would? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Brand 101 as part of Fork, Femme and Foundations. You'll leave able to say what your business stands for, clearly and in your own words. More information below.",
+      caption: "Your logo and website deserve a brand you can explain. On October 21 I'm teaching Brand 101 for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=stephanie" },
+    { key: "robin", name: "Robin", cls: "Intro to Real Estate Management: So You Want to Be a Landlord",
+      script: "You'll spend $1,000 on DIY projects. But will you spend under $300 learning how to start investing in real estate the right way? Before you invest in property, invest in yourself. You're your own biggest asset. Join me on October 21st, when I'll teach Intro to Real Estate Management as part of Fork, Femme and Foundations. You'll learn what it really takes to own and run a rental before you buy one. More information below.",
+      caption: "Thinking about a rental? Learn what it takes before you buy. On October 21 I'm teaching Intro to Real Estate Management: So You Want to Be a Landlord for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=robin" },
+    { key: "joshlyn", name: "Joshlyn", cls: "Investing",
+      script: "You'll let over $1,000 drift into micro-investing apps without a second thought. But will you spend under $300 learning to invest on purpose? As a founder, you're your company's biggest asset. Join me on October 21st, when I'll teach Investing as part of Fork, Femme and Foundations. We'll walk through how to put your profits to work with a plan, not a guess. More information below.",
+      caption: "Investing on autopilot isn't a plan. On October 21 I'm teaching Investing for Fork, Femme & Foundations, part of HER Texas's Fork and Femme. Classes from $99. Save your seat: quintaand.co/go/whereyouare?ref=joshlyn",
+      check: "Joshlyn's video invites people to October 21, but her link still lands on the Investing <strong>waitlist</strong> (go/whereyouare). Confirm her class is bookable that day before she posts." }
+  ];
+  var ADMIN = "erika@quintaand.co";
+  function linkOf(p) { return "quintaand.co/go/whereyouare?ref=" + p.key; }
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient("https://pmpaslevwimofohirves.supabase.co", "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  function gate(t, x, action) {
+    document.getElementById("gate").style.display = "block";
+    document.getElementById("kit").style.display = "none";
+    document.getElementById("gate-title").textContent = t;
+    document.getElementById("gate-text").textContent = x;
+    document.getElementById("gate-action").style.display = action ? "block" : "none";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* Copy that still works in the in-app browsers faculty open this in, where
+     navigator.clipboard often isn't there. Same as kit-week2.html. */
+  function copyText(text) {
+    function legacy() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "0";
+      ta.style.opacity = "0"; ta.style.fontSize = "16px";   // 16px: iPhone won't zoom
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { ta.setSelectionRange(0, text.length); } catch (e) {}
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext !== false) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        if (!legacy()) throw new Error("copy blocked");
+      });
+    }
+    return legacy() ? Promise.resolve() : Promise.reject(new Error("copy blocked"));
+  }
+  /* Copying was blocked: put the text right under the button, selected, with
+     how to copy it by hand. Works everywhere, keeps line breaks. */
+  function showToCopy(btn, text) {
+    var holder = btn.closest(".acts, li, div") || btn.parentNode;
+    var old = holder.parentNode.querySelector(".copy-manual[data-for='" + (btn.dataset.copyId || "") + "']");
+    if (old) old.remove();
+    btn.dataset.copyId = btn.dataset.copyId || String(Math.random()).slice(2);
+    var box = document.createElement("div");
+    box.className = "copy-manual"; box.setAttribute("data-for", btn.dataset.copyId);
+    box.style.cssText = "margin:8px 0 4px;width:100%";
+    var note = document.createElement("p");
+    note.style.cssText = "margin:0 0 6px;font-size:.85rem;color:#5A5E55";
+    note.textContent = "Your browser blocked copying. Press and hold the text below, then tap Copy (on a computer: Ctrl+C).";
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.readOnly = true;
+    ta.style.cssText = "width:100%;box-sizing:border-box;min-height:" + (text.length > 80 ? "120px" : "48px") +
+      ";font:inherit;font-size:16px;padding:8px 10px;border:1px solid #C9D3CB;border-radius:8px;background:#fff";
+    box.appendChild(note); box.appendChild(ta);
+    holder.parentNode.insertBefore(box, holder.nextSibling);
+    ta.focus(); ta.select();
+    try { ta.setSelectionRange(0, text.length); } catch (e) {}
+  }
+  /* WHO USED THE KIT - same kit_events table as Week 2, under kit "week3".
+     Never in her way: a failed write is ignored. */
+  var KIT = "week3", signedIn = false;
+  function logKit(action, item) {
+    if (!sb || !signedIn) return;
+    try {
+      sb.from("kit_events").insert({ kit: KIT, action: action, item: item || null })
+        .then(function (r) { if (r && r.error) console.warn("kit_events", r.error.message); });
+    } catch (e) { /* never block the kit */ }
+  }
+  document.addEventListener("click", function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest("a[download]") : null;
+    if (a) logKit("download", a.getAttribute("data-log") || a.getAttribute("href"));
+  });
+
+  function wireCopy(btn, getText) {
+    btn.addEventListener("click", function () {
+      logKit("copy", btn.getAttribute("data-log") || btn.textContent.trim().slice(0, 60));
+      copyText(getText()).then(function () {
+        var was = btn.textContent;
+        btn.textContent = "Copied ✓";
+        window.setTimeout(function () { btn.textContent = was; }, 1800);
+      }).catch(function () { showToCopy(btn, getText()); });
+    });
+  }
+
+  function cardSrc(k, i) { return "kit/week3/cards/" + k + "-card-" + i + ".png"; }
+
+  function render(p, isAdmin) {
+    var box = document.getElementById("mine");
+    if (!p) {
+      box.innerHTML = '<h2>Your script</h2><p class="note">Your Week 3 script and cards aren\'t on this page yet. ' +
+        'Email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and Erika will send them over.</p>';
+      return;
+    }
+    var nums = [1, 2, 3, 4, 5];
+    box.innerHTML =
+      (isAdmin && p.check ? '<p class="note admin"><strong>Before publishing (only you see this):</strong> ' + p.check + '</p>' : "") +
+
+      '<h2>Your script</h2>' +
+      '<p>Your class: <em>' + esc(p.cls) + '</em>. Read this out loud a few times, then say it in your own words. It\'s about 25 seconds.</p>' +
+      '<div class="cap"><pre id="w3-script">' + esc(p.script) + '</pre>' +
+        '<div class="acts"><button class="btn-sm solid" type="button" data-copy-from="w3-script" data-log="' + p.key + ':script">Copy the script</button></div>' +
+      '</div>' +
+
+      '<h2>What your finished video will look like</h2>' +
+      '<p>Your video goes in the square at the top. These five cards change underneath it while you talk, about five seconds each. Erika adds them for you.</p>' +
+      '<div class="pv" role="img" aria-label="' + esc(p.name) + '’s five cards, changing every five seconds">' +
+        '<div class="you">Your video<br>goes here</div>' +
+        nums.map(function (i) { return '<img src="' + cardSrc(p.key, i) + '" alt="" width="1080" height="1920">'; }).join("") +
+      '</div>' +
+      '<p class="pv-meta">25 sec · 1080×1920 · tall</p>' +
+      '<p style="margin:22px 0 0">Your five cards (tap one to save it):</p>' +
+      '<div class="thumbs">' + nums.map(function (i) {
+        return '<a href="' + cardSrc(p.key, i) + '" download="Fork-Femme-Foundations-' + p.key + '-card-' + i + '.png" data-log="' + p.key + ':card-' + i + '">' +
+          '<img src="' + cardSrc(p.key, i) + '" alt="Card ' + i + '" width="1080" height="1920" loading="lazy">Card ' + i + '</a>';
+      }).join("") + '</div>' +
+      '<div class="acts"><a class="btn-sm" href="kit/week3/' + p.key + '-week3-cards.zip" download="Fork-Femme-Foundations-' + p.key + '-week3-cards.zip" data-log="' + p.key + ':zip">Download all five (zip)</a></div>' +
+      '<p class="note">You don\'t need the cards to record. They\'re here if you\'d like to see them up close or keep a copy. On an iPhone, if a card opens on its own page, press and hold it, then tap <strong>Save to Photos</strong>.</p>' +
+
+      '<h2>Your caption</h2>' +
+      '<p>You\'ll paste this under your video when you post it. Your link is already in it.</p>' +
+      '<div class="cap"><pre id="w3-caption">' + esc(p.caption) + '</pre>' +
+        '<p class="lnk">Your link: <strong>' + esc(linkOf(p)) + '</strong></p>' +
+        '<div class="acts">' +
+          '<button class="btn-sm solid" type="button" data-copy-from="w3-caption" data-log="' + p.key + ':caption">Copy the caption</button>' +
+          '<button class="btn-sm" type="button" data-copy-text="https://' + esc(linkOf(p)) + '" data-log="' + p.key + ':link">Copy my link</button>' +
+        '</div>' +
+      '</div>';
+
+    Array.prototype.forEach.call(box.querySelectorAll("[data-copy-text]"), function (b) {
+      wireCopy(b, function () { return b.getAttribute("data-copy-text"); });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-copy-from]"), function (b) {
+      wireCopy(b, function () { return document.getElementById(b.getAttribute("data-copy-from")).textContent; });
+    });
+  }
+
+  function find(key) {
+    for (var i = 0; i < PEOPLE.length; i++) if (PEOPLE[i].key === key) return PEOPLE[i];
+    return null;
+  }
+
+  if (!sb) { gate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { gate("You're not signed in", "Sign in first, then come back for your kit.", true); return; }
+    var email = session.user.email.toLowerCase();
+    sb.from("faculty").select("*").eq("email", email).maybeSingle().then(function (r) {
+      if (r.error || !r.data) {
+        gate("Almost there", "You're signed in as " + email +
+          ", but there's no faculty record under that email yet — email hello@quintaand.co.", true);
+        return;
+      }
+      var first = String(r.data.display_name || r.data.full_name || "").trim().split(/\s+/)[0].toLowerCase();
+      var isAdmin = email === ADMIN;
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("kit").style.display = "block";
+
+      /* Erika can preview any teacher's page (?as=tara works too). Everyone
+         else only ever gets her own. */
+      var start = first;
+      if (isAdmin) {
+        var as = (new URLSearchParams(location.search).get("as") || "").toLowerCase();
+        if (find(as)) start = as;
+        var sel = document.getElementById("who-select");
+        sel.innerHTML = PEOPLE.map(function (p) {
+          return '<option value="' + p.key + '"' + (p.key === start ? " selected" : "") + '>' + esc(p.name) + '</option>';
+        }).join("");
+        sel.addEventListener("change", function () { render(find(sel.value), true); });
+        document.getElementById("admin-picker").style.display = "block";
+      }
+      render(find(start), isAdmin);
+      signedIn = true;
+      logKit("open", first);
+    });
+  });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>
