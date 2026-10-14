@@ -345,7 +345,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       " &middot; <b>" + QuintaShop.money(total) + "</b>" +
       (pct ? ' <span style="color:var(--sage-deep)">&rarr; ' + QuintaShop.money(after) + " with " + pct + "% off</span>" : "");
     codeLine.innerHTML = pct
-      ? "<strong>" + (pct === 25 ? "FFF25" : "FFF15") + "</strong> is applied for you &mdash; nothing to type."
+      ? "<strong>" + pct + "% off</strong> is applied for you &mdash; nothing to type."   // percentage, not the code name (Erika, 14 Oct)
       : "Add a class in another block and it's 15% off.";
     go.disabled = false; go.textContent = "Continue to payment";
   }

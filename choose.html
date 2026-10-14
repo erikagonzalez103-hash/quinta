@@ -238,7 +238,8 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
              " with " + pct + "% off</span>" : "");
 
     if (pct) {
-      codeLine.innerHTML = "<strong>" + wantCode(p.length) + "</strong> is applied for you " +
+      // The percentage, not the code name (Erika, 14 Oct) - nothing for her to type or look for.
+      codeLine.innerHTML = "<strong>" + pct + "% off</strong> is applied for you " +
         "— you’ll see it on the payment page. Nothing to type.";
       go.disabled = false;
       go.textContent = "Continue to payment";
