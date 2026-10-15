@@ -332,15 +332,20 @@ const QUINTA_CLASSES = [
     name: "Trademarks",
     price: 299,
     venue: "Zoom",
-    desc: "Learn what a trademark actually protects, search properly before you fall in love with a name, and leave knowing whether filing is worth it for you.",
+    desc: "Your business is up and running, and you want to understand how trademark filing fits into its future. In this two-hour, lawyer-led workshop for women founders, gain clarity about the USPTO application process, learn best practices for navigating the online filing interface, and recognize common mistakes before deciding whether to file independently.",
     format: "120 minutes · live, small group",
     covers: [
-      "Trademarks vs. LLC names vs. domains — what each one actually protects",
-      "How to search properly before you commit to a name",
-      "When a DIY federal filing makes sense — and when to hire an attorney",
-      "Keeping your mark alive once you have it"
+      "Trademark fundamentals and how trademarks differ from business names and domains",
+      "An overview of the federal trademark application process",
+      "The purpose and importance of clearance searches",
+      "Information to gather before starting an application",
+      "A guided walkthrough of the USPTO online filing interface",
+      "Key application concepts, including ownership, goods and services, classes, and filing bases",
+      "Best practices for completing application fields and common mistakes to avoid",
+      "Recognizing questions and complexities that call for individual legal guidance"
     ],
-    walkout: "A search-and-file roadmap for your business name.",
+    walkout: "Greater clarity about the USPTO trademark filing process, the information the application requests, and best practices for completing its fields. Leave better informed about preparation needs and questions to resolve before choosing your next step. Filing is optional and at your own risk",
+    prereq: "Best for straightforward businesses considering 1–2 marks in 1–2 classes; not complex tech, biomedical businesses, or extensive portfolios. Education only; no legal advice, attorney-client relationship, or privilege. Do not share confidential information. Clearance searches are discussed, not taught or performed. Government fees are separate",
     price: 299,
     booking: "https://cal.com/quintaandco/trademarks",
     disclaimer: "Educational only — not legal advice. Confirm your filing with a trademark attorney."
