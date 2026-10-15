@@ -106,7 +106,7 @@ const CLASS_NAMES: Record<string, string> = {
   "bookkeeping-2": "Bookkeeping II — Prep for your bookkeeper",
   "certification": "Get certified — WBE / MBE / DBE",
   "financial-planning": "Investing — How to pay yourself first",
-  "trademarks": "Trademarks",
+  "trademarks": "Trademark Matriarch",
   "brand-101": "Brand 101",
 };
 

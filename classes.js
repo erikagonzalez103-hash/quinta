@@ -329,7 +329,7 @@ const QUINTA_CLASSES = [
   {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
-    name: "Trademarks",
+    name: "Trademark Matriarch",   // renamed by Nik, 15 Oct (was "Trademarks"); slug and URL stay "trademarks"
     price: 299,
     venue: "Zoom",
     desc: "Your business is up and running, and you want to understand how trademark filing fits into its future. In this two-hour, lawyer-led workshop for women founders, gain clarity about the USPTO application process, learn best practices for navigating the online filing interface, and recognize common mistakes before deciding whether to file independently.",

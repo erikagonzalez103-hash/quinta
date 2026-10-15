@@ -78,9 +78,9 @@ const QUINTA_FACULTY_TASKS = [
   {
     key: "nik-which-class",
     who: ["nik"],
-    title: "Put Trademarks on the 21st",
+    title: "Put Trademark Matriarch on the 21st",
     detail:
-      "Legacy planning is retired (7 Oct), so Trademarks is your class for the " +
+      "Legacy planning is retired (7 Oct), so Trademark Matriarch is your class for the " +
       "day. Add a 21 October session in My schedule, in person or online.",
     type: "answer"
   },

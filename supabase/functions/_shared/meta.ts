@@ -43,7 +43,7 @@ export const CAL_PRICES: Record<string, { value: number; name: string }> = {
   "first-hire":         { value: 175, name: "Your first hire" },
   "certification":      { value: 299, name: "Get certified — WBE / MBE / DBE" },
   "financial-planning": { value: 250, name: "Investing — How to pay yourself first" },
-  "trademarks":         { value: 299, name: "Trademarks" },
+  "trademarks":         { value: 299, name: "Trademark Matriarch" },
   "funding":            { value: 175, name: "Funding" },
   "brand-101":          { value: 175, name: "Brand 101" },
   "module-1":           { value: 150, name: "Module 1: Your First AI Workflow" },
