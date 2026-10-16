@@ -46,6 +46,7 @@
 .od-how{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
 .od-how label{flex:1 1 200px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;background:#fff;font-size:15.5px;color:var(--ink)}
 .od-how input{accent-color:#4F6B5C;margin-right:8px}
+.od-how label.is-off{opacity:.45;cursor:not-allowed;background:var(--cream)}
 .od-bar{position:sticky;bottom:0;background:var(--cream);border-top:1px solid var(--line);padding:16px 0 18px;margin-top:18px}
 .od-sum{font-size:16px;line-height:1.5;color:var(--ink);margin:0 0 4px}
 .od-sum b{color:var(--moss)}
@@ -319,9 +320,25 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       .map(function (i) { return i.value; });
   }
 
+  /* Kiln can't be picked when every class she has chosen runs online only
+     (Nik's Trademark Matriarch on the 21st - Erika, 16 Oct). "In person" is
+     greyed out and "Online" chosen for her. With an in-room class in the
+     mix she can still choose kiln for that one; the online-only one stays
+     online either way (stripe-checkout / attendingFor). */
+  function kilnAllowed(group, allowed) {
+    var kiln = document.querySelector('input[name="' + group + '"][value="in-person"]');
+    var online = document.querySelector('input[name="' + group + '"][value="online"]');
+    if (!kiln || !online) return;
+    kiln.disabled = !allowed;
+    kiln.closest("label").classList.toggle("is-off", !allowed);
+    kiln.closest("label").title = allowed ? "" : "This class runs online only";
+    if (!allowed) online.checked = true;
+  }
+
   function update() {
     var p = picked();
     var chosen = day.filter(function (s) { return p.indexOf(s.session_id) !== -1; });
+    kilnAllowed("how", !chosen.length || chosen.some(function (s) { return s.format !== "online"; }));
 
     /* A teacher can run her session online only. Whatever she picks for the
        day, that one is online - say so before she pays, not in the email. */
@@ -426,10 +443,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   // An online-only session can't be joined at kiln: switch the choice for her.
   rSel.addEventListener("change", function () {
     var s = day.filter(function (x) { return x.session_id === rSel.value; })[0];
-    if (s && s.format === "online") {
-      var on = document.querySelector('input[name="rhow"][value="online"]');
-      if (on) on.checked = true;
-    }
+    kilnAllowed("rhow", !(s && s.format === "online"));
   });
   el("odRForm").addEventListener("submit", function (ev) {
     ev.preventDefault();
