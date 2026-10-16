@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "first-hire-contractor-or-employee",
+    title: "Does Your First Hire Have to Be an Employee? Contractor vs Employee, and What Madam C.J. Walker Knew in 1917",
+    date: "2026-10-16",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "No. Contractor vs employee is a fit question, and the answer depends on the shape of the work. Madam C.J. Walker built a 20,000-agent sales force without payroll, and her math still works for a first hire.",
+    image: "blog-first-hire.webp"
+  },
+  {
     slug: "how-to-prioritize-q4-goals-in-october",
     title: "How Do You Prioritize Q4 Business Goals When It's Already October?",
     date: "2026-10-06",
