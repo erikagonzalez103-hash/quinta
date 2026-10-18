@@ -69,7 +69,7 @@ const OCT21_PRICES: Record<string, { cents: number; name: string }> = {
   "first-hire":         { cents: 17500, name: "Your first hire" },
   "certification":      { cents: 29900, name: "Get certified — WBE / MBE / DBE" },
   "financial-planning": { cents: 25000, name: "Investing — How to pay yourself first" },
-  "tax-strategy":       { cents: 25000, name: "Tax Strategy" },
+  "tax-strategy":       { cents: 29900, name: "Tax Strategy" },
   "trademarks":         { cents: 29900, name: "Trademark Matriarch" },
   "funding":            { cents: 17500, name: "Funding" },
   "brand-101":          { cents: 17500, name: "Brand 101" },

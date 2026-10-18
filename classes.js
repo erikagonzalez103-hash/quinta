@@ -330,7 +330,7 @@ const QUINTA_CLASSES = [
     slug: "tax-strategy", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     // Guadalupe Barraza's class (added 18 Oct 2026). Waitlist until she adds dates.
     name: "Tax Strategy",
-    price: 250,
+    price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Use the tax rules on purpose, ahead of time. Leave with a planning calendar for your own year and two or three strategies you can name, weigh, and ask your accountant for by name.",
     format: "120 minutes · live, small group",
@@ -345,7 +345,7 @@ const QUINTA_CLASSES = [
     ],
     walkout: "A planning calendar for your own year, the strategies covered with the profit level each one needs, and questions to take to whoever files your return.",
     prereq: "Real profit and real payroll. Below a certain profit most of these strategies cost more to run than they save, and you'll leave knowing whether you're there yet.",
-    price: 250,
+    price: 299,
     booking: "https://cal.com/quintaandco/tax-strategy",
     disclaimer: "Educational only — not tax advice for your situation. Confirm any strategy with your own CPA."
   },

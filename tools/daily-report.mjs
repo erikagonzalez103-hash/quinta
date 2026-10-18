@@ -159,12 +159,12 @@ export function rsvpCard(rows, since) {
       entries.slice(0, 8).map(([k, n]) => row(esc(k), `${n}`)).join("")
     : "";
   const head = row("<strong>Today</strong>", `<strong>${today.length}</strong>`) + row("All time", `${rows.length}`);
-  return card("Fork and Femme Day — Register clicks",
+  return card("Fork and Femme Day — RSVP clicks",
     rows.length
       ? head + block("From where (all time)", tally(rows, "src", "unknown"))
              + block("Teacher links (all time)", tally(rows.filter((r) => r.ref), "ref", ""))
              + quiet("Clicks through to HER Texas's Eventbrite page, not finished registrations. HER Texas can see how many registered from us under the tracking code \"quinta\".")
-      : quiet("Nobody has clicked Register yet."));
+      : quiet("Nobody has clicked RSVP yet."));
 }
 
 export function salesCard(todayRows, allRows, sinceLabel) {
@@ -201,7 +201,7 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   parts.push(safe("Sales by source", () => salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)")));
 
   // --- Fork and Femme Day registrations (only once link_clicks exists) ---
-  const rsvp = safe("Fork and Femme Day — Register clicks", () => rsvpCard(rsvpRows, since));
+  const rsvp = safe("Fork and Femme Day — RSVP clicks", () => rsvpCard(rsvpRows, since));
   if (rsvp) parts.push(rsvp);
 
   // --- The Swarm ---

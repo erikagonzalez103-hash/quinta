@@ -64,7 +64,7 @@ console.log('\n4. Missing tables do not kill the report');
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
   check('produced a report anyway', !!r.html);
   check('faculty still listed', r.html.includes('Tara Johnson'));
-  check('no Register card before its table exists', !r.html.includes('Register clicks'));
+  check('no Register card before its table exists', !r.html.includes('RSVP clicks'));
 }
 
 console.log('\n5. Unbookable detection adapts to the column name');
@@ -199,7 +199,7 @@ console.log('\nFork and Femme Day Register clicks (go/rsvp)');
   check('shows where the clicks came from', html.includes('fff-hero') && html.includes('teacher-link'));
   check('credits the teacher', html.includes('tara'));
   check('says these are clicks, not registrations', html.includes('not finished registrations'));
-  check('quiet so far says so', rsvpCard([], since).includes('Nobody has clicked'));
+  check('quiet so far says so', rsvpCard([], since).includes('Nobody has clicked RSVP'));
   check('missing table leaves the card out', rsvpCard(null, since) === '');
 }
 
