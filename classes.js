@@ -61,29 +61,24 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
-    hold: true,   // HOLD (2 Oct): no instructor. Its leftover Oct 27 date was deleted in Cal.com the
-                  // same day. The date sync will not open this while hold is set - remove the line
-                  // once someone is teaching it and has put real dates in.
-    // NO INSTRUCTOR (Erika, 9/17). Erika stepped off this class - choosing an
-    // entity is a tax question and it should be taught by a tax professional.
-    // Her tax strategist is being asked to take it (meeting week of 9/22).
-    // `open: true` removed on purpose: the page, the syllabus and the SEO stay
-    // exactly as they are, the site shows "Coming soon" and collects waitlist
-    // signups instead of selling a seat nobody can teach. Put the line back the
-    // day it has a teacher and real dates.
+    // TAUGHT BY Guadalupe Barraza, CPA, CTS (joined 18 Oct 2026). Hold lifted
+    // the same day: Cal.com has no future dates for it, so it stays on the
+    // waitlist until she adds dates in the portal, then the date sync opens it.
     name: "Entity setup",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Pick the right entity, get your EIN, and leave with a licensing checklist built for your exact business — plain English, no scare tactics.",
     format: "90 minutes · live, small group",
     covers: [
-      "LLC vs. sole prop vs. S-corp — which actually fits your business",
-      "Getting your EIN and registering with your state",
-      "The licenses and permits your specific work requires",
-      "Keeping your setup clean so taxes are easier later"
+      "Sole prop, LLC, LLC taxed as an S-corp, or corporation: what each changes about liability, taxes and paperwork",
+      "Who “just form an LLC” is wrong for, and what it costs them",
+      "The S-corp election: where the math turns, what a reasonable salary means, and the payroll nobody mentions",
+      "Texas specifics: franchise tax, Comptroller registration, and the public information report",
+      "Your EIN, your bank account, and how you pay yourself",
+      "The licenses and permits your specific work requires at city, county and state level"
     ],
-    walkout: "A licensing checklist built for your exact business, and a clear next step on your entity.",
-    prereq: "Nothing — a great first step.",
+    walkout: "A step-by-step filing guide, a decision worksheet to run against your own numbers, and a licensing checklist built for your exact business.",
+    prereq: "Nothing. You don't need to have decided anything before you walk in.",
     price: 175,
     booking: "https://cal.com/quintaandco/entity-setup",
     disclaimer: "Educational only — not legal or tax advice. Confirm your structure with an attorney or CPA."
@@ -184,21 +179,26 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    name: "Taxes",
-    price: 250,
+    // Guadalupe Barraza's class (18 Oct 2026). It replaced "Taxes" ($250, no
+    // teacher); the slug and URL stay "taxes" so the Cal.com event and old links keep working.
+    name: "Read Your Own Return",
+    price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
-    desc: "Register for the right things from the start and leave with a calendar of every deadline that keeps your business legal.",
-    format: "90 minutes · live, small group",
+    desc: "Open your own tax return and follow it line by line, knowing which numbers came from a rule and which came from a decision you made. A CPA walks one business's return from the shoebox to the signature.",
+    format: "120 minutes · live, small group",
     covers: [
-      "What to register for from the start (sales tax and more)",
-      "The deadlines that keep your business legal",
-      "Setting money aside so tax season isn't scary",
-      "What your CPA actually needs from you"
+      "What a return is built from, and why the shoebox version costs more than the organized one",
+      "A clean year and a messy year for the same business, side by side",
+      "The return line by line: revenue, cost of goods, and the big deduction categories",
+      "The four accidental leaks: mixed spending, missed mileage and home office, contractors handled wrong, and no estimated payments",
+      "The same business as an S-corp, and what would have changed",
+      "Quarterly estimated payments, so April stops being a surprise"
     ],
-    walkout: "A calendar of every tax deadline for your business.",
-    price: 250,
+    walkout: "A year-end document checklist for your CPA, the case return annotated to reread at your own pace, and a short list of what to fix before you file again.",
+    prereq: "You've filed at least once. Bring last year's return to follow along; nobody else sees it. If your books aren't in shape yet, Bookkeeping I and II come first.",
+    price: 175,
     booking: "https://cal.com/quintaandco/taxes",
-    disclaimer: "Educational only — not tax advice. Confirm with a CPA or tax professional."
+    disclaimer: "Educational only — not tax advice. Your return isn't reviewed in class, and attending doesn't make you anyone's client."
   },
   {
     slug: "pricing", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
@@ -324,7 +324,30 @@ const QUINTA_CLASSES = [
     price: 250,
     booking: "https://cal.com/quintaandco/financial-planning",
     disclaimer: "Educational only — not financial, investment, or legal advice. Consult a fee-only advisor."
-  
+
+  },
+  {
+    slug: "tax-strategy", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
+    // Guadalupe Barraza's class (added 18 Oct 2026). Waitlist until she adds dates.
+    name: "Tax Strategy",
+    price: 250,
+    venue: "Kiln, Preston Hollow (Dallas)",
+    desc: "Use the tax rules on purpose, ahead of time. Leave with a planning calendar for your own year and two or three strategies you can name, weigh, and ask your accountant for by name.",
+    format: "120 minutes · live, small group",
+    covers: [
+      "Recording what happened versus planning what's next, and why one call a year with your accountant is a symptom",
+      "The planning calendar: what gets decided in Q1, in Q3, and what's already too late by December",
+      "Revisiting the S-corp election as profit grows",
+      "Salary versus distributions, and where the reasonable-salary line actually sits",
+      "SEP, solo 401(k) and defined benefit plans as tax strategy, and the profit each one needs",
+      "Buying equipment and vehicles on purpose: depreciation, and a deduction versus a good decision",
+      "What a planning engagement involves and costs, and how to tell whether you're ready"
+    ],
+    walkout: "A planning calendar for your own year, the strategies covered with the profit level each one needs, and questions to take to whoever files your return.",
+    prereq: "Real profit and real payroll. Below a certain profit most of these strategies cost more to run than they save, and you'll leave knowing whether you're there yet.",
+    price: 250,
+    booking: "https://cal.com/quintaandco/tax-strategy",
+    disclaimer: "Educational only — not tax advice for your situation. Confirm any strategy with your own CPA."
   },
   {
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",

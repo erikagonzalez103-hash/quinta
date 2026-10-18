@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Fork, Femme &amp; Foundations — the things you can't Google">
 <meta name="twitter:image" content="https://quintaand.co/images/og-default.jpg">
-<meta http-equiv="refresh" content="0; url=https://quintaand.co/oct21.html">
+<meta http-equiv="refresh" content="0; url=https://quintaand.co/fork-femme-foundations.html">
 <!-- The Week 2 poll link (printed on every teacher's Story picture as
      quintaand.co/go/whereyouare?ref=tara).
      8 Oct (Erika: fewest taps from post to paying): a teacher's link opens
@@ -30,17 +30,21 @@
   var q = new URLSearchParams(location.search);
   var ref = (q.get("ref") || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
   var CLASS = { erika: "module-1", tara: "bookkeeping-1", nik: "trademarks",
-                stephanie: "brand-101", robin: "landlord", joshlyn: "financial-planning" };
-  var WAITLIST = { joshlyn: true };
+                stephanie: "brand-101", robin: "landlord", joshlyn: "financial-planning",
+                lupe: "entity-setup" };
+  // Guadalupe (lupe, 18 Oct) has no dates yet either, so hers joins Joshlyn's here.
+  var WAITLIST = { joshlyn: true, lupe: true };
   var slug = CLASS[ref];
   if (slug && WAITLIST[ref]) {
     q.set("c", slug); q.set("src", "poll");
     location.replace("https://quintaand.co/waitlist.html?" + q.toString());
     return;
   }
-  if (slug) q.set("pick", slug);
+  /* 18 Oct: no classes are taught on the 21st (it's Meet the Experts now),
+     so a teacher's link opens her class page, which shows her dates. */
   var s = q.toString();
-  location.replace("https://quintaand.co/oct21.html" + (s ? "?" + s : ""));
+  location.replace("https://quintaand.co/" + (slug ? "classes/" + slug + ".html" : "fork-femme-foundations.html")
+                   + (s ? "?" + s : ""));
 })();
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
@@ -91,6 +95,6 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 <!-- End LinkedIn Insight Tag -->
 </head>
 <body>
-<p>Taking you to <a href="https://quintaand.co/oct21.html">October 21</a>&hellip;</p>
+<p>Taking you to <a href="https://quintaand.co/fork-femme-foundations.html">Fork, Femme &amp; Foundations</a>&hellip;</p>
 </body>
 </html>

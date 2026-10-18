@@ -1,4 +1,4 @@
-import { run, startOfDallasDay, dallasDay, buildReport, kitCard, salesBySource, salesCard } from './daily-report.mjs';
+import { run, startOfDallasDay, dallasDay, buildReport, kitCard, salesBySource, salesCard, rsvpCard } from './daily-report.mjs';
 
 let pass = 0, fail = 0;
 const check = (n, c, d = '') => { if (c) { pass++; console.log(`  ✓ ${n}`); } else { fail++; console.log(`  ✗ ${n} ${d}`); } };
@@ -58,11 +58,13 @@ console.log('\n4. Missing tables do not kill the report');
     if (url.includes('waitlist')) return { ok: true, json: async () => [] };
     if (url.includes('class_sessions')) return { ok: true, json: async () => [] };
     if (url.includes('/enrollments?') || url.includes('/kit_events?')) return { ok: true, json: async () => [] };
+    if (url.includes('/link_clicks?')) return { ok: false, status: 404, text: async () => 'no such table' };
     throw new Error('unexpected ' + url);
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
   check('produced a report anyway', !!r.html);
   check('faculty still listed', r.html.includes('Tara Johnson'));
+  check('no Register card before its table exists', !r.html.includes('Register clicks'));
 }
 
 console.log('\n5. Unbookable detection adapts to the column name');
@@ -182,6 +184,23 @@ console.log('\n11. Sales by source');
   check('shows the total', html.includes('3 sales · $608.50'));
   check('unreadable ledger is not "no sales"', salesCard(null, null, 'x').includes('NOT'));
   check('quiet day says so', salesCard([], [], 'x').includes('No sales today'));
+}
+
+console.log('\nFork and Femme Day Register clicks (go/rsvp)');
+{
+  const since = '2026-10-18T05:00:00.000Z';
+  const rows = [
+    { src: 'fff-hero', ref: null, created_at: '2026-10-17T15:00:00Z' },
+    { src: 'fff-hero', ref: 'tara', created_at: '2026-10-18T15:00:00Z' },
+    { src: 'teacher-link', ref: 'tara', created_at: '2026-10-18T16:00:00Z' },
+  ];
+  const html = rsvpCard(rows, since);
+  check('counts today apart from all time', /Today<\/strong>[\s\S]*?<strong>2<\/strong>/.test(html) && /All time[\s\S]*?>3</.test(html));
+  check('shows where the clicks came from', html.includes('fff-hero') && html.includes('teacher-link'));
+  check('credits the teacher', html.includes('tara'));
+  check('says these are clicks, not registrations', html.includes('not finished registrations'));
+  check('quiet so far says so', rsvpCard([], since).includes('Nobody has clicked'));
+  check('missing table leaves the card out', rsvpCard(null, since) === '');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

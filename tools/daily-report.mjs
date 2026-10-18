@@ -141,6 +141,32 @@ function sourceLabel(g) {
   const name = SOURCE_LABELS[`${g.src}|${g.med}`.toLowerCase()] || `${esc(g.src)}${g.med ? ` · ${esc(g.med)}` : ""}`;
   return `${name}${g.camp ? ` <span style="color:#5A5E55;">— ${esc(g.camp)}</span>` : ""}`;
 }
+/* FORK AND FEMME DAY REGISTRATIONS. The registration is HER Texas's
+   Eventbrite event, so we can't see sign-ups - but every link to it from our
+   site goes through quintaand.co/go/rsvp, which logs the click to
+   link_clicks (supabase/sql/2026-10-18-link-clicks.sql). This counts those:
+   today, all-time, from where on our site, and which teacher's link. */
+export function rsvpCard(rows, since) {
+  if (rows === null) return "";
+  const today = rows.filter((r) => String(r.created_at || "") >= since);
+  const tally = (list, key, blank) => {
+    const by = {};
+    for (const r of list) { const k = r[key] || blank; by[k] = (by[k] || 0) + 1; }
+    return Object.entries(by).sort((a, b) => b[1] - a[1]);
+  };
+  const block = (label, entries) => entries.length
+    ? `<div style="margin:14px 0 6px;font-size:13px;color:#5A5E55;">${esc(label)}</div>` +
+      entries.slice(0, 8).map(([k, n]) => row(esc(k), `${n}`)).join("")
+    : "";
+  const head = row("<strong>Today</strong>", `<strong>${today.length}</strong>`) + row("All time", `${rows.length}`);
+  return card("Fork and Femme Day — Register clicks",
+    rows.length
+      ? head + block("From where (all time)", tally(rows, "src", "unknown"))
+             + block("Teacher links (all time)", tally(rows.filter((r) => r.ref), "ref", ""))
+             + quiet("Clicks through to HER Texas's Eventbrite page, not finished registrations. HER Texas can see how many registered from us under the tracking code \"quinta\".")
+      : quiet("Nobody has clicked Register yet."));
+}
+
 export function salesCard(todayRows, allRows, sinceLabel) {
   if (todayRows === null || allRows === null) {
     return card("Sales by source", `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The ledger could not be read — this is NOT "no sales".</p>`);
@@ -165,13 +191,18 @@ function safe(title, build) {
 }
 
 export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
-                              waitlistUnreadable = false, kitRows = null, salesToday = [], salesAll = [] }) {
+                              waitlistUnreadable = false, kitRows = null, salesToday = [], salesAll = [],
+                              rsvpRows = null, since = "" }) {
   const parts = [];
   // Names are compared and printed below; a faculty row with no name at all must not break that.
   faculty = (faculty || []).map((f) => ({ ...f, name: String(f.name || f.email || "(no name)") }));
 
   // --- Sales by source (first: it's the number the campaign is judged on) ---
   parts.push(safe("Sales by source", () => salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)")));
+
+  // --- Fork and Femme Day registrations (only once link_clicks exists) ---
+  const rsvp = safe("Fork and Femme Day — Register clicks", () => rsvpCard(rsvpRows, since));
+  if (rsvp) parts.push(rsvp);
 
   // --- The Swarm ---
   //
@@ -324,6 +355,9 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const salesAll = refused.has("enrollments") ? null : salesAllRaw;
   const salesToday = salesAll === null ? null : salesAll.filter((r) => String(r.created_at || "") >= since);
 
+  const rsvpRaw = await get(`link_clicks?select=src,ref,created_at&link=eq.eventbrite-fff&created_at=lt.${end}&order=created_at.asc`);
+  const rsvpRows = refused.has("link_clicks") ? null : rsvpRaw;
+
   /* Every table failing is not "a quiet day", it is a broken key — and a
      report that cheerfully says "No signups today" when the database was
      never reachable is worse than no report at all. A partial failure still
@@ -372,7 +406,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const { html, subject } = buildReport({
     now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
     waitlistUnreadable: refused.has("waitlist"),
-    kitRows, salesToday, salesAll,
+    kitRows, salesToday, salesAll, rsvpRows, since,
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }

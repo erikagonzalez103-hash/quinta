@@ -3,10 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* 18 Oct 2026: October 21 became Meet the Experts and no classes are taught
+   that day, so nothing is sold here any more. A link with ?pick=<class>
+   (old teacher posts) opens that class's page; anything else, the Meet the
+   Experts page. ?ref= and utm tags travel with her. The page below is kept
+   only so this can be undone. */
+(function () {
+  var q = new URLSearchParams(location.search);
+  var pick = (q.get("pick") || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+  q.delete("pick");
+  var s = q.toString();
+  location.replace((pick ? "classes/" + pick + ".html" : "fork-femme-foundations.html")
+                   + (s ? "?" + s : "") + (pick ? "" : "#experts"));
+})();
+</script>
+<meta name="robots" content="noindex,follow">
 <title>Book October 21 — Fork, Femme &amp; Foundations | Quinta &amp; Co.</title>
 <meta name="description" content="Book your classes for Wednesday, October 21 at kiln in Dallas or online. Three blocks — 10am, 1pm and 3pm — ten seats per class. Two classes are 15% off, three are 25% off.">
 <meta name="theme-color" content="#FAFAF6">
-<meta name="robots" content="index,follow">
 <link rel="canonical" href="https://quintaand.co/oct21.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Quinta &amp; Co.">
@@ -209,7 +224,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   </div>
 </footer>
 
-<script src="classes.js?v=23"></script>
+<script src="classes.js?v=24"></script>
 <script src="js/shop.js?v=1"></script>
 <script src="js/meta.js?v=5"></script>
 <script>
