@@ -168,6 +168,12 @@ input:focus{outline:none;border-color:var(--sage)}
       <p class="hint">Shows under the button. Leave blank to hide it.</p>
     </fieldset>
 
+    <fieldset>
+      <label class="lbl" for="noteIn">Chat length line</label>
+      <input type="text" id="noteIn" placeholder="e.g. Chats run up to 15 minutes">
+      <p class="hint">Also shows under the button. Leave blank to hide it.</p>
+    </fieldset>
+
     <p class="err" id="err"></p>
     <button class="save" type="submit">Save &amp; start</button>
 
@@ -186,6 +192,7 @@ input:focus{outline:none;border-color:var(--sage)}
 <script>
 (function(){
   var KEY = 'fnf-call-v1';
+  var DEFAULT_NOTE = 'Chats run up to 15 minutes';
   var PEOPLE = {
     nik:     { name:'Nik',     img:'nik.jpg',     defaultHow:'facetime' },
     joshlyn: { name:'Joshlyn', img:'joshlyn.jpg', defaultHow:'teams' }
@@ -214,6 +221,7 @@ input:focus{outline:none;border-color:var(--sage)}
     $('ftAddr').value = c.ft || '';
     $('teamsUrl').value = c.teams || '';
     $('hoursIn').value = c.hours || '';
+    $('noteIn').value = c.note == null ? DEFAULT_NOTE : c.note;
     $('err').className = 'err';
     syncSetup();
     $('setup').className = 'setup on';
@@ -224,7 +232,8 @@ input:focus{outline:none;border-color:var(--sage)}
     $('stage').style.backgroundImage = 'url(' + p.img + ')';
     $('callLabel').textContent = 'Call ' + p.name;
     $('callBtn').setAttribute('aria-label', 'Start a video call with ' + p.name);
-    $('hours').textContent = c.hours || '';
+    var note = c.note == null ? DEFAULT_NOTE : c.note;
+    $('hours').textContent = [c.hours, note].filter(Boolean).join('  ·  ');
     $('ovTitle').textContent = 'Calling ' + p.name + '…';
     $('setup').className = 'setup';
   }
@@ -238,7 +247,7 @@ input:focus{outline:none;border-color:var(--sage)}
     e.preventDefault();
     var c = { who: radio('who'), how: radio('how'),
               ft: $('ftAddr').value.trim(), teams: $('teamsUrl').value.trim(),
-              hours: $('hoursIn').value.trim() };
+              hours: $('hoursIn').value.trim(), note: $('noteIn').value.trim() };
     var err = '';
     if (!c.who) err = 'Pick who this iPad is for.';
     else if (c.how === 'facetime' && !c.ft) err = 'Add their FaceTime number or email.';
