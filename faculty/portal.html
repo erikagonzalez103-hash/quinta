@@ -64,6 +64,9 @@
              by email below rather than shown to the whole faculty. The page
              and its RPCs refuse anyone else regardless. -->
         <a href="attendance.html" id="adminlink" style="display:none">Unmatched check-ins</a>
+        <!-- Erika only (19 Oct): the October 21 RSVP list as a spreadsheet.
+             admin_event_rsvps() refuses every other email. -->
+        <a href="#" id="rsvplink" style="display:none">Download RSVPs</a>
         <a href="#" id="signout" class="signout" style="display:none">Sign out</a>
       </nav>
     </div>
@@ -289,6 +292,53 @@
   var gateText = document.getElementById("gate-text");
   var gateAction = document.getElementById("gate-action");
 
+  /* Download RSVPs (Erika only). Builds the October 21 RSVP list into a
+     CSV that opens in Excel or Google Sheets. Names were typed by the public,
+     so a cell starting with = + - @ gets a leading ' - otherwise a
+     spreadsheet could run it as a formula. */
+  function downloadRsvps(ev) {
+    ev.preventDefault();
+    var link = ev.currentTarget, label = link.textContent;
+    link.textContent = "Getting RSVPs…";
+    sb.rpc("admin_event_rsvps").then(function (r) {
+      link.textContent = label;
+      if (r.error || !r.data || !r.data.ok) {
+        console.error(r.error || r.data);
+        alert("The RSVP list couldn't be read. If this keeps happening, the SQL file 2026-10-19-rsvp-download.sql may not have been run yet.");
+        return;
+      }
+      var rows = r.data.rows || [];
+      if (!rows.length) { alert("No RSVPs yet."); return; }
+      function cell(v) {
+        var t = v == null ? "" : String(v);
+        if (/^[=+\-@]/.test(t)) t = "'" + t;
+        return '"' + t.replace(/"/g, '""') + '"';
+      }
+      function when(iso) {
+        try {
+          return new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric",
+                                                        hour: "numeric", minute: "2-digit" });
+        } catch (e) { return iso; }
+      }
+      var lines = [["RSVP'd (Dallas time)", "Name", "Email", "OK to email offers", "Teacher link", "Ad source", "Ad campaign"]];
+      rows.forEach(function (x) {
+        lines.push([when(x.created_at), x.name, x.email, x.marketing_ok ? "Yes" : "No",
+                    x.ref || "", x.utm_source || "", x.utm_campaign || ""]);
+      });
+      var csv = "\uFEFF" + lines.map(function (l) { return l.map(cell).join(","); }).join("\r\n");
+      var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "oct21-rsvps-" + new Date().toISOString().slice(0, 10) + ".csv";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    }).catch(function (e) {
+      link.textContent = label;
+      console.error(e);
+      alert("The RSVP list couldn't be read. Try again in a moment.");
+    });
+  }
+
   function showGate(title, text, offerReset) {
     gateTitle.textContent = title;
     gateText.textContent = text;
@@ -465,6 +515,8 @@
     if (String(session.user.email || "").toLowerCase() === "erika@quintaand.co") {
       var al = document.getElementById("adminlink");
       if (al) { al.style.display = ""; }
+      var rl = document.getElementById("rsvplink");
+      if (rl) { rl.style.display = ""; rl.addEventListener("click", downloadRsvps); }
     }
     // RLS means this only ever returns the signed-in instructor's own row.
     sb.from("faculty").select("*").eq("email", session.user.email.toLowerCase()).maybeSingle()
