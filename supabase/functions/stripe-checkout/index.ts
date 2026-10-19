@@ -58,7 +58,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
    with a $0 twin, because it never goes near Cal.com - so it has its own
    price list covering the whole paid catalogue. Keep in step with classes.js. */
 const OCT21_PRICES: Record<string, { cents: number; name: string }> = {
-  "entity-setup":       { cents: 17500, name: "Entity setup" },
+  "entity-setup":       { cents: 17500, name: "Entity Building" },
   "banking":            { cents:  9900, name: "Banking" },
   "insurance":          { cents: 17500, name: "Insurance" },
   "bookkeeping-1":      { cents:  9900, name: "Bookkeeping I — Set up QuickBooks" },

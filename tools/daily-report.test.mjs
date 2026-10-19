@@ -58,13 +58,13 @@ console.log('\n4. Missing tables do not kill the report');
     if (url.includes('waitlist')) return { ok: true, json: async () => [] };
     if (url.includes('class_sessions')) return { ok: true, json: async () => [] };
     if (url.includes('/enrollments?') || url.includes('/kit_events?')) return { ok: true, json: async () => [] };
-    if (url.includes('/link_clicks?')) return { ok: false, status: 404, text: async () => 'no such table' };
+    if (url.includes('/event_rsvps?')) return { ok: false, status: 404, text: async () => 'no such table' };
     throw new Error('unexpected ' + url);
   };
   const r = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: NOW });
   check('produced a report anyway', !!r.html);
   check('faculty still listed', r.html.includes('Tara Johnson'));
-  check('no Register card before its table exists', !r.html.includes('RSVP clicks'));
+  check('no RSVP card before its table exists', !r.html.includes('October 21 RSVPs'));
 }
 
 console.log('\n5. Unbookable detection adapts to the column name');
@@ -186,20 +186,22 @@ console.log('\n11. Sales by source');
   check('quiet day says so', salesCard([], [], 'x').includes('No sales today'));
 }
 
-console.log('\nFork and Femme Day Register clicks (go/rsvp)');
+console.log('\nOctober 21 RSVPs (event_rsvps)');
 {
-  const since = '2026-10-18T05:00:00.000Z';
+  const since = '2026-10-19T05:00:00.000Z';
   const rows = [
-    { src: 'fff-hero', ref: null, created_at: '2026-10-17T15:00:00Z' },
-    { src: 'fff-hero', ref: 'tara', created_at: '2026-10-18T15:00:00Z' },
-    { src: 'teacher-link', ref: 'tara', created_at: '2026-10-18T16:00:00Z' },
+    { name: 'Ana Old', email: 'ana@x.com', marketing_ok: false, ref: null, created_at: '2026-10-18T15:00:00Z' },
+    { name: 'Bea New', email: 'bea@x.com', marketing_ok: true, ref: 'tara', created_at: '2026-10-19T15:00:00Z' },
+    { name: '<b>Cy</b>', email: 'cy@x.com', marketing_ok: false, ref: 'tara', created_at: '2026-10-19T16:00:00Z' },
   ];
   const html = rsvpCard(rows, since);
-  check('counts today apart from all time', /Today<\/strong>[\s\S]*?<strong>2<\/strong>/.test(html) && /All time[\s\S]*?>3</.test(html));
-  check('shows where the clicks came from', html.includes('fff-hero') && html.includes('teacher-link'));
-  check('credits the teacher', html.includes('tara'));
-  check('says these are clicks, not registrations', html.includes('not finished registrations'));
-  check('quiet so far says so', rsvpCard([], since).includes('Nobody has clicked RSVP'));
+  check('counts today apart from all time', /Today<\/strong>[\s\S]*?<strong>2<\/strong>/.test(html) && /All RSVPs so far[\s\S]*?>3</.test(html));
+  check('counts who said yes to promotional email', /promotional email[\s\S]*?>1</.test(html));
+  check("lists today's names, not yesterday's", html.includes('Bea New') && !html.includes('Ana Old'));
+  check('marks the email opt-in', html.includes('emails ok'));
+  check('credits the teacher', /From teacher links[\s\S]*tara[\s\S]*?>2</.test(html));
+  check('escapes names', !html.includes('<b>Cy</b>'));
+  check('quiet so far says so', rsvpCard([], since).includes('No RSVPs yet'));
   check('missing table leaves the card out', rsvpCard(null, since) === '');
 }
 

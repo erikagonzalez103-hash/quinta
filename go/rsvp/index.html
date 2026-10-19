@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RSVP for Fork and Femme Day | Quinta &amp; Co.</title>
+<title>RSVP for Meet the Experts, October 21 | Quinta &amp; Co.</title>
 <meta name="robots" content="noindex,follow">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Quinta &amp; Co.">
@@ -11,87 +11,25 @@
 <meta property="og:description" content="Free from 9 a.m. to 2 p.m., RSVP required. Meet the Quinta &amp; Co. faculty, talk through your business, and find the class that fits where you are.">
 <meta property="og:image" content="https://quintaand.co/images/og-default.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<!-- quintaand.co/go/rsvp — THE ONLY WAY OUR SITE LINKS TO EVENTBRITE.
+<!-- quintaand.co/go/rsvp — the RSVP for Meet the Experts, October 21.
 
-     Fork and Femme Day registration is HER Texas's Eventbrite event, so its
-     reports are theirs. Every Eventbrite link on quintaand.co (and every
-     teacher's post) points here instead, and this page writes one row to
-     Supabase `link_clicks` before passing her on. That row is what the daily
-     report counts: how many went to register, from where, and which
-     teacher's link sent her.
-
-       ?src=fff-hero     where on our site the click came from (any short word)
-       ?ref=tara         a teacher's link - credits her, same as everywhere else
-       utm_* tags        kept from the ad she arrived by (js/meta.js stores them)
-
-     The Eventbrite address carries aff=quinta, Eventbrite's own tracking
-     code, so HER Texas can also see in THEIR report how many registrations
-     came from us. Change the event address in ONE place: EVENT below.
-     Table: supabase/sql/2026-10-18-link-clicks.sql. -->
+     19 Oct 2026: the RSVP moved from HER Texas's Eventbrite to our own form
+     on the landing page (Eventbrite confused women who had already signed up
+     for Fork and Femme, and HER Texas doesn't need the RSVP). This link now
+     opens that form, keeping ?ref= and the utm tags so the RSVP credits the
+     teacher and the ad. RSVPs land in Supabase event_rsvps. -->
 <script>
 (function () {
-  var EVENT = "https://www.eventbrite.com/e/fork-and-femme-day-tickets-1995572898258";
-  var LINK = "eventbrite-fff";
-  var to = EVENT + "?aff=quinta";
-  var gone = false;
-  function go() { if (gone) return; gone = true; location.replace(to); }
-
-  try {
-    var q = new URLSearchParams(location.search);
-    function clean(v, n) { return v ? String(v).toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, n) || null : null; }
-    function stored(key, days) {
-      try {
-        var s = JSON.parse(localStorage.getItem(key) || "null");
-        return s && s.at && Date.now() - s.at < days * 86400000 ? s : null;
-      } catch (e) { return null; }
-    }
-    // The teacher: this link's ?ref= first, then the one app.js kept (60 days).
-    var ref = clean(q.get("ref"), 24);
-    var keptRef = stored("quinta_ref", 60);
-    if (!ref && keptRef) ref = clean(keptRef.code, 24);
-    if (q.get("ref") && ref) {
-      try { localStorage.setItem("quinta_ref", JSON.stringify({ code: ref, at: Date.now() })); } catch (e) {}
-    }
-    // The ad: this link's utm_* first, then the ones js/meta.js kept (30 days).
-    var fromUrl = !!q.get("utm_source");
-    var kept = stored("quinta_utm", 30) || {};
-    function utm(k) { var v = fromUrl ? q.get(k) : kept[k]; return v ? String(v).slice(0, 200) : null; }
-
-    var row = {
-      link: LINK,
-      src: clean(q.get("src"), 40) || (ref ? "teacher-link" : "direct"),
-      ref: ref,
-      utm_source: utm("utm_source"), utm_medium: utm("utm_medium"),
-      utm_campaign: utm("utm_campaign"), utm_content: utm("utm_content"),
-      referrer: document.referrer ? document.referrer.slice(0, 500) : null
-    };
-
-    var KEY = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf";   // public by design: insert-only
-    fetch("https://pmpaslevwimofohirves.supabase.co/rest/v1/link_clicks", {
-      method: "POST", keepalive: true,
-      headers: { apikey: KEY, Authorization: "Bearer " + KEY,
-                 "Content-Type": "application/json", Prefer: "return=minimal" },
-      body: JSON.stringify(row)
-    }).then(go, go);
-
-    // Google Analytics and Meta hear about it too, best-effort.
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { dataLayer.push(arguments); };
-    gtag("js", new Date());
-    gtag("config", "G-QM9XPPN7XC");
-    gtag("event", "eventbrite_click", { link_src: row.src, ref: row.ref || "" });
-  } catch (e) { go(); }
-
-  // Never hold her here: whatever happens to the log, she's on her way within a second.
-  setTimeout(go, 1000);
+  var q = new URLSearchParams(location.search);
+  q.delete("src");
+  var s = q.toString();
+  location.replace("https://quintaand.co/fork-femme-foundations.html" + (s ? "?" + s : "") + "#rsvp");
 })();
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-QM9XPPN7XC"></script>
-<!-- No-JS fallback only: no click is logged this way. -->
-<meta http-equiv="refresh" content="2; url=https://www.eventbrite.com/e/fork-and-femme-day-tickets-1995572898258?aff=quinta">
+<meta http-equiv="refresh" content="2; url=https://quintaand.co/fork-femme-foundations.html#rsvp">
 <style>body{font-family:Georgia,serif;background:#FAFAF6;color:#2F332E;padding:40px 20px;text-align:center}</style>
 </head>
 <body>
-<p>Taking you to <a href="https://www.eventbrite.com/e/fork-and-femme-day-tickets-1995572898258?aff=quinta">Fork and Femme Day on Eventbrite</a>&hellip;</p>
+<p>Taking you to <a href="https://quintaand.co/fork-femme-foundations.html#rsvp">the RSVP for October 21</a>&hellip;</p>
 </body>
 </html>

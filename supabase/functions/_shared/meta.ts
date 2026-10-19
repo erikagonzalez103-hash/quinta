@@ -32,7 +32,7 @@ const GRAPH = "https://graph.facebook.com/v23.0";
    bundle price. Keep in step with classes.js and the BUNDLES block in
    fork-femme-foundations.html (and js/meta.js, which the browser uses). */
 export const CAL_PRICES: Record<string, { value: number; name: string }> = {
-  "entity-setup":       { value: 175, name: "Entity setup" },
+  "entity-setup":       { value: 175, name: "Entity Building" },
   "banking":            { value:  99, name: "Banking" },
   "insurance":          { value: 175, name: "Insurance" },
   "bookkeeping-1":      { value:  99, name: "Bookkeeping I — Set up QuickBooks" },

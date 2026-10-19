@@ -64,7 +64,7 @@ const QUINTA_CLASSES = [
     // TAUGHT BY Guadalupe Barraza, CPA, CTS (joined 18 Oct 2026). Hold lifted
     // the same day: Cal.com has no future dates for it, so it stays on the
     // waitlist until she adds dates in the portal, then the date sync opens it.
-    name: "Entity setup",
+    name: "Entity Building",   // renamed 18 Oct (was "Entity setup"); slug and URL stay "entity-setup"
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Pick the right entity, get your EIN, and leave with a licensing checklist built for your exact business — plain English, no scare tactics.",

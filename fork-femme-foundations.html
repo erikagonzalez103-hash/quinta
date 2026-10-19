@@ -28,7 +28,7 @@
 <link rel="stylesheet" href="styles.css?v=4">
 
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Event","name":"Meet the Experts at Fork and Femme Day","startDate":"2026-10-21T09:00:00-05:00","endDate":"2026-10-21T14:00:00-05:00","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled","description":"Free, RSVP required. Meet the experts at kiln Dallas during HER Texas's Fork and Femme Day. Meet the Quinta & Co. faculty, talk through your business, and find the class that fits where you are. Breakfast and lunch from two women-owned food businesses; co-working at kiln after 2 p.m.","location":{"@type":"Place","name":"kiln Dallas","address":{"@type":"PostalAddress","addressLocality":"Dallas","addressRegion":"TX","addressCountry":"US"}},"organizer":[{"@type":"Organization","name":"Quinta & Co.","url":"https://quintaand.co/"},{"@type":"Organization","name":"HER Texas"}],"image":"https://quintaand.co/images/og-default.jpg","url":"https://quintaand.co/fork-femme-foundations.html","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://quintaand.co/go/rsvp/"}}
+{"@context":"https://schema.org","@type":"Event","name":"Meet the Experts at Fork and Femme Day","startDate":"2026-10-21T09:00:00-05:00","endDate":"2026-10-21T14:00:00-05:00","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","eventStatus":"https://schema.org/EventScheduled","description":"Free, RSVP required. Meet the experts at kiln Dallas during HER Texas's Fork and Femme Day. Meet the Quinta & Co. faculty, talk through your business, and find the class that fits where you are. Breakfast and lunch from two women-owned food businesses; co-working at kiln after 2 p.m.","location":{"@type":"Place","name":"kiln Dallas","address":{"@type":"PostalAddress","addressLocality":"Dallas","addressRegion":"TX","addressCountry":"US"}},"organizer":[{"@type":"Organization","name":"Quinta & Co.","url":"https://quintaand.co/"},{"@type":"Organization","name":"HER Texas"}],"image":"https://quintaand.co/images/og-default.jpg","url":"https://quintaand.co/fork-femme-foundations.html","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://quintaand.co/fork-femme-foundations.html#rsvp"}}
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
 <!-- Google tag (gtag.js) -->
@@ -164,6 +164,23 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 .fff-textlink{color:var(--sage-deep);font-size:15.5px;text-underline-offset:3px}
 .fff-scarce{font-size:14px;color:var(--sage-deep);margin:12px 0 0}
 .fff-h2{text-wrap:balance}
+/* our own RSVP (19 Oct) */
+#rsvp{scroll-margin-top:90px}
+.fff-rsvp{background:#EEF2EC;border:1px solid var(--line);border-radius:12px;padding:26px 26px 24px;max-width:640px}
+.fff-rsvp .fff-h2{margin-bottom:8px}
+.fff-rsvp-sub{font-size:15.5px;line-height:1.6;color:var(--ink);margin:0 0 18px}
+.fff-field{display:block;margin:0 0 12px}
+.fff-field span{display:block;font-size:13.5px;color:var(--moss);font-weight:600;margin:0 0 5px}
+.fff-field input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--line);border-radius:8px;
+  font-family:inherit;font-size:16px;background:var(--cream);color:var(--ink)}
+.fff-field input:focus,.fff-opt input:focus{outline:2px solid var(--sage-deep);outline-offset:1px}
+.fff-opt{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;font-size:14.5px;line-height:1.5;color:var(--ink);cursor:pointer}
+.fff-opt input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:#4F6B5C}
+.fff-fine{font-size:12.5px;line-height:1.55;color:var(--sage-deep);margin:12px 0 0}
+.fff-fine a{color:var(--sage-deep)}
+.fff-rsvp .btn{width:100%;text-align:center;font-size:16px;padding:14px 20px}
+.fff-done{font-size:17px;line-height:1.6;color:var(--moss);margin:0}
+.fff-done strong{display:block;font-family:var(--display);font-weight:500;font-size:1.5rem;margin-bottom:6px}
 /* who's in the room (18 Oct: Meet the Experts) */
 .fff-why{list-style:none;padding:0;margin:22px 0 28px;max-width:68ch;display:grid;gap:12px}
 .fff-why li{position:relative;padding-left:22px;font-size:16.5px;line-height:1.55;color:var(--ink)}
@@ -227,9 +244,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   <!-- FIRST SCREEN. 18 Oct 2026: October 21 is no longer a teaching day.
        It is MEET THE EXPERTS - free, RSVP required (Erika, 18 Oct), at kiln 9 a.m. to 2 p.m.,
        where women meet the faculty and book a class for later this semester.
-       No classes are taught on the 21st. Registration is HER Texas's
-       Eventbrite event, and every link to it goes through go/rsvp/ so we can
-       count the clicks ourselves (see the note in that file). The $250,000
+       No classes are taught on the 21st. The RSVP is our own form just below
+       (19 Oct) - the page no longer sends anyone to HER Texas's Eventbrite.
+       The $250,000
        is HER Texas's goal for October, not ours. -->
   <section class="fff-hero">
     <div class="wrap">
@@ -238,11 +255,38 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       <p class="fff-goal"><strong>Meet the Experts.</strong> Free at kiln Dallas on Wednesday, October 21, from 9&nbsp;a.m. to 2&nbsp;p.m. Meet the faculty, talk through your business, and find the class that fits where you are.</p>
       <p class="fff-priceline"><strong>Free · RSVP required</strong><span class="fff-dot"> · </span><span class="fff-when">Wednesday, Oct 21 · 9–2 at kiln Dallas</span></p>
       <div class="fff-cta">
-        <a class="btn btn-solid fff-find" id="fffFind" data-rsvp="fff-hero" href="go/rsvp/?src=fff-hero">RSVP free</a>
+        <a class="btn btn-solid fff-find" id="fffFind" data-rsvp="fff-hero" href="#rsvp">RSVP free</a>
         <a class="fff-textlink" href="where-you-are.html" id="fffQuizTop">Not sure which class? Two questions</a>
         <a class="fff-textlink" href="#experts">Who's in the room ↓</a>
       </div>
-      <p class="fff-scarce">RSVP through HER Texas on Eventbrite so they know you're coming.</p>
+    </div>
+  </section>
+
+  <!-- OUR OWN RSVP (19 Oct). HER Texas doesn't need one - they only track
+       spend on the day - and "RSVP on Eventbrite" confused women who had
+       already signed up for Fork and Femme. Erika wants an RSVP anyway: a
+       woman who has said yes is more likely to come. Rows land in Supabase
+       event_rsvps (supabase/sql/2026-10-19-event-rsvps.sql). The email box
+       is unticked by default; unticked means we write about the 21st only. -->
+  <section class="fff-sec" id="rsvp">
+    <div class="wrap">
+      <div class="fff-rsvp">
+        <div id="rsvpForm">
+          <h2 class="fff-h2">RSVP for October&nbsp;21</h2>
+          <p class="fff-rsvp-sub">Free, and it takes ten seconds. It tells our experts to expect you. Already signed up for Fork and Femme Day with HER Texas? You're welcome either way; this just lets us know you're coming to meet the experts.</p>
+          <form novalidate>
+            <label class="fff-field"><span>Your name</span>
+              <input type="text" name="name" autocomplete="name" maxlength="120" required></label>
+            <label class="fff-field"><span>Email</span>
+              <input type="email" name="email" autocomplete="email" maxlength="200" placeholder="you@yourbusiness.com" required></label>
+            <label class="fff-opt"><input type="checkbox" name="marketing_ok">
+              <span>Yes, send me emails from Quinta &amp; Co. about classes, events and offers. I can unsubscribe any time.</span></label>
+            <button class="btn btn-solid" type="submit">RSVP</button>
+            <p class="fff-msg" role="status" aria-live="polite"></p>
+            <p class="fff-fine">We'll use your email to send you details about October&nbsp;21. Anything else, like promotional emails about classes and offers, only if you tick the box. <a href="privacy.html">Privacy policy</a>.</p>
+          </form>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -265,7 +309,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         <span>Free · RSVP required</span>
       </div>
       <div class="fff-cta">
-        <a class="btn btn-solid" data-rsvp="fff-why" href="go/rsvp/?src=fff-why">RSVP free</a>
+        <a class="btn btn-solid" data-rsvp="fff-why" href="#rsvp">RSVP free</a>
         <a class="btn" href="#classes">See the classes</a>
       </div>
     </div>
@@ -314,7 +358,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
           <div>
             <h3 class="fff-ename">Guadalupe Barraza, CPA, CTS</h3>
             <p class="fff-elabel">Teaches</p>
-            <p><a href="classes/entity-setup.html">Entity setup</a>, <a href="classes/taxes.html">Read Your Own Return</a>, <a href="classes/tax-strategy.html">Tax Strategy</a></p>
+            <p><a href="classes/entity-setup.html">Entity Building</a>, <a href="classes/taxes.html">Read Your Own Return</a>, <a href="classes/tax-strategy.html">Tax Strategy</a></p>
             <p class="fff-elabel">Ask her about</p>
             <p>Choosing your entity, tax planning, keeping more of what you earn</p>
           </div>
@@ -396,7 +440,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
         <div class="fff-slot"><div class="fff-time">2:00</div><div class="fff-what"><strong>Stay and co-work</strong><span>The drop-in ends; you're welcome to stay and work at kiln.</span></div></div>
       </div>
       <div class="fff-cta" style="margin-top:26px">
-        <a class="btn btn-solid" data-rsvp="fff-day" href="go/rsvp/?src=fff-day">RSVP free</a>
+        <a class="btn btn-solid" data-rsvp="fff-day" href="#rsvp">RSVP free</a>
       </div>
     </div>
   </section>
@@ -643,10 +687,74 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     });
   });
 
+  /* ---------- the RSVP form (19 Oct) ----------
+     Saves name, email, the marketing tick, the teacher's code and the ad's
+     tags to event_rsvps. A second RSVP from the same email is refused by
+     the database (23505) and reads as "already on the list". */
+  (function () {
+    var box = document.getElementById("rsvpForm");
+    if (!box) return;
+    var form = box.querySelector("form");
+    var msg = form.querySelector(".fff-msg");
+    var btn = form.querySelector("button");
+    function clean(v, n) { return v ? String(v).slice(0, n) : null; }
+    function tags() {
+      var q = new URLSearchParams(location.search), t = {};
+      try {
+        var kept = JSON.parse(localStorage.getItem("quinta_utm") || "null");
+        if (kept && kept.at && Date.now() - kept.at < 30 * 86400000 && !q.get("utm_source")) t = kept;
+      } catch (e) {}
+      ["utm_source", "utm_medium", "utm_campaign", "utm_content"].forEach(function (k) {
+        if (q.get(k)) t[k] = q.get(k);
+      });
+      return t;
+    }
+    function done(first, already) {
+      box.innerHTML = '<p class="fff-done"><strong>' +
+        (already ? "You're already on the list." : "You're on the list" + (first ? ", " + esc(first) : "") + ".") +
+        '</strong>See you at kiln on Wednesday, October 21, any time between 9 and 2. Bring a question about your business.</p>';
+    }
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var name = (form.elements["name"].value || "").trim();
+      var email = (form.elements["email"].value || "").trim();
+      msg.className = "fff-msg";
+      msg.textContent = "";
+      if (!name) { msg.className = "fff-msg bad"; msg.textContent = "Please add your name."; form.elements["name"].focus(); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.className = "fff-msg bad"; msg.textContent = "That email doesn't look quite right."; form.elements["email"].focus(); return;
+      }
+      if (!sb) { msg.className = "fff-msg bad"; msg.textContent = "Something hiccuped. Try again, or email hello@quintaand.co."; return; }
+      btn.disabled = true; btn.textContent = "…";
+      var t = tags();
+      var first = name.split(/\s+/)[0];
+      sb.from("event_rsvps").insert({
+        event: "oct21-meet-the-experts",
+        name: clean(name, 120), email: clean(email, 200),
+        marketing_ok: !!form.elements["marketing_ok"].checked,
+        ref: currentRef() || null,
+        src: clean(window.fffRsvpSrc || "rsvp-form", 40),
+        utm_source: clean(t.utm_source, 200), utm_medium: clean(t.utm_medium, 200),
+        utm_campaign: clean(t.utm_campaign, 200), utm_content: clean(t.utm_content, 200)
+      }).then(function (res) {
+        if (res.error && String(res.error.code) === "23505") { done(first, true); return; }
+        if (res.error) throw res.error;
+        done(first, false);
+        track("fff_rsvp", { src: window.fffRsvpSrc || "rsvp-form", marketing_ok: !!form.elements["marketing_ok"].checked });
+        try { if (typeof fbq === "function") fbq("track", "CompleteRegistration", { content_name: "Meet the Experts, Oct 21" }); } catch (e) {}
+      }).catch(function (err) {
+        console.error(err);
+        btn.disabled = false; btn.textContent = "RSVP";
+        msg.className = "fff-msg bad";
+        msg.textContent = "Something hiccuped. Try again, or email hello@quintaand.co.";
+      });
+    });
+  })();
+
   /* ---------- the buttons keep the ad's tags ----------
      The quiz page reads utm_* from its own address, and ?ref= is how a
      teacher is credited - so both travel with the quiz link and with every
-     "RSVP free" button (go/rsvp/ logs them with the click). */
+     RSVP sent from the form below. */
   (function () {
     var here = new URLSearchParams(location.search), keep = new URLSearchParams();
     ["ref", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
@@ -657,10 +765,13 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
       var quiz = document.getElementById(id);
       if (q && quiz) quiz.href = "where-you-are.html?" + q;
     });
+    /* Each RSVP button scrolls to the form; which one she pressed is saved
+       with her RSVP, so we can see which part of the page did the work. */
     Array.prototype.forEach.call(document.querySelectorAll("[data-rsvp]"), function (a) {
-      var src = a.getAttribute("data-rsvp");
-      a.href = "go/rsvp/?src=" + encodeURIComponent(src) + (q ? "&" + q : "");
-      a.addEventListener("click", function () { track("fff_register_click", { src: src }); });
+      a.addEventListener("click", function () {
+        window.fffRsvpSrc = a.getAttribute("data-rsvp");
+        track("fff_rsvp_click", { src: window.fffRsvpSrc });
+      });
     });
   })();
 

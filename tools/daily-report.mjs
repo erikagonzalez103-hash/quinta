@@ -141,30 +141,32 @@ function sourceLabel(g) {
   const name = SOURCE_LABELS[`${g.src}|${g.med}`.toLowerCase()] || `${esc(g.src)}${g.med ? ` · ${esc(g.med)}` : ""}`;
   return `${name}${g.camp ? ` <span style="color:#5A5E55;">— ${esc(g.camp)}</span>` : ""}`;
 }
-/* FORK AND FEMME DAY REGISTRATIONS. The registration is HER Texas's
-   Eventbrite event, so we can't see sign-ups - but every link to it from our
-   site goes through quintaand.co/go/rsvp, which logs the click to
-   link_clicks (supabase/sql/2026-10-18-link-clicks.sql). This counts those:
-   today, all-time, from where on our site, and which teacher's link. */
+/* OCTOBER 21 RSVPs - Meet the Experts. From our own form on the landing
+   page (event_rsvps, supabase/sql/2026-10-19-event-rsvps.sql), which
+   replaced the Eventbrite link on 19 Oct. Today's names are listed so Erika
+   can see who is coming; "emails ok" marks the ones who ticked the box for
+   promotional email - the rest get October 21 news only. */
 export function rsvpCard(rows, since) {
   if (rows === null) return "";
   const today = rows.filter((r) => String(r.created_at || "") >= since);
-  const tally = (list, key, blank) => {
-    const by = {};
-    for (const r of list) { const k = r[key] || blank; by[k] = (by[k] || 0) + 1; }
-    return Object.entries(by).sort((a, b) => b[1] - a[1]);
-  };
-  const block = (label, entries) => entries.length
-    ? `<div style="margin:14px 0 6px;font-size:13px;color:#5A5E55;">${esc(label)}</div>` +
-      entries.slice(0, 8).map(([k, n]) => row(esc(k), `${n}`)).join("")
+  const optedIn = rows.filter((r) => r.marketing_ok).length;
+  const by = {};
+  for (const r of rows) if (r.ref) by[r.ref] = (by[r.ref] || 0) + 1;
+  const refs = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  const head = row("<strong>Today</strong>", `<strong>${today.length}</strong>`)
+    + row("All RSVPs so far", `${rows.length}`)
+    + row("Said yes to promotional email", `${optedIn}`);
+  const names = today.length
+    ? `<div style="margin:14px 0 6px;font-size:13px;color:#5A5E55;">New today</div>` +
+      today.map((r) => row(`${esc(r.name || "")} — <span style="color:#5A5E55;">${esc(r.email || "")}</span>`,
+        [r.marketing_ok ? "emails ok" : "", r.ref ? `via ${esc(r.ref)}` : ""].filter(Boolean).join(" · ") || "&nbsp;")).join("")
     : "";
-  const head = row("<strong>Today</strong>", `<strong>${today.length}</strong>`) + row("All time", `${rows.length}`);
-  return card("Fork and Femme Day — RSVP clicks",
-    rows.length
-      ? head + block("From where (all time)", tally(rows, "src", "unknown"))
-             + block("Teacher links (all time)", tally(rows.filter((r) => r.ref), "ref", ""))
-             + quiet("Clicks through to HER Texas's Eventbrite page, not finished registrations. HER Texas can see how many registered from us under the tracking code \"quinta\".")
-      : quiet("Nobody has clicked RSVP yet."));
+  const teachers = refs.length
+    ? `<div style="margin:14px 0 6px;font-size:13px;color:#5A5E55;">From teacher links (all time)</div>` +
+      refs.slice(0, 8).map(([k, n]) => row(esc(k), `${n}`)).join("")
+    : "";
+  return card("October 21 RSVPs — Meet the Experts",
+    rows.length ? head + names + teachers : quiet("No RSVPs yet."));
 }
 
 export function salesCard(todayRows, allRows, sinceLabel) {
@@ -200,8 +202,8 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
   // --- Sales by source (first: it's the number the campaign is judged on) ---
   parts.push(safe("Sales by source", () => salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)")));
 
-  // --- Fork and Femme Day registrations (only once link_clicks exists) ---
-  const rsvp = safe("Fork and Femme Day — RSVP clicks", () => rsvpCard(rsvpRows, since));
+  // --- October 21 RSVPs (only once event_rsvps exists) ---
+  const rsvp = safe("October 21 RSVPs — Meet the Experts", () => rsvpCard(rsvpRows, since));
   if (rsvp) parts.push(rsvp);
 
   // --- The Swarm ---
@@ -355,8 +357,8 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const salesAll = refused.has("enrollments") ? null : salesAllRaw;
   const salesToday = salesAll === null ? null : salesAll.filter((r) => String(r.created_at || "") >= since);
 
-  const rsvpRaw = await get(`link_clicks?select=src,ref,created_at&link=eq.eventbrite-fff&created_at=lt.${end}&order=created_at.asc`);
-  const rsvpRows = refused.has("link_clicks") ? null : rsvpRaw;
+  const rsvpRaw = await get(`event_rsvps?select=name,email,marketing_ok,ref,src,created_at&event=eq.oct21-meet-the-experts&created_at=lt.${end}&order=created_at.asc`);
+  const rsvpRows = refused.has("event_rsvps") ? null : rsvpRaw;
 
   /* Every table failing is not "a quiet day", it is a broken key — and a
      report that cheerfully says "No signups today" when the database was

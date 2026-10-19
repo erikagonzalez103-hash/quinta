@@ -21,7 +21,7 @@ Key facts:
 
 ## Class pages
 
-Each class has a full syllabus page under https://quintaand.co/classes/ — for example [Module 1 — Claude for beginners](https://quintaand.co/classes/module-1.html), [Entity setup](https://quintaand.co/classes/entity-setup.html), and [Bookkeeping](https://quintaand.co/classes/bookkeeping-1.html). All classes are listed in the [sitemap](https://quintaand.co/sitemap.xml).
+Each class has a full syllabus page under https://quintaand.co/classes/ — for example [Module 1 — Claude for beginners](https://quintaand.co/classes/module-1.html), [Entity Building](https://quintaand.co/classes/entity-setup.html), and [Bookkeeping](https://quintaand.co/classes/bookkeeping-1.html). All classes are listed in the [sitemap](https://quintaand.co/sitemap.xml).
 
 ## Blog
 
