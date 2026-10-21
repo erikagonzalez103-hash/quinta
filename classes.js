@@ -61,6 +61,7 @@ const QUINTA_CLASSES = [
   // Phase 01 — Start right
   {
     slug: "entity-setup", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     // TAUGHT BY Guadalupe Barraza, CPA, CTS (joined 18 Oct 2026). Hold lifted
     // the same day: Cal.com has no future dates for it, so it stays on the
     // waitlist until she adds dates in the portal, then the date sync opens it.

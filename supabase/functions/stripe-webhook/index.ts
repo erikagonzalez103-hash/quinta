@@ -47,6 +47,9 @@ const CLASS_NAMES: Record<string, string> = {
   "financial-planning": "Investing — How to pay yourself first",
   "certification": "Get certified — WBE / MBE / DBE",
   "trademarks": "Trademark Matriarch",
+  "entity-setup": "Entity Building",
+  "taxes": "Read Your Own Return",
+  "tax-strategy": "Tax Strategy",
 };
 
 /* Stripe signs the raw body as `t=<unix>,v1=<hex>` over "<t>.<body>".

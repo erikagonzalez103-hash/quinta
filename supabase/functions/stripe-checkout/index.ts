@@ -100,6 +100,10 @@ const PRICES: Record<string, { cents: number; name: string }> = {
   "financial-planning": { cents: 25000, name: "Investing — How to pay yourself first" },
   "certification":      { cents: 29900, name: "Get certified — WBE / MBE / DBE" },
   "trademarks":         { cents: 29900, name: "Trademark Matriarch" },
+  // Lupe's three (21 Oct) - redeem twins entity-setup-redeem, taxes-redeem, tax-strategy-redeem
+  "entity-setup":       { cents: 17500, name: "Entity Building" },
+  "taxes":              { cents: 17500, name: "Read Your Own Return" },
+  "tax-strategy":       { cents: 29900, name: "Tax Strategy" },
 };
 
 /* The codes, and the number of classes each one is for. The minimum order
