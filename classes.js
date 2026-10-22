@@ -122,7 +122,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "landlord", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Intro to Real Estate Management: So You Want to Be a Landlord",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
@@ -223,7 +223,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "rental-management", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Owning it without doing it all",
     price: 250,
     venue: "Kiln, Preston Hollow (Dallas)",
@@ -413,7 +413,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "rental-growth", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Grow it and build your team",
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
