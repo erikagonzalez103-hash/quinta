@@ -395,7 +395,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Brand 101",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
