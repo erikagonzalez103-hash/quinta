@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "what-ai-tools-cost-small-business",
+    title: "What Do AI Tools Cost for a Small Business? And Three Subscriptions Worth Cancelling First",
+    date: "2026-10-26",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Most small businesses spend less on AI than the internet implies: a median $2,200 a year, and a third spend nothing. What the 2026 numbers say, three subscriptions worth cancelling first, and a one-afternoon audit.",
+    image: "blog-ai-tools-cost-wide.webp"
+  },
+  {
     slug: "first-hire-contractor-or-employee",
     title: "Does Your First Hire Have to Be an Employee? Contractor vs Employee, and What Madam C.J. Walker Knew in 1917",
     date: "2026-10-16",
