@@ -162,7 +162,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping II — Prep for your bookkeeper",
     price: 99,
     venue: "Zoom",
@@ -413,7 +413,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "rental-growth", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Grow it and build your team",
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
