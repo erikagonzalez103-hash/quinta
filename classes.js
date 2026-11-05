@@ -331,8 +331,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "tax-strategy", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
-    // Guadalupe Barraza's class (added 18 Oct 2026). Waitlist until she adds dates.
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Tax Strategy",
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
