@@ -452,7 +452,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
-    open: true,   // Erika set 13 & 27 Oct and 3 Nov - bookable
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Module 1: Your First AI Workflow",
     price: 150,
     venue: "Kiln, Preston Hollow (Dallas)",
