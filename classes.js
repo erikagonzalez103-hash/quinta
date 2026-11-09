@@ -223,7 +223,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "rental-management", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Owning it without doing it all",
     price: 250,
     venue: "Kiln, Preston Hollow (Dallas)",
