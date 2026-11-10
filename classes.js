@@ -470,8 +470,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "module-2", track: "practice", phase: null, phaseNum: null, stage: "Up and running",
-    open: true,   // Opened 30 Sep: 11 Nov date in Cal.com. Explicit so the landing page and
-                  // Where You Are agree with the class page, which already showed it bookable.
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Module 2 — Build your AI assistant",
     price: 200,
     venue: "Kiln, Preston Hollow (Dallas)",
