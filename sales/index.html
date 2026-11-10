@@ -87,6 +87,7 @@ tr.click:hover td{background:#F4F6F1}
         <label>Class<select id="fClass"><option value="">All classes</option></select></label>
         <label>Instructor<select id="fTeacher"><option value="">All instructors</option></select></label>
         <label>Type of sale<select id="fType"><option value="">All types</option></select></label>
+        <label>Booked for<select id="fWhen"><option value="">Any class date</option><option value="upcoming">Upcoming classes</option><option value="past">Already happened</option><option value="none">Not picked yet</option></select></label>
         <label>Search buyer<input type="search" id="fBuyer" placeholder="Name or email"></label>
       </div>
       <label class="s-check"><input type="checkbox" id="fAll"> Include refunded, expired and unfinished (pending) sales</label>
@@ -112,7 +113,7 @@ tr.click:hover td{background:#F4F6F1}
     <div class="s-card">
       <h2 class="s-h2">Every sale <span class="s-muted" id="count"></span></h2>
       <div class="s-scroll"><table id="detail"></table></div>
-      <p class="s-note">Click a row in By class, By instructor or By month to filter to it. A bundle's price is recorded on its first class; its other classes show $0, so a bundle's revenue counts toward the class it was booked with. Dates are Dallas time. "Booked" = she has a date; "Owed" = paid, date not picked yet; "Taken" = she came.</p>
+      <p class="s-note">Click a row in By class, By instructor or By month to filter to it. A bundle's price is recorded on its first class; its other classes show $0, so a bundle's revenue counts toward the class it was booked with. Dates are Dallas time. "Booked for" is the class date she picked. "Booked" = she has a date; "Owed" = paid, date not picked yet; "Taken" = she came.</p>
     </div>
   </div>
 </div>
@@ -139,6 +140,15 @@ tr.click:hover td{background:#F4F6F1}
   var COUNTED = { booked: 1, owed: 1, taken: 1 };
 
   var rows = [], teachers = {};
+  var TODAY = new Date().toLocaleString("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).slice(0, 10);
+  /* "2026-11-12" -> "Thu, Nov 12" (adds the year when it isn't this year). */
+  function classDay(d) {
+    if (!d) return "";
+    var p = String(d).slice(0, 10).split("-"), dt = new Date(+p[0], +p[1] - 1, +p[2]);
+    var o = { weekday: "short", month: "short", day: "numeric" };
+    if (+p[0] !== new Date().getFullYear()) o.year = "numeric";
+    return dt.toLocaleDateString("en-US", o);
+  }
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(c) { return "$" + (Math.round(c) / 100).toLocaleString("en-US", { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 }); }
@@ -195,7 +205,7 @@ tr.click:hover td{background:#F4F6F1}
     opts($("fTeacher"), uniq(function (r) { return r.teacher; }).sort());
     opts($("fType"), uniq(function (r) { return r.source; }).sort(), function (v) { return TYPE[v] || v; });
   }
-  var IDS = ["fMonth", "fFrom", "fTo", "fClass", "fTeacher", "fType", "fBuyer"];
+  var IDS = ["fMonth", "fFrom", "fTo", "fClass", "fTeacher", "fType", "fWhen", "fBuyer"];
   function save() { try { var o = {}; IDS.forEach(function (i) { o[i] = $(i).value; }); o.fAll = $("fAll").checked; sessionStorage.setItem("q_sales_f", JSON.stringify(o)); } catch (e) {} }
   function restore() { try { var o = JSON.parse(sessionStorage.getItem("q_sales_f") || "{}"); IDS.forEach(function (i) { if (o[i] != null) $(i).value = o[i]; }); $("fAll").checked = !!o.fAll; } catch (e) {} }
   IDS.concat(["fAll"]).forEach(function (i) { $(i).addEventListener(i === "fBuyer" ? "input" : "change", function () { save(); draw(); }); });
@@ -212,6 +222,9 @@ tr.click:hover td{background:#F4F6F1}
       if (f.fClass && r.cls !== f.fClass) return false;
       if (f.fTeacher && r.teacher !== f.fTeacher) return false;
       if (f.fType && r.source !== f.fType) return false;
+      if (f.fWhen === "none" && r.session_on) return false;
+      if (f.fWhen === "upcoming" && !(r.session_on && r.session_on >= TODAY)) return false;
+      if (f.fWhen === "past" && !(r.session_on && r.session_on < TODAY)) return false;
       if (q && (String(r.student_name || "") + " " + String(r.student_email || "")).toLowerCase().indexOf(q) === -1) return false;
       return true;
     });
@@ -246,13 +259,14 @@ tr.click:hover td{background:#F4F6F1}
     summary("byTeacher", list, function (r) { return r.teacher; }, "Instructor", "fTeacher");
     summary("byMonth", list, function (r) { return r.month; }, "Month", "fMonth", true);
     $("count").textContent = "(" + list.length + ")";
-    $("detail").innerHTML = "<tr><th>Sold</th><th>Buyer</th><th>Class</th><th>Instructor</th><th>Type</th><th class='n'>Paid</th><th>Status</th><th>Class date</th><th>Came from</th></tr>" +
+    $("detail").innerHTML = "<tr><th>Sold</th><th>Buyer</th><th>Class</th><th>Booked for</th><th>Instructor</th><th>Type</th><th class='n'>Paid</th><th>Status</th><th>Came from</th></tr>" +
       list.map(function (r) {
         var from = [r.ref_code ? "via " + r.ref_code : "", r.utm_source || ""].filter(Boolean).join(" · ");
         return "<tr><td>" + r.day + "</td><td>" + esc(r.student_name || "") + "<br><span class='s-muted'>" + esc(r.student_email || "") + "</span></td><td>" +
-          esc(r.cls) + (r.bundle_key ? "<br><span class='s-muted'>" + esc(r.bundle_key) + " bundle</span>" : "") + "</td><td>" + esc(r.teacher) +
+          esc(r.cls) + (r.bundle_key ? "<br><span class='s-muted'>" + esc(r.bundle_key) + " bundle</span>" : "") + "</td><td style='white-space:nowrap'>" +
+          (r.session_on ? esc(classDay(r.session_on)) : "<span class='s-muted'>Not picked yet</span>") + "</td><td>" + esc(r.teacher) +
           "</td><td>" + esc(TYPE[r.source] || r.source) + "</td><td class='n'>" + money(r.cents) + "</td><td><span class='s-pill" + (COUNTED[r.status] ? "" : " off") + "'>" +
-          esc(STATUS[r.status] || r.status) + "</span></td><td>" + esc(r.session_on || "") + "</td><td class='s-muted'>" + esc(from) + "</td></tr>";
+          esc(STATUS[r.status] || r.status) + "</span></td><td class='s-muted'>" + esc(from) + "</td></tr>";
       }).join("");
   }
   /* Click a summary row to filter to it. */
@@ -268,7 +282,7 @@ tr.click:hover td{background:#F4F6F1}
   $("csv").addEventListener("click", function () {
     var list = filtered();
     function cell(v) { var t = v == null ? "" : String(v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; }
-    var lines = [["Sold (Dallas)", "Buyer", "Email", "Class", "Instructor", "Type", "Bundle", "Paid", "Status", "Class date", "Referral", "Ad source", "Ad campaign", "Order"]];
+    var lines = [["Sold (Dallas)", "Buyer", "Email", "Class", "Instructor", "Type", "Bundle", "Paid", "Status", "Booked for", "Referral", "Ad source", "Ad campaign", "Order"]];
     list.forEach(function (r) {
       lines.push([r.day, r.student_name, r.student_email, r.cls, r.teacher, TYPE[r.source] || r.source, r.bundle_key || "",
                   (r.cents / 100).toFixed(2), STATUS[r.status] || r.status, r.session_on || "", r.ref_code || "", r.utm_source || "", r.utm_campaign || "", r.order_ref || ""]);
