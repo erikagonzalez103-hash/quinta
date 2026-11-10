@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "stewardship-leadership-for-founders",
+    title: "Stewardship Leadership for Founders: Did I Evolve, or Is This Just the Better Way to Run a Business?",
+    date: "2026-11-06",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Stewardship leadership means holding your business in trust for the people doing the work. What it means, why it fits a 1099 workforce, where it strains, and three ways to practice it this week.",
+    image: "blog-steward.webp"
+  },
+  {
     slug: "what-ai-tools-cost-small-business",
     title: "What Do AI Tools Cost for a Small Business? And Three Subscriptions Worth Cancelling First",
     date: "2026-10-26",
