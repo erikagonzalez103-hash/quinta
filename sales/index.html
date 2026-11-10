@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- ===========================================================================
+     SALES - Erika only (10 Nov 2026). Hidden: not linked anywhere, noindex.
+
+     Reads every row of the enrollments ledger through admin_sales()
+     (supabase/sql/2026-11-10-admin-sales.sql), which refuses any signed-in
+     email except erika@quintaand.co. Nothing here works with the public key
+     alone, so the page itself holds nothing private.
+
+     One ledger row = one class one person is entitled to. Cal.com bookings
+     write rows (cal-bundle-welcome) and so does the site's own checkout
+     (stripe-webhook). A bundle's price sits on its first class's row; its
+     other classes show $0 - so "revenue by class" credits the bundle to the
+     class it was anchored on. "Classes sold" counts every row.
+     =========================================================================== -->
+<style>
+body{background:var(--cream,#FAFAF6)}
+.s-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+.s-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.s-h1{font-family:var(--display);font-weight:500;font-size:clamp(1.9rem,4vw,2.6rem);margin:0;color:var(--moss)}
+.s-who{font-size:13px;color:var(--sage-deep)}
+.s-who a{color:var(--sage-deep)}
+.s-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+.s-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.s-filters label{display:block;font-size:12px;font-weight:600;color:var(--moss);letter-spacing:.02em}
+.s-filters select,.s-filters input{width:100%;box-sizing:border-box;margin-top:5px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:var(--cream,#FAFAF6);color:var(--ink)}
+.s-check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin-top:12px}
+.s-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.s-btn{border:1px solid var(--sage-deep);background:var(--sage-deep);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-size:14px;cursor:pointer}
+.s-btn.ghost{background:transparent;color:var(--sage-deep)}
+.s-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+.s-tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.s-tile b{display:block;font-family:var(--display);font-weight:500;font-size:1.9rem;color:var(--moss);line-height:1.1}
+.s-tile span{font-size:12.5px;color:var(--sage-deep)}
+.s-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:18px}
+.s-h2{font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--moss);margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #EEECE4;vertical-align:top}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sage-deep);font-weight:600;white-space:nowrap}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.click{cursor:pointer}
+tr.click:hover td{background:#F4F6F1}
+.s-scroll{overflow-x:auto}
+.s-pill{display:inline-block;font-size:11px;padding:2px 7px;border-radius:99px;background:#EEF2EC;color:var(--moss);white-space:nowrap}
+.s-pill.off{background:#F7E9E6;color:#8A3B2E}
+.s-muted{color:#8A8E83;font-size:12.5px}
+.s-note{font-size:12.5px;color:#8A8E83;line-height:1.55;margin-top:10px}
+#gate{max-width:440px;margin:60px auto}
+#gate input{width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:10px 0}
+#gate .msg{font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="s-wrap">
+
+  <div id="gate" class="s-card" style="display:none">
+    <h1 class="s-h1" style="font-size:1.6rem">Sales</h1>
+    <p id="gateText" style="font-size:15px;line-height:1.6">Sign in with your Quinta email and we'll send you a link.</p>
+    <form id="gateForm">
+      <input type="email" id="gateEmail" placeholder="erika@quintaand.co" autocomplete="email" required>
+      <button class="s-btn" type="submit">Email me a sign-in link</button>
+      <p class="msg" id="gateMsg" role="status"></p>
+    </form>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="s-top">
+      <h1 class="s-h1">Sales</h1>
+      <span class="s-who" id="who"></span>
+    </div>
+
+    <div class="s-card">
+      <div class="s-filters">
+        <label>Month<select id="fMonth"><option value="">All months</option></select></label>
+        <label>From<input type="date" id="fFrom"></label>
+        <label>To<input type="date" id="fTo"></label>
+        <label>Class<select id="fClass"><option value="">All classes</option></select></label>
+        <label>Instructor<select id="fTeacher"><option value="">All instructors</option></select></label>
+        <label>Type of sale<select id="fType"><option value="">All types</option></select></label>
+        <label>Search buyer<input type="search" id="fBuyer" placeholder="Name or email"></label>
+      </div>
+      <label class="s-check"><input type="checkbox" id="fAll"> Include refunded, expired and unfinished (pending) sales</label>
+      <div class="s-actions">
+        <button class="s-btn ghost" type="button" id="reset">Clear filters</button>
+        <button class="s-btn" type="button" id="csv">Download these as a spreadsheet</button>
+      </div>
+    </div>
+
+    <div class="s-tiles">
+      <div class="s-tile"><b id="tRev">$0</b><span>Revenue</span></div>
+      <div class="s-tile"><b id="tSeats">0</b><span>Classes sold</span></div>
+      <div class="s-tile"><b id="tOrders">0</b><span>Orders</span></div>
+      <div class="s-tile"><b id="tBuyers">0</b><span>Buyers</span></div>
+    </div>
+
+    <div class="s-grid">
+      <div class="s-card"><h2 class="s-h2">By class</h2><div class="s-scroll"><table id="byClass"></table></div></div>
+      <div class="s-card"><h2 class="s-h2">By instructor</h2><div class="s-scroll"><table id="byTeacher"></table></div></div>
+      <div class="s-card"><h2 class="s-h2">By month</h2><div class="s-scroll"><table id="byMonth"></table></div></div>
+    </div>
+
+    <div class="s-card">
+      <h2 class="s-h2">Every sale <span class="s-muted" id="count"></span></h2>
+      <div class="s-scroll"><table id="detail"></table></div>
+      <p class="s-note">Click a row in By class, By instructor or By month to filter to it. A bundle's price is recorded on its first class; its other classes show $0, so a bundle's revenue counts toward the class it was booked with. Dates are Dallas time. "Booked" = she has a date; "Owed" = paid, date not picked yet; "Taken" = she came.</p>
+    </div>
+  </div>
+</div>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script src="../classes.js?v=38"></script>
+<script>
+(function () {
+  "use strict";
+  var sb = supabase.createClient("https://pmpaslevwimofohirves.supabase.co",
+                                 "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+
+  /* Who teaches what, for classes with no session on the calendar yet. The
+     database's answer (latest session's instructor) wins when there is one. */
+  var TEACHER = {
+    "bookkeeping-1": "Tara", "bookkeeping-2": "Tara", "brand-101": "Stephanie",
+    "trademarks": "Nik", "financial-planning": "Joshlyn",
+    "landlord": "Robin", "rental-management": "Robin", "rental-growth": "Robin",
+    "entity-setup": "Guadalupe", "taxes": "Guadalupe", "tax-strategy": "Guadalupe",
+    "module-1": "Erika", "module-2": "Erika", "module-3": "Erika", "certification": "Erika", "coffee": "Erika"
+  };
+  var TYPE = { single: "Single class", bundle: "Bundle", gift: "Gift", comp: "Comp (free)", "multi-discount": "Pick 2–3 (discount)" };
+  var STATUS = { booked: "Booked", owed: "Owed", taken: "Taken", refunded: "Refunded", expired: "Expired", pending: "Unfinished" };
+  var COUNTED = { booked: 1, owed: 1, taken: 1 };
+
+  var rows = [], teachers = {};
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function money(c) { return "$" + (Math.round(c) / 100).toLocaleString("en-US", { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 }); }
+  function dallas(iso) { return new Date(iso).toLocaleString("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).slice(0, 10); }
+  function monthLabel(ym) { var p = ym.split("-"); return new Date(+p[0], +p[1] - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" }); }
+  function className(r) {
+    try { var c = typeof quintaBySlug === "function" && quintaBySlug(r.class_slug); if (c) return c.name; } catch (e) {}
+    var list = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].slug === r.class_slug) return list[i].name;
+    return r.class_name || r.class_slug;
+  }
+  function teacherOf(slug) { return teachers[slug] || TEACHER[slug] || "Unassigned"; }
+
+  /* ---------- sign-in ---------- */
+  function showGate(text) { $("gate").style.display = ""; $("app").style.display = "none"; if (text) $("gateText").textContent = text; }
+  $("gateForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = $("gateEmail").value.trim();
+    $("gateMsg").textContent = "Sending…";
+    sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false, emailRedirectTo: location.href.split("#")[0] } })
+      .then(function (r) {
+        $("gateMsg").textContent = r.error ? "That didn't work: " + r.error.message : "Check your email for the sign-in link.";
+      });
+  });
+
+  sb.auth.getSession().then(function (res) {
+    var s = res.data && res.data.session;
+    if (!s) { showGate(); return; }
+    $("who").innerHTML = "Signed in as " + esc(s.user.email) + " · <a href='#' id='out'>Sign out</a>";
+    $("out").addEventListener("click", function (e) { e.preventDefault(); sb.auth.signOut().then(function () { location.reload(); }); });
+    sb.rpc("admin_sales").then(function (r) {
+      if (r.error) { showGate("The sales list couldn't be read (" + r.error.message + "). If this is the first time, run supabase/sql/2026-11-10-admin-sales.sql."); return; }
+      if (!r.data || !r.data.ok) { showGate("This page is only for erika@quintaand.co. You're signed in as " + s.user.email + "."); return; }
+      rows = (r.data.rows || []).map(function (x) {
+        x.day = dallas(x.created_at); x.month = x.day.slice(0, 7);
+        x.cls = className(x); x.teacher = null; x.cents = Number(x.amount_cents) || 0;
+        return x;
+      });
+      teachers = r.data.teachers || {};
+      rows.forEach(function (x) { x.teacher = teacherOf(x.class_slug); });
+      $("gate").style.display = "none"; $("app").style.display = "";
+      fillSelects(); restore(); draw();
+    });
+  });
+
+  /* ---------- filters ---------- */
+  function opts(sel, values, label) {
+    values.forEach(function (v) { var o = document.createElement("option"); o.value = v; o.textContent = label ? label(v) : v; sel.appendChild(o); });
+  }
+  function uniq(f) { var s = {}; rows.forEach(function (r) { var v = f(r); if (v) s[v] = 1; }); return Object.keys(s); }
+  function fillSelects() {
+    opts($("fMonth"), uniq(function (r) { return r.month; }).sort().reverse(), monthLabel);
+    opts($("fClass"), uniq(function (r) { return r.cls; }).sort());
+    opts($("fTeacher"), uniq(function (r) { return r.teacher; }).sort());
+    opts($("fType"), uniq(function (r) { return r.source; }).sort(), function (v) { return TYPE[v] || v; });
+  }
+  var IDS = ["fMonth", "fFrom", "fTo", "fClass", "fTeacher", "fType", "fBuyer"];
+  function save() { try { var o = {}; IDS.forEach(function (i) { o[i] = $(i).value; }); o.fAll = $("fAll").checked; sessionStorage.setItem("q_sales_f", JSON.stringify(o)); } catch (e) {} }
+  function restore() { try { var o = JSON.parse(sessionStorage.getItem("q_sales_f") || "{}"); IDS.forEach(function (i) { if (o[i] != null) $(i).value = o[i]; }); $("fAll").checked = !!o.fAll; } catch (e) {} }
+  IDS.concat(["fAll"]).forEach(function (i) { $(i).addEventListener(i === "fBuyer" ? "input" : "change", function () { save(); draw(); }); });
+  $("reset").addEventListener("click", function () { IDS.forEach(function (i) { $(i).value = ""; }); $("fAll").checked = false; save(); draw(); });
+
+  function filtered() {
+    var f = {}; IDS.forEach(function (i) { f[i] = $(i).value.trim(); });
+    var q = f.fBuyer.toLowerCase();
+    return rows.filter(function (r) {
+      if (!$("fAll").checked && !COUNTED[r.status]) return false;
+      if (f.fMonth && r.month !== f.fMonth) return false;
+      if (f.fFrom && r.day < f.fFrom) return false;
+      if (f.fTo && r.day > f.fTo) return false;
+      if (f.fClass && r.cls !== f.fClass) return false;
+      if (f.fTeacher && r.teacher !== f.fTeacher) return false;
+      if (f.fType && r.source !== f.fType) return false;
+      if (q && (String(r.student_name || "") + " " + String(r.student_email || "")).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+
+  /* ---------- drawing ---------- */
+  function group(list, key) {
+    var g = {};
+    list.forEach(function (r) { var k = key(r); (g[k] = g[k] || { k: k, seats: 0, cents: 0, buyers: {} }); g[k].seats++; g[k].cents += r.cents; g[k].buyers[String(r.student_email || "").toLowerCase()] = 1; });
+    return Object.keys(g).map(function (k) { var x = g[k]; x.n = Object.keys(x.buyers).length; return x; });
+  }
+  function summary(id, list, key, label, filterId, sortByKey) {
+    var g = group(list, key);
+    g.sort(sortByKey ? function (a, b) { return a.k < b.k ? 1 : -1; } : function (a, b) { return b.cents - a.cents || b.seats - a.seats; });
+    var html = "<tr><th>" + label + "</th><th class='n'>Classes</th><th class='n'>Buyers</th><th class='n'>Revenue</th></tr>";
+    html += g.map(function (x) {
+      return "<tr class='click' data-f='" + filterId + "' data-v='" + esc(x.k) + "'><td>" + esc(filterId === "fMonth" ? monthLabel(x.k) : x.k) +
+        "</td><td class='n'>" + x.seats + "</td><td class='n'>" + x.n + "</td><td class='n'>" + money(x.cents) + "</td></tr>";
+    }).join("") || "<tr><td colspan='4' class='s-muted'>Nothing matches these filters.</td></tr>";
+    $(id).innerHTML = html;
+  }
+  function draw() {
+    var list = filtered();
+    var cents = list.reduce(function (t, r) { return t + r.cents; }, 0);
+    var orders = {}, buyers = {};
+    list.forEach(function (r) { orders[r.order_ref || r.id] = 1; buyers[String(r.student_email || "").toLowerCase()] = 1; });
+    $("tRev").textContent = money(cents);
+    $("tSeats").textContent = list.length;
+    $("tOrders").textContent = Object.keys(orders).length;
+    $("tBuyers").textContent = Object.keys(buyers).length;
+    summary("byClass", list, function (r) { return r.cls; }, "Class", "fClass");
+    summary("byTeacher", list, function (r) { return r.teacher; }, "Instructor", "fTeacher");
+    summary("byMonth", list, function (r) { return r.month; }, "Month", "fMonth", true);
+    $("count").textContent = "(" + list.length + ")";
+    $("detail").innerHTML = "<tr><th>Sold</th><th>Buyer</th><th>Class</th><th>Instructor</th><th>Type</th><th class='n'>Paid</th><th>Status</th><th>Class date</th><th>Came from</th></tr>" +
+      list.map(function (r) {
+        var from = [r.ref_code ? "via " + r.ref_code : "", r.utm_source || ""].filter(Boolean).join(" · ");
+        return "<tr><td>" + r.day + "</td><td>" + esc(r.student_name || "") + "<br><span class='s-muted'>" + esc(r.student_email || "") + "</span></td><td>" +
+          esc(r.cls) + (r.bundle_key ? "<br><span class='s-muted'>" + esc(r.bundle_key) + " bundle</span>" : "") + "</td><td>" + esc(r.teacher) +
+          "</td><td>" + esc(TYPE[r.source] || r.source) + "</td><td class='n'>" + money(r.cents) + "</td><td><span class='s-pill" + (COUNTED[r.status] ? "" : " off") + "'>" +
+          esc(STATUS[r.status] || r.status) + "</span></td><td>" + esc(r.session_on || "") + "</td><td class='s-muted'>" + esc(from) + "</td></tr>";
+      }).join("");
+  }
+  /* Click a summary row to filter to it. */
+  ["byClass", "byTeacher", "byMonth"].forEach(function (id) {
+    $(id).addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-f]"); if (!tr) return;
+      $(tr.getAttribute("data-f")).value = tr.getAttribute("data-v"); save(); draw();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  /* ---------- spreadsheet ---------- */
+  $("csv").addEventListener("click", function () {
+    var list = filtered();
+    function cell(v) { var t = v == null ? "" : String(v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; }
+    var lines = [["Sold (Dallas)", "Buyer", "Email", "Class", "Instructor", "Type", "Bundle", "Paid", "Status", "Class date", "Referral", "Ad source", "Ad campaign", "Order"]];
+    list.forEach(function (r) {
+      lines.push([r.day, r.student_name, r.student_email, r.cls, r.teacher, TYPE[r.source] || r.source, r.bundle_key || "",
+                  (r.cents / 100).toFixed(2), STATUS[r.status] || r.status, r.session_on || "", r.ref_code || "", r.utm_source || "", r.utm_campaign || "", r.order_ref || ""]);
+    });
+    var csv = "﻿" + lines.map(function (l) { return l.map(cell).join(","); }).join("\r\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "quinta-sales-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+})();
+</script>
+</body>
+</html>
