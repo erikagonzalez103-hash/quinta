@@ -181,9 +181,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
-    // Guadalupe Barraza's class (18 Oct 2026). It replaced "Taxes" ($250, no
-    // teacher); the slug and URL stay "taxes" so the Cal.com event and old links keep working.
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Read Your Own Return",
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
