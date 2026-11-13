@@ -406,9 +406,18 @@
   function foundationsOpen() {
     return !!(window.QUINTA_CONFIG && window.QUINTA_CONFIG.FOUNDATIONS_OPEN);
   }
+  /* 13 Nov 2026 (Erika): "Open now" means the class has a teacher; "Coming
+     soon" means it doesn't yet. Dates are a separate question - a class with
+     a teacher but no dates on the calendar is open, and offers "Get the next
+     date" (the waitlist) instead of a booking button that leads nowhere. */
   function isSoon(c) {
     if (c.open) return false;
-    return !!c.soon || (c.track === "foundations" && !foundationsOpen());
+    return !c.teacher;
+  }
+  function hasDates(c) { return !!(c.open || c.free); }
+  function nextDateNoteHTML(c) {
+    var coffee = '<a href="' + pageRoot() + 'coffee.html">Coffee with Quinta</a>';
+    return "New dates for this class are on the way. Join the list and you'll hear the day they open — and grab a free hour in the meantime at " + coffee + ".";
   }
   function soonLabel(c) {
     // Was "Coming this fall" for Foundations — wrong once part of the
@@ -532,15 +541,33 @@
     if (c.walkout) html += '<p class="syl-label">What you\'ll walk out with</p><p class="syl-walkout">' + escapeHtml(c.walkout) + "</p>";
     body.innerHTML = html;
 
-    if (isSoon(c)) {
+    if (!hasDates(c)) {
       var s = document.createElement("p");
       s.className = "soon-note";
-      s.innerHTML = soonNoteHTML(c);
+      s.innerHTML = isSoon(c) ? soonNoteHTML(c) : nextDateNoteHTML(c);
       body.appendChild(s);
     }
     var foot = document.createElement("div");
     foot.className = "acc-foot";
-    if (!isSoon(c) && c.booking) {
+    if (!isSoon(c) && !hasDates(c)) {
+      var nd = document.createElement("div");
+      nd.className = "book";
+      var ndb = document.createElement("a");
+      ndb.className = "btn btn-solid";
+      ndb.href = pageRoot() + "waitlist.html?c=" + encodeURIComponent(c.slug);
+      ndb.textContent = "Get the next date";
+      wireAltClick(ndb, c, "waitlist_from_card", "card");
+      nd.appendChild(ndb);
+      var ndMoney = priceLabel(c);
+      if (ndMoney) {
+        var ndp = document.createElement("span");
+        ndp.className = "price-note";
+        ndp.textContent = ndMoney;
+        nd.appendChild(ndp);
+      }
+      foot.appendChild(nd);
+    }
+    if (hasDates(c) && c.booking) {
       var bk = document.createElement("div");
       bk.className = "book";
       var b = document.createElement("a");
@@ -946,7 +973,7 @@
 
     qtrack("view_item", { currency: "USD", items: [ga4Item(c)] });
     qtrack("class_viewed", { class_slug: c.slug, class_name: c.name,
-                             bookable: isSoon(c) ? "no" : "yes",
+                             bookable: hasDates(c) ? "yes" : "no",
                              referred: storedRef() ? "yes" : "no" });
 
     var desc = document.createElement("p");
@@ -1029,17 +1056,17 @@
     }
 
     // Booking area
-    if (isSoon(c)) {
+    if (!hasDates(c)) {
       var soon = document.createElement("p");
       soon.className = "soon-note";
-      soon.innerHTML = soonNoteHTML(c);
+      soon.innerHTML = isSoon(c) ? soonNoteHTML(c) : nextDateNoteHTML(c);
       detail.appendChild(soon);
       var cbook = document.createElement("div");
       cbook.className = "book";
       var wbtn = document.createElement("a");
       wbtn.className = "btn btn-solid";
       wbtn.href = pageRoot() + "waitlist.html?c=" + encodeURIComponent(c.slug);
-      wbtn.textContent = "Join the waitlist";
+      wbtn.textContent = isSoon(c) ? "Join the waitlist" : "Get the next date";
       wireAltClick(wbtn, c, "waitlist_from_class", "class_page");
       cbook.appendChild(wbtn);
       /* A class with no dates yet still has a price, and she still wants to

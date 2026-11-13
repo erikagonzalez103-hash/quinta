@@ -93,6 +93,15 @@ const BUNDLES: Record<string, {
     key: "the-practice", name: "The Practice", anchor: "module-1",
     classes: ["module-1", "module-2", "module-3"],
   },
+  // Books Before Bubbly, 15 Dec 2026: day-only events, all ending -bbb.
+  "keep-the-books-bbb": {
+    key: "keep-the-books-bbb", name: "Keep the Books (Books Before Bubbly)", anchor: "bookkeeping-1",
+    classes: ["bookkeeping-1", "bookkeeping-2"],
+  },
+  "books-to-taxes-bbb": {
+    key: "books-to-taxes-bbb", name: "Books to Taxes (Books Before Bubbly)", anchor: "bookkeeping-2",
+    classes: ["bookkeeping-2", "year-end-tax"],
+  },
 };
 
 /* Readable names for the ledger, so a report does not read as slugs. Only the
@@ -108,11 +117,13 @@ const CLASS_NAMES: Record<string, string> = {
   "financial-planning": "Investing — How to pay yourself first",
   "trademarks": "Trademark Matriarch",
   "brand-101": "Brand 101",
+  "year-end-tax": "Year-End Tax Readiness",   // Books Before Bubbly only (15 Dec 2026)
 };
 
 /* A booking can land on a twin. Strip the suffix to get the real class. */
 function realSlug(slug: string): string {
-  return String(slug || "").replace(/-(redeem|fall25|herhouse(-duo)?)$/i, "");
+  // "-redeem" can sit on top of an event suffix: bookkeeping-2-bbb-redeem.
+  return String(slug || "").replace(/-redeem$/i, "").replace(/-(bbb|fall25|herhouse(-duo)?)$/i, "");
 }
 
 async function signatureOk(raw: string, header: string | null): Promise<boolean> {

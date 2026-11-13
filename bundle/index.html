@@ -74,9 +74,9 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   </div>
 </footer>
 
-<script src="../classes.js?v=40"></script>
+<script src="../classes.js?v=41"></script>
 <script src="../js/shop.js?v=1"></script>
-<script src="../js/meta.js?v=5"></script>
+<script src="../js/meta.js?v=6"></script>
 <script>
 (function () {
   "use strict";
@@ -124,7 +124,26 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
       name: "The Practice", price: 485,
       anchor: "module-1",
       redeem: ["module-2", "module-3"]
+    },
+    /* Books Before Bubbly, 15 Dec 2026. Anchors and redeems are the day's own
+       -bbb events, so the redeem links open Dec 15 only. */
+    "keep-the-books-bbb": {
+      name: "Keep the Books \u00b7 Books Before Bubbly", price: 168,
+      anchor: "bookkeeping-1-bbb",
+      redeem: ["bookkeeping-2-bbb"]
+    },
+    "books-to-taxes-bbb": {
+      name: "Books to Taxes \u00b7 Books Before Bubbly", price: 168,
+      anchor: "bookkeeping-2-bbb",
+      redeem: ["year-end-tax-bbb"]
     }
+  };
+
+  /* Day-only classes that aren't in classes.js. */
+  var EVENT_CLASSES = {
+    "bookkeeping-1-bbb": { name: "Bookkeeping 1 with Tara Johnson", walkout: "Tuesday, December 15 at 10:00 a.m., at kiln Preston Hollow or online." },
+    "bookkeeping-2-bbb": { name: "Bookkeeping 2 with Tara Johnson", walkout: "Tuesday, December 15 at 11:30 a.m., at kiln Preston Hollow or online." },
+    "year-end-tax-bbb":  { name: "Year-End Tax Readiness with Guadalupe Barraza, CPA", walkout: "Tuesday, December 15 at 1:30 p.m., at kiln Preston Hollow or online." }
   };
 
   var CAL = "https://cal.com/quintaandco/";
@@ -166,6 +185,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   }
 
   function bySlug(slug) {
+    if (EVENT_CLASSES[slug]) return EVENT_CLASSES[slug];
     var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
     for (var i = 0; i < all.length; i++) { if (all[i].slug === slug) return all[i]; }
     return null;

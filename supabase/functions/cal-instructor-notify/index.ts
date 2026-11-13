@@ -54,13 +54,22 @@ const BUNDLE_STARTS_WITH: Record<string, string> = {
   "build-to-last-fff": "certification",     // back on Get Certified 7 Oct (Legacy Planning retired)
   "keep-the-books-fff": "bookkeeping-1",    // back on Bookkeeping I once Tara scheduled it (2 Oct)
   "get-started-fff": "module-1",            // Entity setup has no instructor
+  "keep-the-books-bbb": "bookkeeping-1",    // Books Before Bubbly, 15 Dec 2026
+  "books-to-taxes-bbb": "bookkeeping-2",
+};
+
+/* Classes that exist only for one event and so have no dates in the portal
+   to look the teacher up from. */
+const TEACHER_FALLBACK: Record<string, { instructor_email: string; instructor_name: string; class_name: string }> = {
+  "year-end-tax": { instructor_email: "lupe@gbarrazacpa.com", instructor_name: "Guadalupe Barraza", class_name: "Year-End Tax Readiness" },
 };
 
 function realSlug(slug: string): string {
   const s = String(slug || "");
   if (BUNDLE_STARTS_WITH[s]) return BUNDLE_STARTS_WITH[s];
-  // a plain discount or redeem twin is the class with a suffix
-  return s.replace(/-(redeem|fall25|herhouse(-duo)?)$/i, "");
+  // a plain discount or redeem twin is the class with a suffix; "-redeem"
+  // can sit on top of an event suffix (bookkeeping-2-bbb-redeem)
+  return s.replace(/-redeem$/i, "").replace(/-(bbb|fall25|herhouse(-duo)?)$/i, "");
 }
 
 /* Cal.com signs the raw body with HMAC-SHA256 and sends it as
@@ -157,7 +166,7 @@ serve(async (req) => {
     const student = who?.name || who?.email || "Someone";
     const studentEmail = who?.email || "";
 
-    const found = await findInstructor(slug, start);
+    const found = (await findInstructor(slug, start)) || TEACHER_FALLBACK[slug] || null;
     const to = found?.instructor_email || FALLBACK_TO;
     const teacher = (found?.instructor_name || "").split(" ")[0] || "there";
     const className = found?.class_name || p?.eventType?.title || p?.title || slug;

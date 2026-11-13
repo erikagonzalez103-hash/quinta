@@ -44,6 +44,9 @@
      disclaimer - optional educational disclaimer (regulated topics)
      free       - true for free classes
      soon       - true for classes still in development
+     teacher    - who teaches it. A class with a teacher shows under "Open now"
+                  (with "Get the next date" until it has dates); a class with
+                  no teacher shows "Coming soon". Erika, 13 Nov 2026.
 
    NOTE: each booking link points at a Cal.com event type named after
    the slug, e.g. cal.com/quintaandco/entity-setup. Those event types
@@ -66,6 +69,7 @@ const QUINTA_CLASSES = [
     // the same day: Cal.com has no future dates for it, so it stays on the
     // waitlist until she adds dates in the portal, then the date sync opens it.
     name: "Entity Building",   // renamed 18 Oct (was "Entity setup"); slug and URL stay "entity-setup"
+    teacher: "Guadalupe Barraza, CPA",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Learn what an LLC really is, whether your business needs one yet, and how that choice will (and won’t) change your taxes. If an LLC fits, we’ll walk through forming one in Texas step by step and talk about when to bring in an attorney.",
@@ -124,6 +128,7 @@ const QUINTA_CLASSES = [
     slug: "landlord", track: "foundations", phase: "Start right", phaseNum: "01", stage: "Just starting",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Intro to Real Estate Management: So You Want to Be a Landlord",
+    teacher: "Robin Frazier",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Before you spend a dollar on a rental, let someone who looks after more than 200 rental doors across DFW honestly try to talk you out of it. Then run the numbers on a real property and decide.",
@@ -145,6 +150,7 @@ const QUINTA_CLASSES = [
     slug: "bookkeeping-1", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping I — Set up QuickBooks",
+    teacher: "Tara Johnson",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 99,
     venue: "Zoom",
     desc: "Decide whether you even need QuickBooks, then set it up right — bank connected, accounts organized — and walk out with a working, categorized file.",
@@ -164,6 +170,7 @@ const QUINTA_CLASSES = [
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping II — Prep for your bookkeeper",
+    teacher: "Tara Johnson",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 99,
     venue: "Zoom",
     desc: "Learn what a clean handoff looks like so your bookkeeper thanks you, instead of billing you to untangle a shoebox.",
@@ -183,6 +190,7 @@ const QUINTA_CLASSES = [
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Read Your Own Return",
+    teacher: "Guadalupe Barraza, CPA",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Learn how a small business tax return is put together, so you can tell which numbers come straight from the rules and which come from your records and choices. Using a sample business, a CPA walks the return from receipts to signature so you can read your own with confidence.",
@@ -223,6 +231,7 @@ const QUINTA_CLASSES = [
     slug: "rental-management", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Owning it without doing it all",
+    teacher: "Robin Frazier",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 250,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Be the rental owner who knows what good management looks like, without screening tenants at 9pm or chasing down an AC repair in August.",
@@ -279,6 +288,7 @@ const QUINTA_CLASSES = [
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Get certified — WBE / MBE / DBE",
+    teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Learn what certification unlocks and exactly how to get it, taught by someone who's been through it, and leave with your roadmap.",
@@ -310,6 +320,7 @@ const QUINTA_CLASSES = [
     slug: "financial-planning", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: false,  // WAITLIST since 30 Sep: Joshlyn's September dates passed. Set true when she adds new ones.
     name: "Investing — How to pay yourself first",
+    teacher: "Joshlyn Ross",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 250,
     venue: "Zoom",
     desc: "Your business is not your retirement plan. Learn how to build wealth outside the company — starting with your first $100 — and leave with a pay-yourself-first investing plan built on your own numbers.",
@@ -331,6 +342,7 @@ const QUINTA_CLASSES = [
     slug: "tax-strategy", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Tax Strategy",
+    teacher: "Guadalupe Barraza, CPA",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Learn how business owners use the tax rules on purpose, ahead of time instead of after the year is over. You’ll leave knowing how the most common small business strategies work, what makes each one start to make sense, and how to bring them up with your tax professional.",
@@ -354,6 +366,7 @@ const QUINTA_CLASSES = [
     slug: "trademarks", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Trademark Matriarch",   // renamed by Nik, 15 Oct (was "Trademarks"); slug and URL stay "trademarks"
+    teacher: "Nik Sallie",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
     venue: "Zoom",
     desc: "Your business is up and running, and you want to understand how trademark filing fits into its future. In this two-hour, lawyer-led workshop for women founders, gain clarity about the USPTO application process, learn best practices for navigating the online filing interface, and recognize common mistakes before deciding whether to file independently.",
@@ -394,6 +407,7 @@ const QUINTA_CLASSES = [
     slug: "brand-101", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Up and running",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Brand 101",
+    teacher: "Stephanie Tatum Wagner",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Walk out with a one-page brand foundation — your promise, your voice, and a simple visual direction — so every future decision gets easier, no agency required.",
@@ -412,6 +426,7 @@ const QUINTA_CLASSES = [
     slug: "rental-growth", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Grow it and build your team",
+    teacher: "Robin Frazier",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Decide when to hold, sell, or use your equity to buy again. Then bring a real deal to the team every investor needs: a property manager, a lender, an investment tax specialist, and an insurance agent.",
@@ -434,6 +449,7 @@ const QUINTA_CLASSES = [
     slug: "coffee", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     url: "coffee.html",   // Coffee has its own page (not class.html?c=coffee)
     name: "Coffee with Quinta",
+    teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "A free hour to build one small, working tool with Claude — right on your phone, start to finish. The easiest way to see what's possible.",
     format: "60 minutes · free · live, small group · monthly",
@@ -452,6 +468,7 @@ const QUINTA_CLASSES = [
     slug: "module-1", track: "practice", phase: null, phaseNum: null, stage: "Just starting",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Module 1: Your First AI Workflow",
+    teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 150,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Your first real session: what Claude is, how to talk to it, and how to put it to work for your business that same day.",
@@ -470,6 +487,7 @@ const QUINTA_CLASSES = [
     slug: "module-2", track: "practice", phase: null, phaseNum: null, stage: "Up and running",
     open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Module 2 — Build your AI assistant",
+    teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 200,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Go from chatting with Claude to building an assistant that handles a real, repeatable task in your business.",
@@ -488,6 +506,7 @@ const QUINTA_CLASSES = [
     slug: "module-3", track: "practice", phase: null, phaseNum: null, stage: "Established",
     soon: true,   // no dates set yet - waitlist until Module 3 is scheduled
     name: "Module 3 — Real databases & automation",
+    teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
     venue: "Kiln, Preston Hollow (Dallas)",
     desc: "Add a real database and a little automation so your tools start running quietly in the background — keeping track of things and handling the busywork without needing you.",

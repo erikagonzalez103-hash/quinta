@@ -49,7 +49,13 @@
     "get-started-fff":    { name: "Get started (bundle)",    value: 212 },
     "keep-the-books-fff": { name: "Keep the books (bundle)", value: 168 },
     "build-to-last-fff":  { name: "Build to last (bundle)",  value: 767 },
-    "the-practice-fff":   { name: "The Practice (bundle)",   value: 485 }
+    "the-practice-fff":   { name: "The Practice (bundle)",   value: 485 },
+    // Books Before Bubbly, 15 Dec 2026 - day-only events, not in classes.js
+    "bookkeeping-1-bbb":  { name: "Bookkeeping 1 (Books Before Bubbly)", value: 99 },
+    "bookkeeping-2-bbb":  { name: "Bookkeeping 2 (Books Before Bubbly)", value: 99 },
+    "year-end-tax-bbb":   { name: "Year-End Tax Readiness (Books Before Bubbly)", value: 99 },
+    "keep-the-books-bbb": { name: "Keep the Books (Books Before Bubbly)", value: 168 },
+    "books-to-taxes-bbb": { name: "Books to Taxes (Books Before Bubbly)", value: 168 }
   };
   var PENDING = "quinta_meta_pending";     // sessionStorage: what she was about to pay for
   var FIRED = "quinta_meta_purchased";     // localStorage: Purchase ids already sent

@@ -57,6 +57,12 @@ export const CAL_PRICES: Record<string, { value: number; name: string }> = {
   "keep-the-books-fff": { value: 168, name: "Keep the books (bundle)" },
   "build-to-last-fff":  { value: 767, name: "Build to last (bundle)" },
   "the-practice-fff":   { value: 485, name: "The Practice (bundle)" },
+  // Books Before Bubbly, 15 Dec 2026
+  "bookkeeping-1-bbb":  { value:  99, name: "Bookkeeping 1 (Books Before Bubbly)" },
+  "bookkeeping-2-bbb":  { value:  99, name: "Bookkeeping 2 (Books Before Bubbly)" },
+  "year-end-tax-bbb":   { value:  99, name: "Year-End Tax Readiness (Books Before Bubbly)" },
+  "keep-the-books-bbb": { value: 168, name: "Keep the Books (Books Before Bubbly bundle)" },
+  "books-to-taxes-bbb": { value: 168, name: "Books to Taxes (Books Before Bubbly bundle)" },
 };
 
 async function sha256(s: string): Promise<string> {
