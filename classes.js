@@ -168,7 +168,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "bookkeeping-2", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Bookkeeping II — Prep for your bookkeeper",
     teacher: "Tara Johnson",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 99,
@@ -188,7 +188,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Read Your Own Return",
     teacher: "Guadalupe Barraza, CPA",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
@@ -286,7 +286,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Get certified — WBE / MBE / DBE",
     teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
