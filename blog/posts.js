@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "when-to-stop-diy-small-business-tax-prep",
+    title: "When Should You Stop Doing Your Own Small Business Tax Prep? Complexity Decides, Not Revenue",
+    date: "2026-11-15",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "There is no revenue number that tells you to stop doing your own small business tax prep. Complexity decides: payroll, sales tax, more than one income stream, or quarterly estimates. What to do in year one, three and five, and what bad books really cost.",
+    image: "blog-taxprep.webp"
+  },
+  {
     slug: "stewardship-leadership-for-founders",
     title: "Stewardship Leadership for Founders: Did I Evolve, or Is This Just the Better Way to Run a Business?",
     date: "2026-11-06",
