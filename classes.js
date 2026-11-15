@@ -286,7 +286,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "certification", track: "foundations", phase: "Build to last", phaseNum: "03", stage: "Established",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Get certified — WBE / MBE / DBE",
     teacher: "Erika Gonzalez Harrison",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 299,
