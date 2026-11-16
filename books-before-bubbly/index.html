@@ -511,6 +511,30 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
   });
   var extra = keep.toString();
   if (extra) Array.prototype.forEach.call(document.querySelectorAll("a[data-cal]"), function (a) { a.href += "?" + extra; });
+  /* Google Analytics: a Book click, under the same names the class pages use
+     (app.js wireBookClick), so this page's clicks land in the same reports.
+     These slugs are not in classes.js, so name and price live here - keep in
+     step with BUNDLES in js/meta.js. Wrapped so analytics never blocks a booking. */
+  var GA_ITEMS = {
+    "bookkeeping-1-bbb":  ["Bookkeeping 1 (Books Before Bubbly)", 99],
+    "bookkeeping-2-bbb":  ["Bookkeeping 2 (Books Before Bubbly)", 99],
+    "year-end-tax-bbb":   ["Year-End Tax Readiness (Books Before Bubbly)", 99],
+    "keep-the-books-bbb": ["Keep the Books (Books Before Bubbly)", 168],
+    "books-to-taxes-bbb": ["Books to Taxes (Books Before Bubbly)", 168]
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("a[data-cal]"), function (a) {
+    a.addEventListener("click", function () {
+      try {
+        if (typeof gtag !== "function") return;
+        var slug = a.getAttribute("data-cal"), it = GA_ITEMS[slug] || [slug, 0];
+        var item = { item_id: slug, item_name: it[0], item_category: "Books Before Bubbly", price: it[1], quantity: 1 };
+        gtag("event", "booking_start", { class_slug: slug, class_name: it[0], price: "paid",
+          referred: ref ? "yes" : "no", clicked_from: "books_before_bubbly" });
+        gtag("event", "add_to_cart", { currency: "USD", value: it[1], items: [item] });
+        gtag("event", "begin_checkout", { currency: "USD", value: it[1], items: [item] });
+      } catch (e) { /* never let analytics break a Book button */ }
+    });
+  });
   /* Reduced motion: show the still, not the loop. */
   try {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
