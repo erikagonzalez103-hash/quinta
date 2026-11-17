@@ -103,7 +103,9 @@
   #instructors { border-top: 1px solid var(--border); padding-top: clamp(1.8rem, 4vw, 2.4rem); }
 
   /* persistent scroll cue */
-  .scroll-cue { position: fixed; left: 50%; transform: translateX(-50%);
+  /* Bottom-right, not centred: centred, it sat on top of the "Save your seat"
+     button on phones and over headings on tablets. */
+  .scroll-cue { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px));
     bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40;
     width: 42px; height: 42px; border-radius: 50%; background: rgba(47,63,53,0.92); color: var(--cream);
     display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;
@@ -113,7 +115,7 @@
   @media (prefers-reduced-motion: no-preference) {
     .scroll-cue:not(.hide) { animation: cueBounce 1.8s ease-in-out infinite; }
   }
-  @keyframes cueBounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(5px); } }
+  @keyframes cueBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 
   .eyebrow { font-family: "Cinzel", Georgia, serif; text-transform: uppercase;
     letter-spacing: 0.3em; font-size: 0.72rem; font-weight: 600; color: var(--sage-deep); }
@@ -137,6 +139,8 @@
   .meta .v { font-family: "Fraunces", Georgia, serif; font-style: italic;
     text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 0.98rem; color: var(--moss); }
   .meta .sep { color: var(--gold); }
+  /* Phones: one item per line, so a dot never dangles at the end of a line. */
+  @media (max-width: 560px) { .meta { flex-direction: column; gap: 0.3rem; } .meta .sep { display: none; } }
   .scarcity { margin-top: 0.6rem; font-family: "Cinzel", Georgia, serif;
     text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.68rem; color: var(--body-soft); }
   .hero-photo { margin: 2rem auto 0; max-width: 560px; border-radius: 8px; overflow: hidden;
