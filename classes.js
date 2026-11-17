@@ -188,7 +188,7 @@ const QUINTA_CLASSES = [
   },
   {
     slug: "taxes", track: "foundations", phase: "Keep the books", phaseNum: "02", stage: "Up and running",
-    open: true,               // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
+    open: false, soon: true,  // AUTO: set from Cal.com by tools/sync-class-dates.mjs — edit dates in the portal, not here
     name: "Read Your Own Return",
     teacher: "Guadalupe Barraza, CPA",   // has a teacher = "Open now" on the hub, dates or not (Erika, 13 Nov)
     price: 175,
