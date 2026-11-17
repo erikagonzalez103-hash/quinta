@@ -109,8 +109,14 @@ function dallas(iso: string): string {
 /* Who teaches this class? class_sessions is the faculty portal's own record,
    so it knows the instructor for a given class on a given date. Fall back to
    any session of that class, then to Erika — never drop the notification. */
+/* Why the last lookup came back empty - said in the log and in a TEST email,
+   so a missed teacher is never a mystery again (Oct 28: three bookings,
+   only Erika was emailed, and the free plan keeps one day of logs). */
+let lookupWhy = "";
+
 async function findInstructor(slug: string, startIso: string) {
-  if (!SUPABASE_URL || !SERVICE_KEY) return null;
+  lookupWhy = "";
+  if (!SUPABASE_URL || !SERVICE_KEY) { lookupWhy = "SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set"; return null; }
   const day = String(startIso).slice(0, 10);
   const head = {
     apikey: SERVICE_KEY,
@@ -123,13 +129,26 @@ async function findInstructor(slug: string, startIso: string) {
   for (const q of [`${base}&session_date=eq.${day}&limit=1`, `${base}&limit=1`]) {
     try {
       const res = await fetch(q, { headers: head });
-      if (!res.ok) continue;
+      if (!res.ok) {
+        lookupWhy = `class_sessions answered ${res.status}: ${(await res.text()).slice(0, 200)}`;
+        console.error("lookup refused", lookupWhy);
+        continue;
+      }
       const rows = await res.json();
       if (Array.isArray(rows) && rows.length && rows[0].instructor_email) return rows[0];
-    } catch (e) { console.error("lookup failed", e); }
+      lookupWhy = Array.isArray(rows) && rows.length
+        ? `a "${slug}" session has no instructor_email`
+        : `no class_sessions row with class_slug "${slug}"`;
+    } catch (e) { lookupWhy = `lookup failed: ${String(e)}`; console.error("lookup failed", e); }
   }
   return null;
 }
+
+/* TEST MODE. A booking made with one of these addresses is Erika testing:
+   it goes to her alone, marked [TEST], and says which teacher it WOULD have
+   reached and why - so she can book a $0 link, read the result, and cancel,
+   without the teacher getting a fake booking. */
+const TEST_BOOKERS = ["erika@quintaand.co", "hello@quintaand.co"];
 
 serve(async (req) => {
   const json = (body: unknown, status = 200) =>
@@ -166,8 +185,15 @@ serve(async (req) => {
     const student = who?.name || who?.email || "Someone";
     const studentEmail = who?.email || "";
 
-    const found = (await findInstructor(slug, start)) || TEACHER_FALLBACK[slug] || null;
-    const to = found?.instructor_email || FALLBACK_TO;
+    const fromTable = await findInstructor(slug, start);
+    const found = fromTable || TEACHER_FALLBACK[slug] || null;
+    const isTest = TEST_BOOKERS.includes(String(studentEmail).trim().toLowerCase());
+    const wouldGo = found?.instructor_email || FALLBACK_TO;
+    const to = isTest ? FALLBACK_TO : wouldGo;
+    const diagnosis = found
+      ? `Would have gone to ${found.instructor_name || "?"} &lt;${found.instructor_email}&gt;, found ${fromTable ? "in the class dates" : "in the fallback list"}.`
+      : `NO TEACHER FOUND for "${slug}" (booked as "${bookedSlug}"): ${lookupWhy || "unknown"}. A real booking would go to Erika only.`;
+    console.log(`booking ${bookedSlug} -> ${slug}; ${diagnosis.replace(/&lt;|&gt;/g, "")}${isTest ? " [TEST]" : ""}`);
     const teacher = (found?.instructor_name || "").split(" ")[0] || "there";
     const className = found?.class_name || p?.eventType?.title || p?.title || slug;
 
@@ -207,11 +233,16 @@ serve(async (req) => {
 
     /* "online" in the subject so the teacher sees it in her inbox list,
        without opening the email. */
-    const subject = cancelled
+    const subject = (isTest ? "[TEST] " : "") + (cancelled
       ? `Cancellation — ${className}, ${dallas(start)}`
-      : `New booking${online ? " (online)" : ""} — ${className}, ${dallas(start)}`;
+      : `New booking${online ? " (online)" : ""} — ${className}, ${dallas(start)}`);
+
+    const testBox = isTest
+      ? `<p style="margin:0 0 16px;padding:12px 14px;background:#FFF6E0;border-left:3px solid #CAA871"><strong>Test booking</strong> (made with ${esc(studentEmail)}), sent to you only. ${diagnosis}</p>`
+      : "";
 
     const html = `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">
+      ${testBox}
       <p style="margin:0 0 16px">Hi ${esc(teacher)},</p>
       <p style="margin:0 0 16px"><strong>${esc(student)}</strong> just ${verb} <strong>${esc(className)}</strong>.</p>
       ${joinHtml}
@@ -223,7 +254,8 @@ serve(async (req) => {
       <p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co.</p>
     </div>`;
 
-    const text = `Hi ${teacher},\n\n${student} just ${verb} ${className}.\n\n`
+    const text = (isTest ? `TEST BOOKING, sent to you only. ${diagnosis.replace(/&lt;/g, "<").replace(/&gt;/g, ">")}\n\n` : "")
+      + `Hi ${teacher},\n\n${student} just ${verb} ${className}.\n\n`
       + joinText
       + `When: ${dallas(start)} (Dallas time)\n`
       + (studentEmail ? `Her email: ${studentEmail}\n` : "")
@@ -259,7 +291,7 @@ serve(async (req) => {
       console.warn(`No instructor for "${slug}" (booked as "${bookedSlug}") — sent to ${FALLBACK_TO} instead.`);
     }
 
-    return json({ ok: true, slug, sent_to: to, matched_instructor: !!found });
+    return json({ ok: true, slug, sent_to: to, test: isTest, matched_instructor: !!found, why: found ? undefined : lookupWhy });
   } catch (e) {
     console.error(e);
     return json({ error: String(e) }, 500);
