@@ -1,0 +1,43 @@
+# Books Before Bubbly seat watch (15 Dec 2026).
+#
+# Every 2 hours, adds up how many people are booked into each of the day's
+# three classes across all their Cal.com links (on its own, bundle, bundle's
+# 2nd class) and emails erika@quintaand.co once a class reaches 18 - then once
+# per new person after that. Stops by itself after 14 Dec; delete this file
+# after the event.
+#
+# The last number emailed per class rides between runs in the Actions cache,
+# so the same count is never emailed twice.
+#
+# SECRETS (already set): CAL_API_KEY, RESEND_API_KEY
+name: Books Before Bubbly seat watch
+
+on:
+  schedule:
+    - cron: "41 */2 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Last numbers emailed
+        uses: actions/cache@v4
+        with:
+          path: .bbb-seat-watch
+          key: bbb-seat-watch-${{ github.run_id }}
+          restore-keys: bbb-seat-watch-
+
+      - name: Check the logic still holds
+        run: node tools/bbb-seat-watch.test.mjs
+
+      - name: Count seats, email if needed
+        env:
+          CAL_API_KEY: ${{ secrets.CAL_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node tools/bbb-seat-watch.mjs
