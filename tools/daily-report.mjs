@@ -7,6 +7,10 @@
  *   Who posted today?           the Swarm board, in an email
  *   Who signed up?              waitlist rows since this morning
  *   Who's it credited to?       referral standings, and today's movement
+ *   What's coming up?           every class in the next 4 days: instructor,
+ *                               how many are booked, and - for any under the
+ *                               two-person minimum - the cancel-by time
+ *                               (48 hours before it starts, per policies.html)
  *   What's scheduled?           class dates set today, and any that synced
  *                               but are NOT bookable — the silent failure
  *                               the Worker catches and nobody reads
@@ -182,6 +186,106 @@ export function salesCard(todayRows, allRows, sinceLabel) {
     (all.length ? block(all) : quiet("No sales yet.")));
 }
 
+/* UPCOMING CLASSES - the next few days of the schedule, with who teaches
+   each, how many are booked, and whether it can still run. Policy (see
+   policies.html and terms.html): every class runs with at least two people,
+   and if one won't, students hear at least 48 hours before it starts. So
+   each class under two gets its cancel-by time - start minus 48 hours - and
+   once that time has passed the card says so in red.
+
+   Seats come from the enrollments ledger: 'booked' and 'taken' count;
+   'pending' (a bank payment not cleared yet) is shown beside the count but
+   not in it. A Stripe seat carries session_id; a Cal.com seat carries only
+   class_slug + session_on, so both ways are matched. */
+export const MIN_SEATS = 2;
+export const NOTICE_HOURS = 48;
+export const UPCOMING_DAYS = 4;          // the run day and the three after it
+
+export function addDays(day, n) {
+  const d = new Date(`${day}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+/* A Dallas wall-clock date and time, as an instant - DST-safe the same way
+   startOfDallasDay is. */
+export function dallasInstant(day, time) {
+  const hm = String(time || "00:00").slice(0, 5);
+  for (const offset of ["-05:00", "-06:00"]) {
+    const t = new Date(`${day}T${hm}:00${offset}`);
+    const back = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(t);
+    if (dallasDay(t) === day && back === hm) return t;
+  }
+  return new Date(`${day}T${hm}:00-06:00`);
+}
+const clock = (t) => {
+  const [h, m] = String(t || "").slice(0, 5).split(":").map(Number);
+  if (Number.isNaN(h)) return "";
+  return `${h % 12 || 12}${m ? ":" + String(m).padStart(2, "0") : ""}${h < 12 ? "am" : "pm"}`;
+};
+const shortWhen = (d) => new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+}).format(d).replace(":00", "");
+const dayHeading = (day) => new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC", weekday: "long", month: "long", day: "numeric",
+}).format(new Date(`${day}T12:00:00Z`));
+
+/* Pure: sessions + ledger rows -> one line per class, soonest first. */
+export function upcomingClasses(sessions, seats, ranAt) {
+  return (sessions || [])
+    .map((s) => {
+      const mine = (seats || []).filter((x) => x.session_id
+        ? x.session_id === s.id
+        : x.class_slug === s.class_slug && String(x.session_on) === String(s.session_date));
+      const n = mine.filter((x) => x.status === "booked" || x.status === "taken").length;
+      const pending = mine.filter((x) => x.status === "pending").length;
+      const start = dallasInstant(String(s.session_date), s.start_time);
+      const cancelBy = new Date(start.getTime() - NOTICE_HOURS * 3600 * 1000);
+      const short = n < MIN_SEATS;
+      return {
+        s, n, pending, start, cancelBy, short,
+        teacher: s.instructor_name || s.instructor_email || "no instructor set",
+        late: short && ranAt >= cancelBy,
+      };
+    })
+    .filter((c) => c.start >= ranAt)
+    .sort((a, b) => a.start - b.start);
+}
+
+export function upcomingCard(classes, { unreadable = false } = {}) {
+  if (unreadable) {
+    return card("Upcoming classes", `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The schedule or the ledger could not be read — this is NOT "no classes".</p>`);
+  }
+  if (!classes.length) return card("Upcoming classes", quiet(`Nothing on the schedule in the next ${UPCOMING_DAYS} days.`));
+
+  const short = classes.filter((c) => c.short);
+  const late = short.filter((c) => c.late);
+  const lead = short.length
+    ? `<div style="background:#FBEEEC;border-left:2px solid #E4B7AE;padding:14px 18px;margin-bottom:16px;font-size:14px;line-height:1.6;">
+        <strong style="color:#B4503C;">${short.length} ${short.length === 1 ? "class is" : "classes are"} under the ${MIN_SEATS}-person minimum.</strong>
+        ${late.length ? `<br>${late.length} ${late.length === 1 ? "is" : "are"} already inside the ${NOTICE_HOURS}-hour notice window — decide today and tell the students.` : ""}
+        <br><span style="color:#5A5E55;">Policy: students hear at least ${NOTICE_HOURS} hours ahead and choose a full refund or a seat in the next round.</span>
+      </div>`
+    : quiet(`Every class in the next ${UPCOMING_DAYS} days has at least ${MIN_SEATS} people.`) + '<div style="height:12px"></div>';
+
+  const byDay = {};
+  for (const c of classes) (byDay[c.s.session_date] = byDay[c.s.session_date] || []).push(c);
+  const body = Object.keys(byDay).sort().map((day) =>
+    `<div style="margin:14px 0 4px;font-size:13px;color:#5A5E55;">${esc(dayHeading(day))}</div>` +
+    byDay[day].map((c) => {
+      const status = !c.short
+        ? `<span style="color:#4F6B5C;">✓ running</span>`
+        : c.late
+          ? `<span style="color:#B4503C;font-weight:600;">past cancel-by (${esc(shortWhen(c.cancelBy))})</span>`
+          : `<span style="color:#A0782C;font-weight:600;">cancel by ${esc(shortWhen(c.cancelBy))}</span>`;
+      const count = `<strong>${c.n}</strong> of ${MIN_SEATS} min${c.pending ? ` <span style="color:#A0782C;">+${c.pending} bank pending</span>` : ""}`;
+      return row(
+        `${esc(clock(c.s.start_time))} · <strong>${esc(c.s.class_name || c.s.class_slug)}</strong> <span style="color:#5A5E55;">— ${esc(c.teacher)}</span>`,
+        `${count} · ${status}`);
+    }).join("")).join("");
+
+  return card("Upcoming classes", lead + body);
+}
+
 /* A section that throws becomes a note saying so - the rest of the report
    still goes out. On 7 and 8 Oct 2026 one bad section stopped the whole email
    two mornings running, and silence read as "no report", not "broken". */
@@ -194,13 +298,18 @@ function safe(title, build) {
 
 export function buildReport({ now, posts, faculty, signups, referrals, sessionsToday, unbookable,
                               waitlistUnreadable = false, kitRows = null, salesToday = [], salesAll = [],
-                              rsvpRows = null, since = "" }) {
+                              rsvpRows = null, since = "", upcoming = null, upcomingUnreadable = false }) {
   const parts = [];
   // Names are compared and printed below; a faculty row with no name at all must not break that.
   faculty = (faculty || []).map((f) => ({ ...f, name: String(f.name || f.email || "(no name)") }));
 
   // --- Sales by source (first: it's the number the campaign is judged on) ---
   parts.push(safe("Sales by source", () => salesCard(salesToday, salesAll, "Since the sale opened (Sept 29)")));
+
+  // --- Upcoming classes: who's teaching, how many are in, what to cancel ---
+  if (upcoming !== null || upcomingUnreadable) {
+    parts.push(safe("Upcoming classes", () => upcomingCard(upcoming || [], { unreadable: upcomingUnreadable })));
+  }
 
   // --- October 21 RSVPs (only once event_rsvps exists) ---
   const rsvp = safe("October 21 RSVPs — Meet the Experts", () => rsvpCard(rsvpRows, since));
@@ -294,7 +403,12 @@ export function buildReport({ now, posts, faculty, signups, referrals, sessionsT
     </p>
   </div></body></html>`;
 
+  const underMin = (upcoming || []).filter((c) => c.short);
   const headline = [
+    Array.isArray(salesToday)
+      ? (() => { const n = salesBySource(salesToday).reduce((t, g) => t + g.n, 0); return `${n} sale${n === 1 ? "" : "s"}`; })()
+      : "SALES UNREADABLE",
+    underMin.length ? `${underMin.length} class${underMin.length === 1 ? "" : "es"} under minimum` : null,
     waitlistUnreadable
       ? "WAITLIST UNREADABLE"
       : `${signups.length} signup${signups.length === 1 ? "" : "s"}`,
@@ -357,6 +471,27 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const salesAll = refused.has("enrollments") ? null : salesAllRaw;
   const salesToday = salesAll === null ? null : salesAll.filter((r) => String(r.created_at || "") >= since);
 
+  /* Upcoming classes, counted from when the email is sent (not the day it
+     reports on) - "the next couple of days" means from when she reads it.
+     status IS NULL counts as running; neq alone would drop those rows. */
+  const runDay = dallasDay(ranAt);
+  const lastDay = addDays(runDay, UPCOMING_DAYS - 1);
+  const upSessions = await get(`class_sessions?select=id,class_slug,class_name,session_date,start_time,instructor_name,instructor_email,status`
+    + `&session_date=gte.${runDay}&session_date=lte.${lastDay}&or=(status.is.null,status.neq.canceled)&order=session_date.asc,start_time.asc`);
+  let upcoming = null, upcomingUnreadable = refused.has("class_sessions");
+  if (!upcomingUnreadable) {
+    const seatCols = "select=id,session_id,class_slug,session_on,status";
+    const byDate = await get(`enrollments?${seatCols}&status=in.(booked,taken,pending)&session_on=gte.${runDay}&session_on=lte.${lastDay}`);
+    const ids = upSessions.map((x) => x.id).filter(Boolean);
+    const byId = ids.length ? await get(`enrollments?${seatCols}&status=in.(booked,taken,pending)&session_id=in.(${ids.join(",")})`) : [];
+    if (refused.has("enrollments")) upcomingUnreadable = true;
+    else {
+      const seen = new Set(), seats = [];
+      for (const r of [...byDate, ...byId]) if (!seen.has(r.id)) { seen.add(r.id); seats.push(r); }
+      upcoming = upcomingClasses(upSessions, seats, ranAt);
+    }
+  }
+
   const rsvpRaw = await get(`event_rsvps?select=name,email,marketing_ok,ref,src,created_at&event=eq.oct21-meet-the-experts&created_at=lt.${end}&order=created_at.asc`);
   const rsvpRows = refused.has("event_rsvps") ? null : rsvpRaw;
 
@@ -408,7 +543,7 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
   const { html, subject } = buildReport({
     now, posts, faculty: roster, signups, referrals, sessionsToday, unbookable,
     waitlistUnreadable: refused.has("waitlist"),
-    kitRows, salesToday, salesAll, rsvpRows, since,
+    kitRows, salesToday, salesAll, rsvpRows, since, upcoming, upcomingUnreadable,
   });
 
   if (dryRun) { log(`[dry run] subject: ${subject}`); return { subject, html }; }
