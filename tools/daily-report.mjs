@@ -251,6 +251,16 @@ export function upcomingClasses(sessions, seats, ranAt) {
     .sort((a, b) => a.start - b.start);
 }
 
+export function upcomingLog(classes, unreadable = false) {
+  if (unreadable) return "Upcoming classes: could not be read (NOT \"no classes\")";
+  if (!classes || !classes.length) return `Upcoming classes: none in the next ${UPCOMING_DAYS} days`;
+  const short = classes.filter((c) => c.short).length;
+  return [`Upcoming classes (${classes.length}, ${short} under the ${MIN_SEATS}-person minimum):`,
+    ...classes.map((c) => `  ${c.s.session_date} ${clock(c.s.start_time)} · ${c.s.class_name || c.s.class_slug} · ${c.teacher}`
+      + ` · ${c.n} booked${c.pending ? ` +${c.pending} bank pending` : ""}`
+      + ` · ${!c.short ? "running" : c.late ? `UNDER MIN, past cancel-by ${shortWhen(c.cancelBy)}` : `UNDER MIN, cancel by ${shortWhen(c.cancelBy)}`}`)].join("\n");
+}
+
 export function upcomingCard(classes, { unreadable = false } = {}) {
   if (unreadable) {
     return card("Upcoming classes", `<p style="margin:0;line-height:1.65;color:#8A2B2B;font-weight:600;">The schedule or the ledger could not be read — this is NOT "no classes".</p>`);
@@ -491,6 +501,10 @@ export async function run({ fetch, env, log = console.log, now = new Date() }) {
       upcoming = upcomingClasses(upSessions, seats, ranAt);
     }
   }
+  /* The same list, in the GitHub run log, so it can be read without the
+     inbox. Class, teacher and counts only - never a student's name or email,
+     since run logs are visible to anyone with access to the repo. */
+  log(upcomingLog(upcoming, upcomingUnreadable));
 
   const rsvpRaw = await get(`event_rsvps?select=name,email,marketing_ok,ref,src,created_at&event=eq.oct21-meet-the-experts&created_at=lt.${end}&order=created_at.asc`);
   const rsvpRows = refused.has("event_rsvps") ? null : rsvpRaw;

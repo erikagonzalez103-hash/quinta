@@ -1,4 +1,4 @@
-import { run, startOfDallasDay, dallasDay, buildReport, kitCard, salesBySource, salesCard, rsvpCard, upcomingClasses, upcomingCard, dallasInstant } from './daily-report.mjs';
+import { run, startOfDallasDay, dallasDay, buildReport, kitCard, salesBySource, salesCard, rsvpCard, upcomingClasses, upcomingCard, upcomingLog, dallasInstant } from './daily-report.mjs';
 
 let pass = 0, fail = 0;
 const check = (n, c, d = '') => { if (c) { pass++; console.log(`  ✓ ${n}`); } else { fail++; console.log(`  ✗ ${n} ${d}`); } };
@@ -269,6 +269,12 @@ console.log('\n12. Upcoming classes: instructor, headcount, the 48-hour cancel-b
   const rr = await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: () => {}, now: ranAt });
   check('run() includes the card', rr.html.includes('Upcoming classes') && rr.html.includes('Claude Module 1'));
   check('looks 4 days ahead from the send day', urls.some((u) => u.includes('session_date=gte.2026-11-13&session_date=lte.2026-11-16')));
+  const logged = [];
+  await run({ fetch: fetchStub, env: { DRY_RUN: '1' }, log: (m) => logged.push(m), now: ranAt });
+  const ul = logged.find((m) => String(m).startsWith('Upcoming classes'));
+  check('logs the upcoming list for the run log', !!ul && ul.includes('Claude Module 1 · Erika G · 1 booked +1 bank pending · UNDER MIN, cancel by'), ul);
+  check('the log line names no students', !/@/.test(ul || ''));
+  check('empty and unreadable say so in the log', upcomingLog([]).includes('none') && upcomingLog([], true).includes('NOT'));
   check('keeps sessions with no status', urls.some((u) => u.includes('or=(status.is.null,status.neq.canceled)')));
 }
 
