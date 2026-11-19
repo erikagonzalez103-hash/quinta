@@ -172,7 +172,32 @@
     });
   }
 
-  // Wire the blog "Share" bar — builds share links from the post's canonical URL + title.
+  /* The blog's action row (Erika, 19 Nov): "This helped" heart on the left,
+     Share on the right, placed where the article ends - ABOVE the sources,
+     which fold away into a closed "Sources" box. Nobody scrolls past a long
+     source list to like or share.
+
+     Share follows what most blogs and news sites do now:
+       - phones and tablets: ONE "Share" button that opens the phone's own
+         share menu (Messages, Instagram, WhatsApp, LinkedIn... whatever the
+         reader actually uses);
+       - computers: small recognisable icons - LinkedIn, Facebook, X, email,
+         copy link.
+     Built here, not in each post, so every post (and every new one from the
+     template or the Studio) gets the same thing. The old Share bar in the
+     HTML is reused as the container. */
+  var SHARE_ICONS = {
+    linkedin: '<path fill="currentColor" d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/>',
+    facebook: '<path fill="currentColor" d="M13.4 21.5v-8.2h2.75l.42-3.2H13.4V8.05c0-.93.26-1.56 1.6-1.56h1.7V3.63a22.6 22.6 0 0 0-2.48-.13c-2.45 0-4.13 1.5-4.13 4.24v2.36H7.33v3.2h2.76v8.2h3.31z"/>',
+    x: '<path fill="currentColor" d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.2h1.7L7.4 4.73H5.58L16.67 19.2z"/>',
+    email: '<rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+    copy: '<path d="M10 13.5a4.5 4.5 0 0 0 6.8.5l2.7-2.7a4.5 4.5 0 0 0-6.4-6.4l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M14 10.5a4.5 4.5 0 0 0-6.8-.5l-2.7 2.7a4.5 4.5 0 0 0 6.4 6.4l1.5-1.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+    share: '<path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+  };
+  function shareSvg(k) {
+    return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' + SHARE_ICONS[k] + "</svg>";
+  }
+
   function wireShare() {
     var box = document.querySelector(".post-share");
     if (!box) return;
@@ -183,30 +208,210 @@
     var u = encodeURIComponent(url), t = encodeURIComponent(title);
     var links = {
       linkedin: "https://www.linkedin.com/sharing/share-offsite/?url=" + u,
-      x: "https://twitter.com/intent/tweet?url=" + u + "&text=" + t,
       facebook: "https://www.facebook.com/sharer/sharer.php?u=" + u,
+      x: "https://twitter.com/intent/tweet?url=" + u + "&text=" + t,
       email: "mailto:?subject=" + t + "&body=" + encodeURIComponent(title + "\n\n" + url)
     };
-    Array.prototype.forEach.call(box.querySelectorAll("a[data-share]"), function (a) {
-      var k = a.getAttribute("data-share");
-      if (links[k]) {
+    var names = { linkedin: "LinkedIn", facebook: "Facebook", x: "X" };
+    // Which post, for Google Analytics and the heart: the file name, e.g. "texas-llc-cost".
+    var slug = (url.split("?")[0].split("#")[0].split("/").pop() || "").replace(/\.html$/, "");
+    // GA4's own "share" event (Reports > Engagement > Events): method = where it
+    // went, spot = "top" (under the title) or "end" (end of the article).
+    var trackShare = function (method, spot) {
+      qtrack("share", { method: method, content_type: "article", item_id: slug, share_spot: spot });
+    };
+    var phone = !!navigator.share && !!window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    var nativeShare = function (spot) {
+      trackShare("device_menu", spot);
+      navigator.share({ title: title, url: url }).catch(function () { /* closed the menu */ });
+    };
+
+    // The five icons (LinkedIn, Facebook, X, email, copy link) plus a "Share" label.
+    function addIcons(el, spot) {
+      var label = document.createElement("span");
+      label.className = "post-share-label";
+      label.textContent = "Share";
+      label.setAttribute("aria-live", "polite");
+      el.appendChild(label);
+      ["linkedin", "facebook", "x", "email"].forEach(function (k) {
+        var a = document.createElement("a");
+        a.className = "share-icon";
         a.href = links[k];
+        a.title = k === "email" ? "Share by email" : "Share on " + names[k];
+        a.setAttribute("aria-label", a.title);
         if (k !== "email") { a.target = "_blank"; a.rel = "noopener"; }
-      }
-    });
-    var copy = box.querySelector(".share-copy");
-    if (copy && navigator.clipboard) {
-      copy.addEventListener("click", function () {
-        navigator.clipboard.writeText(url).then(function () {
-          var orig = copy.textContent;
-          copy.textContent = "Copied!";
-          copy.classList.add("is-copied");
-          setTimeout(function () { copy.textContent = orig; copy.classList.remove("is-copied"); }, 1600);
-        });
+        a.innerHTML = shareSvg(k);
+        a.addEventListener("click", function () { trackShare(k, spot); });
+        el.appendChild(a);
       });
-    } else if (copy) {
-      copy.style.display = "none";
+      if (navigator.clipboard) {
+        var copy = document.createElement("button");
+        copy.type = "button";
+        copy.className = "share-icon";
+        copy.title = "Copy link";
+        copy.setAttribute("aria-label", "Copy link");
+        copy.innerHTML = shareSvg("copy");
+        copy.addEventListener("click", function () {
+          trackShare("copy_link", spot);
+          navigator.clipboard.writeText(url).then(function () {
+            label.textContent = "Link copied";
+            copy.classList.add("is-copied");
+            setTimeout(function () { label.textContent = "Share"; copy.classList.remove("is-copied"); }, 1800);
+          });
+        });
+        el.appendChild(copy);
+      }
     }
+
+    // 1. Fold the sources into a closed "Sources (12)" box.
+    var src = document.querySelector(".post-sources");
+    var sourcesBox = null;
+    if (src) {
+      var head = src.previousElementSibling;
+      if (!(head && /^H[234]$/.test(head.tagName) && /source/i.test(head.textContent))) head = null;
+      sourcesBox = document.createElement("details");
+      sourcesBox.className = "post-sources-box";
+      sourcesBox.innerHTML = '<summary><h2 class="post-sources-title">Sources</h2>'
+        + '<span class="post-sources-count">' + src.querySelectorAll("li").length + "</span></summary>";
+      src.parentNode.insertBefore(sourcesBox, head || src);
+      if (head) head.parentNode.removeChild(head);
+      sourcesBox.appendChild(src);
+    }
+
+    // 2. The end-of-article row: just above the sources, or where the Share bar was.
+    var row = document.createElement("div");
+    row.className = "post-actions";
+    if (sourcesBox) sourcesBox.parentNode.insertBefore(row, sourcesBox);
+    else box.parentNode.insertBefore(row, box);
+    row.appendChild(box);
+    box.innerHTML = "";
+    if (phone) {
+      var main = document.createElement("button");
+      main.type = "button";
+      main.className = "share-main";
+      main.innerHTML = shareSvg("share") + "<span>Share</span>";
+      main.addEventListener("click", function () { nativeShare("end"); });
+      box.appendChild(main);
+    } else {
+      addIcons(box, "end");
+    }
+
+    // 3. The small row under the title, Substack-style (Erika, 19 Nov): a heart
+    //    and a Share button for people who skim. On a computer, Share opens a
+    //    little menu with the same five icons.
+    var rows = [row];
+    var h1 = document.querySelector("article h1");
+    if (h1) {
+      var afterTitle = h1.nextElementSibling && h1.nextElementSibling.classList.contains("post-deck") ? h1.nextElementSibling : h1;
+      var top = document.createElement("div");
+      top.className = "post-actions-top";
+      var topShare = document.createElement("div");
+      topShare.className = "post-share-top";
+      var sb = document.createElement("button");
+      sb.type = "button";
+      sb.className = "share-top-btn";
+      sb.innerHTML = shareSvg("share") + "<span>Share</span>";
+      topShare.appendChild(sb);
+      if (phone) {
+        sb.addEventListener("click", function () { nativeShare("top"); });
+      } else {
+        var pop = document.createElement("div");
+        pop.className = "share-pop";
+        pop.hidden = true;
+        addIcons(pop, "top");
+        topShare.appendChild(pop);
+        sb.setAttribute("aria-expanded", "false");
+        var setOpen = function (open) {
+          pop.hidden = !open;
+          sb.setAttribute("aria-expanded", open ? "true" : "false");
+        };
+        sb.addEventListener("click", function (e) { e.stopPropagation(); setOpen(pop.hidden); });
+        document.addEventListener("click", function (e) { if (!topShare.contains(e.target)) setOpen(false); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+      }
+      top.appendChild(topShare);
+      afterTitle.parentNode.insertBefore(top, afterTitle.nextSibling);
+      rows.push(top);
+    }
+    wireLike(rows, slug);
+  }
+
+  /* The "This helped" heart (Erika, 19 Nov): one at the end of the article
+     (with its label) and a small one under the title. Both show the same
+     state - tapping either one likes the post once.
+     Counts live in Supabase (supabase/sql/2026-11-19-blog-likes.sql). The
+     browser keeps a random id, nothing personal, so a second tap takes the
+     heart back rather than counting twice. The number shows only once a post
+     has LIKE_SHOW_AT hearts: "0" on a new post reads worse than no number.
+     If Supabase can't be reached (or the SQL hasn't been run yet), no heart
+     appears at all. */
+  var LIKE_SHOW_AT = 5;
+  var HEART_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M12 20.3l-1.3-1.2C5.9 14.8 3 12.2 3 8.9 3 6.3 5 4.3 7.6 4.3c1.5 0 2.9.7 3.8 1.8l.6.7.6-.7c.9-1.1 2.3-1.8 3.8-1.8C19 4.3 21 6.3 21 8.9c0 3.3-2.9 5.9-7.7 10.2L12 20.3z"/></svg>';
+  function wireLike(rows, slug) {
+    if (!slug || !/^[a-z0-9-]{3,80}$/.test(slug) || !window.fetch || !window.Promise) return;
+    var SB = "https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/";
+    var K = "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf";
+    var rpc = function (fn, body) {
+      return fetch(SB + fn, {
+        method: "POST",
+        headers: { apikey: K, Authorization: "Bearer " + K, "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    };
+    var store = {
+      get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set: function (k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+    };
+    var visitor = store.get("q_visitor");
+    if (!visitor) {
+      visitor = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16);
+          });
+      store.set("q_visitor", visitor);
+    }
+    var key = "q_liked:" + slug;
+    var liked = store.get(key) === "1";
+
+    rpc("blog_like_count", { p_slug: slug }).then(function (n) {
+      var count = Number(n) || 0;
+      var btns = rows.map(function (row, i) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = i === 0 ? "like-btn" : "like-btn like-btn-top";
+        btn.innerHTML = HEART_SVG + (i === 0 ? '<span class="like-label">This helped</span>' : "") + '<span class="like-count"></span>';
+        if (i !== 0) { btn.title = "This helped"; btn.setAttribute("aria-label", "This helped"); }
+        row.insertBefore(btn, row.firstChild);
+        return btn;
+      });
+      var paint = function () {
+        btns.forEach(function (btn, i) {
+          btn.classList.toggle("is-liked", liked);
+          btn.setAttribute("aria-pressed", liked ? "true" : "false");
+          btn.querySelector(".like-count").textContent = count >= LIKE_SHOW_AT ? (i === 0 ? "· " : "") + count : "";
+        });
+      };
+      paint();
+      var busy = false;
+      var toggle = function () {
+        if (busy) return;
+        busy = true;
+        liked = !liked;
+        count = Math.max(0, count + (liked ? 1 : -1));
+        paint();
+        if (liked) qtrack("blog_like", { content_type: "article", item_id: slug });
+        rpc("blog_like", { p_slug: slug, p_visitor: visitor, p_on: liked }).then(function (m) {
+          count = Number(m) || 0;
+          store.set(key, liked ? "1" : null);
+          paint();
+        }).catch(function () {
+          liked = !liked;                       // didn't save: put the heart back as it was
+          count = Math.max(0, count + (liked ? 1 : -1));
+          paint();
+        }).then(function () { busy = false; });
+      };
+      btns.forEach(function (btn) { btn.addEventListener("click", toggle); });
+    }).catch(function () { /* Supabase unreachable or not set up: no heart */ });
   }
 
   /* ---------- 1. Launch gate ---------- */
@@ -321,7 +526,9 @@
         socialLink("li", "pf-btn") + '<span>LinkedIn</span></a>' +
         socialLink("ig", "pf-btn") + '<span>Instagram</span></a>' +
       '</div>';
-    share.parentNode.insertBefore(card, share.nextSibling);
+    // After the heart + Share row when wireShare() built one (above the folded sources).
+    var after = share.closest(".post-actions") || share;
+    after.parentNode.insertBefore(card, after.nextSibling);
   }
 
   /* ---------- 2. Hub lists ---------- */

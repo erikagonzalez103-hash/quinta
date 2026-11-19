@@ -511,11 +511,42 @@ a.cls:hover .cls-name{color:var(--sage-deep)}
 .post-hero{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin:8px 0 28px}
 .post-deck{font-family:var(--display);font-weight:400;font-size:clamp(18px,2.4vw,22px);line-height:1.5;color:var(--sage-deep);margin:0 0 22px}
 .post-aside{font-style:italic;color:var(--sage-deep);border-left:2px solid var(--sage);padding-left:18px;margin:26px 0}
-.post-share{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:44px;padding-top:26px;border-top:1px solid var(--line)}
+/* Blog action row, built by app.js wireShare(): heart left, Share right,
+   above the folded Sources. Before the script runs, the HTML Share bar sits
+   at the end of the post; the script moves it into this row. */
+.post-share{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:44px}
+.post-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;margin:40px 0 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.post-actions .post-share{margin:0 0 0 auto}
 .post-share-label{font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:600;color:var(--sage-deep);margin-right:4px}
-.share-btn{font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:600;color:var(--sage-deep);background:#EEF2EC;border:none;border-radius:20px;padding:8px 15px;cursor:pointer;text-decoration:none;transition:background .2s,color .2s}
-.share-btn:hover{background:var(--moss);color:var(--cream)}
-.share-copy.is-copied{background:var(--sage-deep);color:var(--cream)}
+.share-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:none;background:#EEF2EC;color:var(--sage-deep);cursor:pointer;text-decoration:none;transition:background .2s,color .2s}
+.share-icon:hover,.share-icon:focus-visible,.share-icon.is-copied{background:var(--moss);color:var(--cream)}
+.share-main{display:inline-flex;align-items:center;gap:8px;font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:600;color:var(--cream);background:var(--sage-deep);border:none;border-radius:22px;padding:10px 18px;cursor:pointer}
+.share-main:active{background:var(--moss)}
+/* Small row under the title (Substack-style): heart + Share */
+.post-actions-top{display:flex;align-items:center;gap:10px;margin:2px 0 22px}
+.like-btn.like-btn-top{padding:7px 12px;gap:6px}
+.post-share-top{position:relative}
+.share-top-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:600;color:var(--sage-deep);background:transparent;border:1px solid var(--line);border-radius:22px;padding:7px 14px;cursor:pointer;transition:border-color .2s}
+.share-top-btn:hover,.share-top-btn[aria-expanded="true"]{border-color:var(--moss)}
+.share-top-btn svg{width:16px;height:16px}
+.share-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--cream);border:1px solid var(--line);border-radius:30px;box-shadow:0 8px 24px rgba(43,58,51,.12);white-space:nowrap}
+.share-pop[hidden]{display:none}
+/* Sources, folded closed (details/summary, so search engines still read them) */
+.post-sources-box{margin-top:22px}
+.post-sources-box summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;padding:6px 0}
+.post-sources-box summary::-webkit-details-marker{display:none}
+.post-sources-box summary::after{content:"";width:8px;height:8px;border-right:1.6px solid var(--sage-deep);border-bottom:1.6px solid var(--sage-deep);transform:rotate(45deg);margin:-4px 0 0 4px;transition:transform .2s}
+.post-sources-box[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+.post-body .post-sources-box .post-sources-title{font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:600;color:var(--sage-deep);margin:0}
+.post-sources-count{font-family:var(--label);font-size:11px;font-weight:600;color:var(--sage-deep);background:#EEF2EC;border-radius:10px;padding:2px 8px}
+.post-sources-box summary:hover .post-sources-title{color:var(--moss)}
+/* "This helped" heart, added by app.js wireLike() at the start of the row */
+.like-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-weight:600;color:var(--sage-deep);background:transparent;border:1px solid var(--line);border-radius:22px;padding:9px 16px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.like-btn svg{fill:none;stroke:currentColor;stroke-width:1.8;transition:transform .2s}
+.like-btn:hover{border-color:var(--moss)}
+.like-btn.is-liked{background:#EEF2EC;border-color:#EEF2EC}
+.like-btn.is-liked svg{fill:var(--sage-deep);stroke:var(--sage-deep);transform:scale(1.08)}
+.like-count{letter-spacing:.06em}
 .post .crumb-link{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:500;color:var(--sage-deep);text-decoration:none}
 .post .crumb-link:hover{color:var(--moss)}
 .post-meta{font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--sage-deep);margin:24px 0 12px}
