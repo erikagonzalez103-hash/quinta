@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "failing-forward-in-business",
+    title: "What Does “Failing Forward” Mean in Business? And How to Tell a Stall From an Exit",
+    date: "2026-11-24",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Failing forward means treating a setback as information you act on inside a set timeframe. How to tell an ordinary year-three stall from a fixable problem or a real exit, and why you write your kill criteria before you need them.",
+    image: "blog-failing-forward-wide.webp"
+  },
+  {
     slug: "when-to-stop-diy-small-business-tax-prep",
     title: "When Should You Stop Doing Your Own Small Business Tax Prep? Complexity Decides, Not Revenue",
     date: "2026-11-15",
