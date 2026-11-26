@@ -347,6 +347,24 @@
      appears at all. */
   var LIKE_SHOW_AT = 5;
   var HEART_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M12 20.3l-1.3-1.2C5.9 14.8 3 12.2 3 8.9 3 6.3 5 4.3 7.6 4.3c1.5 0 2.9.7 3.8 1.8l.6.7.6-.7c.9-1.1 2.3-1.8 3.8-1.8C19 4.3 21 6.3 21 8.9c0 3.3-2.9 5.9-7.7 10.2L12 20.3z"/></svg>';
+  /* Blog post videos (.post-video): tell GA when someone presses play and
+     when they watch to the end, once each per page view. Nothing personal. */
+  function wirePostVideo() {
+    var vids = document.querySelectorAll(".post-video video");
+    Array.prototype.forEach.call(vids, function (v) {
+      var title = v.getAttribute("data-title") || document.title;
+      var started = false, done = false;
+      v.addEventListener("play", function () {
+        if (started) return; started = true;
+        qtrack("video_start", { video_title: title, video_provider: "quinta" });
+      });
+      v.addEventListener("ended", function () {
+        if (done) return; done = true;
+        qtrack("video_complete", { video_title: title, video_provider: "quinta" });
+      });
+    });
+  }
+
   function wireLike(rows, slug) {
     if (!slug || !/^[a-z0-9-]{3,80}$/.test(slug) || !window.fetch || !window.Promise) return;
     var SB = "https://pmpaslevwimofohirves.supabase.co/rest/v1/rpc/";
@@ -447,6 +465,7 @@
     wireToggles();
     decorateWordmarks();
     wireShare();
+    wirePostVideo();
     setupMobileNav();
     injectFooterSocial();
     injectPostFollow();
