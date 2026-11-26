@@ -95,6 +95,25 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel -->
+<!-- LinkedIn Insight Tag -->
+<script type="text/javascript">
+_linkedin_partner_id = "9479266";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script><script type="text/javascript">
+(function(l) {
+if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+window.lintrk.q=[]}
+var s = document.getElementsByTagName("script")[0];
+var b = document.createElement("script");
+b.type = "text/javascript";b.async = true;
+b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b, s);})(window.lintrk);
+</script>
+<noscript>
+<img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=9479266&fmt=gif" />
+</noscript>
+<!-- End LinkedIn Insight Tag -->
 </head>
 <body>
 
@@ -214,6 +233,28 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   function off(c) { return Math.round(c * (100 - PCT) / 100); }
   var money = QuintaShop.money;
 
+  /* GOOGLE ANALYTICS. Standard GA4 ecommerce names, so the Purchase journey
+     and Ecommerce reports fill in on their own:
+       view_item_list   the class list drawn (once)
+       add_to_cart      a class ticked, or a gift chosen
+       remove_from_cart a class unticked, or the gift changed or cleared
+       booking_start    "Continue to payment" (same event every class page
+                        sends, clicked_from "shopsmall")
+       begin_checkout   same moment, with the cart and the coupon
+       purchase         sent by bundle/index.html when Stripe sends her back
+     plus sale_checkout_error when payment can't be opened, with the reason.
+     Prices are the sale prices; `discount` is what the 15% took off. */
+  function track(name, props) {
+    try { if (typeof gtag === "function") gtag("event", name, props || {}); } catch (e) {}
+  }
+  function gaItem(slug, gift) {
+    var full = cents(slug);
+    return { item_id: slug, item_name: bySlug(slug).name, item_category: "Black Friday sale",
+             item_variant: gift ? "gift" : "for me", coupon: CODE,
+             price: off(full) / 100, discount: (full - off(full)) / 100, quantity: 1 };
+  }
+  var referred = QuintaShop.ref() ? "yes" : "no";
+
   /* Outside the window: say so plainly instead of a form that can't work. */
   var now = Date.now();
   if (!PREVIEW && (now < START || now >= END)) {
@@ -292,15 +333,31 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     go.textContent = "Continue to payment";
   }
 
-  function fail(text) {
+  function fail(text, reason) {
     go.disabled = false;
     go.textContent = "Continue to payment";
     msg.className = "ss-msg bad";
     msg.textContent = text;
+    if (reason) track("sale_checkout_error", { reason: reason });
   }
 
-  list.addEventListener("change", function () { msg.textContent = ""; update(); });
-  giftSel.addEventListener("change", function () { msg.textContent = ""; update(); });
+  list.addEventListener("change", function (ev) {
+    msg.textContent = "";
+    var box = ev.target;
+    if (box && box.type === "checkbox") {
+      var it = gaItem(box.value, false);
+      track(box.checked ? "add_to_cart" : "remove_from_cart", { currency: "USD", value: it.price, items: [it] });
+    }
+    update();
+  });
+  var lastGift = "";
+  giftSel.addEventListener("change", function () {
+    msg.textContent = "";
+    if (lastGift) { var o = gaItem(lastGift, true); track("remove_from_cart", { currency: "USD", value: o.price, items: [o] }); }
+    if (giftSel.value) { var n = gaItem(giftSel.value, true); track("add_to_cart", { currency: "USD", value: n.price, items: [n] }); }
+    lastGift = giftSel.value;
+    update();
+  });
 
   document.getElementById("ssForm").addEventListener("submit", function (ev) {
     ev.preventDefault();
@@ -308,7 +365,7 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     if (!c.all.length || go.disabled) return;
     var to = document.getElementById("ssTo").value.trim();
     if (c.gift && to && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
-      fail("That email doesn't look right. Fix it, or leave it blank and we'll send the gift to you.");
+      fail("That email doesn't look right. Fix it, or leave it blank and we'll send the gift to you.", "bad_gift_email");
       return;
     }
 
@@ -318,16 +375,13 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
     msg.textContent = "";
 
     // Google Analytics, never in the way of the sale.
-    try {
-      if (window.gtag) {
-        gtag("event", "begin_checkout", {
-          currency: "USD", value: c.after / 100, coupon: CODE,
-          items: c.all.map(function (s) {
-            return { item_id: s, item_name: bySlug(s).name, price: off(cents(s)) / 100, quantity: 1 };
-          })
-        });
-      }
-    } catch (e) {}
+    var items = c.mine.map(function (s) { return gaItem(s, false); });
+    if (c.gift) items.push(gaItem(c.gift, true));
+    track("booking_start", { class_slug: c.all.join(","), class_name: "Black Friday sale", price: "paid",
+      referred: referred, clicked_from: "shopsmall", gift: c.gift ? "yes" : "no" });
+    track("begin_checkout", { currency: "USD", value: c.after / 100, coupon: CODE, items: items });
+    // For the purchase event on the thank-you page (same browser, same tab).
+    try { sessionStorage.setItem("qc_sale_cart", JSON.stringify({ value: c.after / 100, coupon: CODE, items: items })); } catch (e) {}
 
     fetch(FN, {
       method: "POST",
@@ -347,17 +401,18 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
         sent.then(function () { window.location.href = d.url; });
         return;
       }
-      if (d && d.error === "closed") { fail("The sale has ended, so we haven't sent you on to payment."); return; }
-      if (d && d.error === "not_yet") { fail("The sale opens Friday at 12 a.m. Central. Come back then!"); return; }
+      if (d && d.error === "closed") { fail("The sale has ended, so we haven't sent you on to payment.", "closed"); return; }
+      if (d && d.error === "not_yet") { fail("The sale opens Friday at 12 a.m. Central. Come back then!", "not_yet"); return; }
       if (d && (d.error === "discount_unavailable" || d.url)) {
         fail("The 15% isn't applying right now, so we haven't sent you to payment at full price. " +
-          "Email hello@quintaand.co and we'll send you a link at the sale price.");
+          "Email hello@quintaand.co and we'll send you a link at the sale price.", "discount_unavailable");
         return;
       }
       throw new Error((d && d.error) || "no url");
     }).catch(function (err) {
       console.error(err);
-      fail("We couldn't open the payment page. Try again, or email hello@quintaand.co and we'll send you a link.");
+      fail("We couldn't open the payment page. Try again, or email hello@quintaand.co and we'll send you a link.",
+        String((err && err.message) || "network").slice(0, 40));
     });
   });
 
@@ -367,9 +422,15 @@ src="https://www.facebook.com/tr?id=1179541285251913&ev=PageView&noscript=1"
   /* A class page link can land here with one class ticked: /shopsmall/?c=landlord */
   var pre = new URLSearchParams(location.search).get("c");
   draw();
+  track("view_item_list", { item_list_id: "shopsmall", item_list_name: "Black Friday sale",
+    items: shown.map(function (s) { return gaItem(s, false); }) });
   if (pre && shown.indexOf(pre) !== -1) {
     var box = list.querySelector('input[value="' + pre + '"]');
-    if (box) { box.checked = true; update(); }
+    if (box) {
+      box.checked = true; update();
+      var pi = gaItem(pre, false);
+      track("add_to_cart", { currency: "USD", value: pi.price, items: [pi], clicked_from: "class_link" });
+    }
   }
 
   // Real next dates from Cal.com, filled in when they arrive.

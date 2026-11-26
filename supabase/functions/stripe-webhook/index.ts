@@ -209,6 +209,173 @@ async function bankEmail(kind: "pending" | "failed", s: any) {
   } catch (e) { console.error("bank email threw", e); }
 }
 
+/* ------------------------------------------- BOOKS BEFORE BUBBLY ------- */
+
+const BBB_DAY = "2026-12-15";
+const BBB_SEATS = 20;
+const BBB_WARN = 18;           // Erika's alert line (bbb-seat-watch used the same)
+// UTC times for calendar links; Dallas is UTC-6 in December.
+const BBB_CLASS: Record<string, { name: string; when: string; from: string; to: string; teacher: string }> = {
+  "bookkeeping-1": { name: "Bookkeeping 1", when: "10:00 to 11:30 AM",
+    from: "20261215T160000Z", to: "20261215T173000Z", teacher: "Tara Johnson" },
+  "bookkeeping-2": { name: "Bookkeeping 2", when: "11:30 AM to 1:00 PM",
+    from: "20261215T173000Z", to: "20261215T190000Z", teacher: "Tara Johnson" },
+  "year-end-tax":  { name: "Year-End Tax Readiness", when: "1:30 to 3:00 PM",
+    from: "20261215T193000Z", to: "20261215T210000Z", teacher: "Guadalupe Barraza, CPA" },
+};
+const BBB_WHERE = "kiln coworking, Preston Hollow, Dallas";
+// Same fallback cal-instructor-notify keeps for the one class with no portal dates.
+const TEACHER_FALLBACK: Record<string, { instructor_email: string; instructor_name: string }> = {
+  "year-end-tax": { instructor_email: "lupe@gbarrazacpa.com", instructor_name: "Guadalupe Barraza" },
+};
+const TEST_BUYERS = ["erika@quintaand.co", "hello@quintaand.co"];
+
+async function bbbTeacher(slug: string): Promise<{ instructor_email: string; instructor_name: string } | null> {
+  const base = `class_sessions?select=instructor_email,instructor_name&class_slug=eq.${encodeURIComponent(slug)}`;
+  for (const q of [`${base}&session_date=eq.${BBB_DAY}&limit=1`, `${base}&limit=1`]) {
+    try {
+      const r = await db(q);
+      if (!r.ok) continue;
+      const rows = await r.json();
+      if (Array.isArray(rows) && rows[0]?.instructor_email) return rows[0];
+    } catch (e) { console.error("teacher lookup failed", e); }
+  }
+  return TEACHER_FALLBACK[slug] || null;
+}
+
+function calLink(c: { name: string; from: string; to: string }, online: boolean): string {
+  const q = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${c.name} — Books Before Bubbly (Quinta & Co.)`,
+    dates: `${c.from}/${c.to}`,
+    details: online ? "Live online. Your teacher emails you the video link before class."
+                    : "Books Before Bubbly at kiln Preston Hollow. Bring your laptop.",
+    location: online ? "Online" : BBB_WHERE,
+  });
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
+
+async function bbbBooked(o: {
+  slugs: string[]; name: string; email: string; first: string; online: boolean; bundle: string | null;
+  orderId: string; ref: string | null; adTags: Record<string, string | null>;
+  share: (i: number) => number | null;
+}): Promise<{ ok: boolean; ledger: string }> {
+  const attending = o.online ? "online" : "in-person";
+  const rows = o.slugs.map((slug, i) => ({
+    student_name: o.name || null,
+    student_email: o.email,
+    class_slug: slug,
+    class_name: `${BBB_CLASS[slug]?.name || slug} (Books Before Bubbly)`,
+    source: o.bundle ? "bundle" : "single",
+    bundle_key: o.bundle,
+    order_ref: `${o.orderId}:${slug}`,
+    amount_cents: o.share(i),
+    ref_code: o.ref,
+    status: "booked",
+    session_on: BBB_DAY,
+    session_id: null,
+    attending,
+    notes: "Books Before Bubbly, paid on Stripe",
+    ...o.adTags,
+  }));
+
+  let ledger = "written";
+  try {
+    const r = await db("enrollments", { method: "POST", body: JSON.stringify(rows) });
+    if (r.status === 409) ledger = "already recorded";
+    else if (!r.ok) { ledger = "insert failed"; console.error("bbb insert failed", r.status, await r.text()); }
+  } catch (e) { ledger = "threw"; console.error("bbb ledger threw", e); }
+  const fresh = ledger === "written";
+
+  async function mail(to: string[], subject: string, html: string, text: string, extra: Record<string, unknown> = {}) {
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: SEND_FROM, to, subject, html, text, ...extra }),
+      });
+      if (!r.ok) console.error("bbb email failed", to.join(","), r.status, await r.text());
+      return r.ok;
+    } catch (e) { console.error("bbb email threw", e); return false; }
+  }
+  const wrapB = (inner: string) => `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">${inner}` +
+    `<p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p></div>`;
+
+  /* Seats after this sale, and Erika told when a class is nearly full or
+     when the ledger write failed (she has paid; the rows must be added). */
+  const counts: string[] = [];
+  for (const slug of o.slugs) {
+    try {
+      const r = await db(`enrollments?select=id&session_on=eq.${BBB_DAY}&class_slug=eq.${encodeURIComponent(slug)}&status=in.(booked,taken)`,
+        { headers: { Prefer: "count=exact" } });
+      const n = Number((r.headers.get("content-range") || "").split("/")[1] || 0);
+      if (n >= BBB_WARN) counts.push(`${BBB_CLASS[slug]?.name || slug}: ${n} of ${BBB_SEATS}`);
+    } catch (e) { console.error("bbb count failed", e); }
+  }
+  if (fresh && counts.length || (ledger !== "written" && ledger !== "already recorded")) {
+    await mail([BCC], counts.length ? `Books Before Bubbly filling up — ${counts.join("; ")}` : `Books Before Bubbly seat not recorded — ${o.orderId}`,
+      wrapB(`<p>${esc(o.name || o.email)} (${esc(o.email)}) just booked ${esc(o.slugs.map((s) => BBB_CLASS[s]?.name || s).join(" + "))}, ${attending}.</p>`
+        + (counts.length ? `<p><strong>Seats taken:</strong> ${esc(counts.join("; "))}. To stop sales for a class, ask Claude.</p>` : "")
+        + (ledger !== "written" && ledger !== "already recorded" ? `<p><strong>The ledger write failed (${esc(ledger)}).</strong> She has paid and been confirmed. Add the rows by hand, or ask Claude.</p>` : "")),
+      `${o.name || o.email} booked ${o.slugs.join(" + ")}, ${attending}.\n${counts.join("\n")}\nLedger: ${ledger}\n`);
+  }
+
+  // Her confirmation.
+  const list = o.slugs.map((slug) => {
+    const c = BBB_CLASS[slug] || { name: slug, when: "", from: "", to: "", teacher: "" };
+    return `<li style="margin:0 0 12px"><strong>${esc(c.name)}</strong>, ${esc(c.when)}, with ${esc(c.teacher)}<br>`
+      + `<a href="${calLink(c, o.online)}" style="color:#4F6B5C;font-size:14px">Add to Google Calendar</a></li>`;
+  }).join("");
+  const listText = o.slugs.map((slug) => {
+    const c = BBB_CLASS[slug] || { name: slug, when: "", teacher: "" };
+    return `- ${c.name}, ${c.when}, with ${c.teacher}`;
+  }).join("\n");
+  const where = o.online
+    ? `<p style="margin:0 0 16px"><strong>You're joining online.</strong> Your teacher will email you the video link before class.</p>`
+    : `<p style="margin:0 0 16px"><strong>Where:</strong> ${esc(BBB_WHERE)}. Bring your laptop, and the bubbly is on us after.</p>`;
+  const okStudent = await mail([o.email], "You're in: Books Before Bubbly, Tuesday, December 15",
+    wrapB(`<p style="margin:0 0 16px">Hi ${esc(o.first)},</p>
+      <p style="margin:0 0 16px">Thank you. You're booked for <strong>Books Before Bubbly</strong> on <strong>Tuesday, December 15</strong>:</p>
+      <ul style="margin:0 0 18px;padding-left:20px">${list}</ul>
+      ${where}
+      <p style="margin:0 0 16px;font-size:14px;color:#5A5E55">Need to change something? Just reply to this email.
+        <a href="https://quintaand.co/policies.html" style="color:#5A5E55">Our policies</a>.</p>`),
+    `Hi ${o.first},\n\nThank you. You're booked for Books Before Bubbly on Tuesday, December 15:\n\n${listText}\n\n`
+      + (o.online ? "You're joining online. Your teacher will email you the video link before class.\n"
+                  : `Where: ${BBB_WHERE}. Bring your laptop.\n`)
+      + `\nNeed to change something? Just reply to this email.\n\nQuinta & Co.\n`,
+    { bcc: o.email === BCC ? undefined : [BCC], reply_to: BCC });
+
+  /* Each teacher, once per new booking (a retried webhook doesn't repeat
+     it). Reply-to is the student, so an online student's link is one reply.
+     A test purchase with Erika's own address goes to Erika only, marked. */
+  if (fresh) {
+    const isTest = TEST_BUYERS.includes(o.email);
+    for (const slug of o.slugs) {
+      const c = BBB_CLASS[slug] || { name: slug, when: "" };
+      const t = await bbbTeacher(slug);
+      const to = isTest || !t ? BCC : t.instructor_email;
+      const hi = (t?.instructor_name || "").split(" ")[0] || "there";
+      const join = o.online
+        ? `<p style="margin:0 0 16px;padding:12px 14px;background:#EEF2EC;border-left:3px solid #4F6B5C"><strong>She's joining online.</strong>
+             Reply to this email with your video link — the reply goes straight to her.</p>`
+        : `<p style="margin:0 0 16px"><strong>Joining:</strong> in person at kiln</p>`;
+      await mail([to], `${isTest ? "[TEST] " : ""}New booking${o.online ? " (online)" : ""} — ${c.name}, Books Before Bubbly, Tue Dec 15`,
+        wrapB(`${isTest ? `<p style="margin:0 0 16px;padding:12px 14px;background:#FFF6E0;border-left:3px solid #CAA871"><strong>Test purchase</strong>, sent to you only. Would have gone to ${esc(t?.instructor_email || "nobody found")}.</p>` : ""}
+          <p style="margin:0 0 16px">Hi ${esc(hi)},</p>
+          <p style="margin:0 0 16px"><strong>${esc(o.name || o.email)}</strong> just booked <strong>${esc(c.name)}</strong> at Books Before Bubbly.</p>
+          ${join}
+          <p style="margin:0 0 6px"><strong>When:</strong> Tuesday, December 15, ${esc(c.when)} (Dallas time)</p>
+          <p style="margin:0 0 16px"><strong>Her email:</strong> ${esc(o.email)}</p>`),
+        `Hi ${hi},\n\n${o.name || o.email} just booked ${c.name} at Books Before Bubbly.\n`
+          + (o.online ? "SHE'S JOINING ONLINE - reply with your video link.\n" : "Joining: in person at kiln\n")
+          + `When: Tuesday, December 15, ${c.when}\nHer email: ${o.email}\n`,
+        { reply_to: o.email, cc: to === BCC ? undefined : [BCC] });
+    }
+  }
+  return { ok: okStudent, ledger };
+}
+
 serve(async (req) => {
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
@@ -305,9 +472,11 @@ serve(async (req) => {
         value: paid !== null ? paid / 100 : 0,
         contentIds: ids,
         contentName: offer === "oct21" ? "October 21 classes" : offer === "gift" ? "Buy one, gift one"
-          : offer === "shopsmall" ? "Black Friday sale" : "Choose your own classes",
+          : offer === "shopsmall" ? "Black Friday sale" : offer === "bbb" ? "Books Before Bubbly"
+          : "Choose your own classes",
         sourceUrl: offer === "oct21" ? "https://quintaand.co/oct21.html"
-          : offer === "shopsmall" ? "https://quintaand.co/shopsmall/" : "https://quintaand.co/bundle/",
+          : offer === "shopsmall" ? "https://quintaand.co/shopsmall/"
+          : offer === "bbb" ? "https://quintaand.co/books-before-bubbly/" : "https://quintaand.co/bundle/",
         email, name,
         fbp: String(s?.metadata?.fbp || "") || undefined,
         fbc: String(s?.metadata?.fbc || "") || undefined,
@@ -427,6 +596,23 @@ serve(async (req) => {
       // has nothing. Ask Stripe to retry. The ledger write is safe to repeat.
       if (!okStudent) return json({ error: "confirmation email failed", ledger: ledger21 }, 500);
       return json({ ok: true, oct21: true, ledger: ledger21, seats: ids.length, oversold });
+    }
+
+    /* ------------------------------------ BOOKS BEFORE BUBBLY, paid ------
+       Tuesday 15 December, sold here instead of Cal.com (see stripe-checkout).
+       Each class has one fixed time, so the rows are 'booked' straight away
+       with session_on set - no booking link, nothing left to pick. She gets a
+       confirmation; the teacher gets the same kind of note Cal.com bookings
+       send (cal-instructor-notify); Erika is told when a class passes 18. */
+    if (String(s?.metadata?.offer || "") === "bbb") {
+      if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "no database credentials" }, 500);
+      if (!RESEND_API_KEY) return json({ error: "no email service" }, 500);
+      const field = (Array.isArray(s?.custom_fields) ? s.custom_fields : []).find((f: any) => f?.key === "attending");
+      const online = String(field?.dropdown?.value || "") === "online";
+      const bundle = String(s?.metadata?.bundle || "") || null;
+      const result = await bbbBooked({ slugs, name, email, first, online, bundle, orderId, ref, adTags, share });
+      if (!result.ok) return json({ error: "confirmation email failed", ledger: result.ledger }, 500);
+      return json({ ok: true, bbb: true, ledger: result.ledger, classes: slugs });
     }
 
     /* EVERY ROW MUST CARRY THE SAME KEYS. PostgREST inserts an array as one

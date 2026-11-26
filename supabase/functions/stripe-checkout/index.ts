@@ -125,6 +125,32 @@ const SALE_START = Date.parse("2026-11-27T06:00:00Z");   // Fri 27 Nov, 12:00 a.
 const SALE_END   = Date.parse("2026-11-29T06:00:00Z");   // Sun 29 Nov, 12:00 a.m. Dallas
 const SALE_CODE  = "SHOPSMALL15";
 
+/* BOOKS BEFORE BUBBLY, Tue 15 Dec 2026 (Erika, 26 Nov)
+   Moved off Cal.com checkout because Cal.com counts a booking on one link as
+   busy time on every other link at that hour: one "Books to Taxes" booking
+   hid Bookkeeping 2 from the $99 link and from its redeem twin. Every class
+   that day has one fixed time, so nothing needs a calendar - she pays here,
+   stripe-webhook writes 'booked' rows for 15 Dec and emails her and the
+   teacher. Seats are counted in the ledger: 20 per class, room and online
+   together (the same limit the Cal.com events had).
+   Keys are the old Cal.com slugs, so the page, js/meta.js and GA keep their
+   names. Keep in step with BBB_CLASS in stripe-webhook. */
+const BBB_DAY = "2026-12-15";
+const BBB_SEATS = 20;
+const BBB_CLOSE = Date.parse("2026-12-15T06:00:00Z");   // sales stop at midnight before the day, Dallas
+const BBB_ITEMS: Record<string, { cents: number; label: string; classes: string[]; bundle: string | null }> = {
+  "bookkeeping-1-bbb":  { cents:  9900, classes: ["bookkeeping-1"], bundle: null,
+    label: "Bookkeeping 1 — Books Before Bubbly, Tue Dec 15, 10:00 AM" },
+  "bookkeeping-2-bbb":  { cents:  9900, classes: ["bookkeeping-2"], bundle: null,
+    label: "Bookkeeping 2 — Books Before Bubbly, Tue Dec 15, 11:30 AM" },
+  "year-end-tax-bbb":   { cents:  9900, classes: ["year-end-tax"], bundle: null,
+    label: "Year-End Tax Readiness — Books Before Bubbly, Tue Dec 15, 1:30 PM" },
+  "keep-the-books-bbb": { cents: 16800, classes: ["bookkeeping-1", "bookkeeping-2"], bundle: "keep-the-books-bbb",
+    label: "Keep the Books: Bookkeeping 1 + 2 — Books Before Bubbly, Tue Dec 15" },
+  "books-to-taxes-bbb": { cents: 16800, classes: ["bookkeeping-2", "year-end-tax"], bundle: "books-to-taxes-bbb",
+    label: "Books to Taxes: Bookkeeping 2 + Year-End Tax — Books Before Bubbly, Tue Dec 15" },
+};
+
 /* The codes, and the number of classes each one is for. The minimum order
    amount that actually enforces this lives on the promotion code in Stripe;
    these are only for choosing which code to ask for. */
@@ -265,6 +291,7 @@ serve(async (req) => {
     const isGift = offer === "gift";
     const isOct21 = offer === "oct21";
     const isSale = offer === "shopsmall";
+    const isBbb = offer === "bbb";
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
@@ -277,6 +304,7 @@ serve(async (req) => {
        kept - not to the top of the landing page, three scrolls away from
        where she was. */
     form.set("cancel_url", isSale ? `${SITE}/shopsmall/`
+      : isBbb ? `${SITE}/books-before-bubbly/`
       : `${SITE}/${isOct21 ? "oct21" : isGift ? "gift" : "choose"}.html`);
 
     /* Who sent her. The pages read it from the same localStorage key app.js
@@ -330,7 +358,50 @@ serve(async (req) => {
       return json({ error: "discount_unavailable", code: want }, 409);
     }
 
-    if (isSale) {
+    if (isBbb) {
+      if (!SUPABASE_URL || !SERVICE_KEY) return json({ error: "not configured" }, 500);
+      if (Date.now() >= BBB_CLOSE) return json({ error: "closed" }, 409);
+      const key = String(body?.item || "");
+      const it = BBB_ITEMS[key];
+      if (!it) return json({ error: "unknown_class" }, 400);
+
+      /* Seats, from the ledger. Checked again after payment in
+         stripe-webhook, which tells Erika if a class goes past 18. */
+      const full: string[] = [];
+      for (const cls of it.classes) {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/enrollments?select=id&session_on=eq.${BBB_DAY}`
+          + `&class_slug=eq.${encodeURIComponent(cls)}&status=in.(booked,taken)`,
+          { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, Prefer: "count=exact" } });
+        const n = Number((r.headers.get("content-range") || "").split("/")[1] || 0);
+        if (r.ok && n >= BBB_SEATS) full.push(cls);
+      }
+      if (full.length) return json({ error: "full", classes: full }, 409);
+
+      lines = [{ slug: key, cents: it.cents, label: it.label }];
+      form.set("metadata[offer]", "bbb");
+      form.set("metadata[item]", key);
+      form.set("metadata[slugs]", it.classes.join(","));
+      if (it.bundle) form.set("metadata[bundle]", it.bundle);
+      /* Per class, for splitting the amount across ledger rows - a bundle's
+         $168 lands as $84 + $84, not $168 on the first class. */
+      form.set("metadata[cents]", it.classes.map(() => "9900").join(","));
+      /* "How are you joining?" - asked on Stripe's page, read back by the
+         webhook. The teacher sends online students the video link. */
+      form.set("custom_fields[0][key]", "attending");
+      form.set("custom_fields[0][label][type]", "custom");
+      form.set("custom_fields[0][label][custom]", "How are you joining?");
+      form.set("custom_fields[0][type]", "dropdown");
+      form.set("custom_fields[0][dropdown][options][0][label]", "In person at kiln, Dallas");
+      form.set("custom_fields[0][dropdown][options][0][value]", "inperson");
+      form.set("custom_fields[0][dropdown][options][1][label]", "Online, live on Zoom");
+      form.set("custom_fields[0][dropdown][options][1][value]", "online");
+      form.set("success_url", `${SITE}/books-before-bubbly/?booked=1&s={CHECKOUT_SESSION_ID}`);
+      form.set("custom_text[submit][message]",
+        "**Tuesday, December 15** at kiln Preston Hollow in Dallas, or live online. Your confirmation comes by email the moment you pay.");
+      form.set("allow_promotion_codes", "false");
+      // An open cart isn't holding a seat, so don't leave it payable for a day.
+      form.set("expires_at", String(Math.floor(Date.now() / 1000) + 31 * 60));
+    } else if (isSale) {
       /* THE SALE. Any classes for her, and at most one as a gift for someone
          else - either part may be empty, not both. One gift per order keeps
          the webhook's one-recipient email exactly as it already works. */
@@ -529,7 +600,7 @@ serve(async (req) => {
     /* What each line cost before any discount, in order. The webhook splits
        the amount actually paid across the ledger rows in these proportions,
        so a gift's two rows record $150 and $112.50 rather than two halves. */
-    form.set("metadata[cents]", lines.map((l) => l.cents).join(","));
+    if (!isBbb) form.set("metadata[cents]", lines.map((l) => l.cents).join(","));
 
     lines.forEach((l, i) => {
       form.set(`line_items[${i}][quantity]`, "1");

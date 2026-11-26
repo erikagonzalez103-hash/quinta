@@ -392,14 +392,36 @@
         '<a href="/shopsmall/" style="color:#FAFAF6;font-weight:600;text-decoration:underline;white-space:nowrap">Shop the sale &rarr;</a>';
       document.body.insertBefore(bar, document.body.firstChild);
 
+      /* GA4's standard promotion events (Reports > Monetization > Promotions):
+         view_promotion when the bar shows, select_promotion on any click
+         into the sale - the bar, a card, or a class page button - with
+         clicked_from saying which, as the Book buttons do. */
+      var PROMO = { promotion_id: "shopsmall", promotion_name: "Black Friday sale" };
+      function promo(name, slot, slug) {
+        var p = { promotion_id: PROMO.promotion_id, promotion_name: PROMO.promotion_name,
+                  creative_slot: slot, clicked_from: slot };
+        if (slug) { p.class_slug = slug; p.items = [{ item_id: slug, item_name: (bySlug[slug] || {}).name || slug }]; }
+        qtrack(name, p);
+      }
+      promo("view_promotion", "sale_bar");
+      bar.querySelector("a").addEventListener("click", function () { promo("select_promotion", "sale_bar"); });
+      function whereIs(a) { return a.closest && a.closest("#class-detail") ? "class_page" : "card"; }
+
       var links = document.querySelectorAll('a[href*="cal.com/quintaandco/"]');
       Array.prototype.forEach.call(links, function (a) {
         var m = String(a.getAttribute("href")).match(/cal\.com\/quintaandco\/([a-z0-9-]+)/);
         var c = m && SALE.slugs.indexOf(m[1]) !== -1 ? bySlug[m[1]] : null;
         if (!c) return;
-        a.setAttribute("href", "/shopsmall/?c=" + encodeURIComponent(m[1]));
-        a.textContent = "Buy at 15% off";
-        var note = a.nextElementSibling;
+        /* A fresh copy of the button drops its Cal.com listeners, so this
+           click isn't also counted as booking_start / begin_checkout for a
+           Cal.com booking that never happens. */
+        var fresh = a.cloneNode(true);
+        a.parentNode.replaceChild(fresh, a);
+        fresh.setAttribute("href", "/shopsmall/?c=" + encodeURIComponent(m[1]));
+        fresh.textContent = "Buy at 15% off";
+        var slot = whereIs(fresh), slug = m[1];
+        fresh.addEventListener("click", function () { promo("select_promotion", slot, slug); });
+        var note = fresh.nextElementSibling;
         if (note && /price-note/.test(note.className)) note.innerHTML = saleNote(c);
       });
 
@@ -416,6 +438,7 @@
           b.className = "btn btn-solid";
           b.href = "/shopsmall/?c=" + encodeURIComponent(slug);
           b.textContent = "Buy at 15% off";
+          b.addEventListener("click", function () { promo("select_promotion", "class_page", slug); });
           book.appendChild(b);
           var pn = document.createElement("span");
           pn.className = "price-note";
