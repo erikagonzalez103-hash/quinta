@@ -24,6 +24,14 @@
 
 const QUINTA_POSTS = [
   {
+    slug: "task-avoidance-missing-instruction",
+    title: "Why Task Avoidance in Small Business Is Usually a Missing Instruction",
+    date: "2026-11-29",
+    author: "Erika Gonzalez Harrison",
+    excerpt: "Most task avoidance in small business isn’t laziness. The task was never written as a next step. Three kinds of stuck tasks, the fix each one needs, and how to rewrite one so it gets done.",
+    image: "blog-task-avoidance-wide.webp"
+  },
+  {
     slug: "failing-forward-in-business",
     title: "What Does “Failing Forward” Mean in Business? And How to Tell a Stall From an Exit",
     date: "2026-11-24",
