@@ -349,6 +349,89 @@
   var HEART_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M12 20.3l-1.3-1.2C5.9 14.8 3 12.2 3 8.9 3 6.3 5 4.3 7.6 4.3c1.5 0 2.9.7 3.8 1.8l.6.7.6-.7c.9-1.1 2.3-1.8 3.8-1.8C19 4.3 21 6.3 21 8.9c0 3.3-2.9 5.9-7.7 10.2L12 20.3z"/></svg>';
   /* Blog post videos (.post-video): tell GA when someone presses play and
      when they watch to the end, once each per page view. Nothing personal. */
+  /* BLACK FRIDAY + SMALL BUSINESS SATURDAY (Erika, 26 Nov 2026)
+     Fri 27 Nov 12 a.m. to Sun 29 Nov 12 a.m., Dallas time, this:
+     - puts a sale bar above the header on every page that loads app.js
+     - points every full-price Cal.com Book link for a sale class at
+       /shopsmall/?c=<slug>, so nobody pays full price on Cal.com by mistake
+     - on an undated sale class page, adds the sale button ahead of the
+       waitlist (which becomes the second choice)
+     It switches itself off, and does nothing outside the window. Keep the
+     class list in step with SELLABLE in shopsmall/index.html and PRICES in
+     the stripe-checkout function. ?sale=1 on localhost previews it.
+     Safe to delete after 29 Nov. */
+  var SALE = {
+    start: Date.parse("2026-11-27T06:00:00Z"),
+    end: Date.parse("2026-11-29T06:00:00Z"),
+    slugs: ["entity-setup", "landlord", "bookkeeping-1", "bookkeeping-2", "taxes",
+            "certification", "financial-planning", "tax-strategy", "trademarks",
+            "brand-101", "module-1", "module-2", "module-3"]
+  };
+  function saleOn() {
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]sale=1/.test(location.search)) return true;
+    var now = Date.now();
+    return now >= SALE.start && now < SALE.end;
+  }
+  function wireSale() {
+    if (!saleOn()) return;
+    try {
+      var all = (typeof QUINTA_CLASSES !== "undefined" && QUINTA_CLASSES) || [];
+      var bySlug = {};
+      all.forEach(function (c) { bySlug[c.slug] = c; });
+      function dollars(c) { var v = Math.round(Number(c) || 0); return "$" + (v % 100 === 0 ? v / 100 : (v / 100).toFixed(2)); }
+      function saleNote(c) {
+        var full = Math.round(Number(c.price || 0) * 100);
+        return "<s>" + dollars(full) + "</s> " + dollars(Math.round(full * 0.85));
+      }
+
+      var bar = document.createElement("div");
+      bar.className = "sale-bar";
+      bar.setAttribute("style", "background:#4F6B5C;color:#FAFAF6;text-align:center;font-size:14.5px;" +
+        "line-height:1.45;padding:10px 16px");
+      bar.innerHTML = "Black Friday &amp; Small Business Saturday: <strong>15% off every class</strong>, through Saturday. " +
+        '<a href="/shopsmall/" style="color:#FAFAF6;font-weight:600;text-decoration:underline;white-space:nowrap">Shop the sale &rarr;</a>';
+      document.body.insertBefore(bar, document.body.firstChild);
+
+      var links = document.querySelectorAll('a[href*="cal.com/quintaandco/"]');
+      Array.prototype.forEach.call(links, function (a) {
+        var m = String(a.getAttribute("href")).match(/cal\.com\/quintaandco\/([a-z0-9-]+)/);
+        var c = m && SALE.slugs.indexOf(m[1]) !== -1 ? bySlug[m[1]] : null;
+        if (!c) return;
+        a.setAttribute("href", "/shopsmall/?c=" + encodeURIComponent(m[1]));
+        a.textContent = "Buy at 15% off";
+        var note = a.nextElementSibling;
+        if (note && /price-note/.test(note.className)) note.innerHTML = saleNote(c);
+      });
+
+      // An undated sale class: the sale is the better offer than the waitlist.
+      var slug = document.body.getAttribute("data-class");
+      var detail = document.getElementById("class-detail");
+      var c = slug && SALE.slugs.indexOf(slug) !== -1 ? bySlug[slug] : null;
+      if (c && detail && !detail.querySelector('a[href^="/shopsmall/"]')) {
+        var first = detail.querySelector(".book");
+        if (first) {
+          var book = document.createElement("div");
+          book.className = "book";
+          var b = document.createElement("a");
+          b.className = "btn btn-solid";
+          b.href = "/shopsmall/?c=" + encodeURIComponent(slug);
+          b.textContent = "Buy at 15% off";
+          book.appendChild(b);
+          var pn = document.createElement("span");
+          pn.className = "price-note";
+          pn.innerHTML = saleNote(c) + " &middot; pick your date when it's posted";
+          book.appendChild(pn);
+          first.parentNode.insertBefore(book, first);
+          Array.prototype.forEach.call(first.querySelectorAll(".btn-solid"), function (x) {
+            x.className = x.className.replace("btn-solid", "btn-ghost");
+          });
+          var oldNote = first.querySelector(".price-note");
+          if (oldNote) oldNote.parentNode.removeChild(oldNote);
+        }
+      }
+    } catch (e) { /* the sale bar must never break a page */ }
+  }
+
   function wirePostVideo() {
     var vids = document.querySelectorAll(".post-video video");
     Array.prototype.forEach.call(vids, function (v) {
@@ -466,6 +549,7 @@
     decorateWordmarks();
     wireShare();
     wirePostVideo();
+    wireSale();
     setupMobileNav();
     injectFooterSocial();
     injectPostFollow();

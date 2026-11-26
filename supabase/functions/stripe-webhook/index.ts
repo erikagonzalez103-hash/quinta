@@ -50,6 +50,8 @@ const CLASS_NAMES: Record<string, string> = {
   "entity-setup": "Entity Building",
   "taxes": "Read Your Own Return",
   "tax-strategy": "Tax Strategy",
+  "landlord": "Intro to Real Estate Management: So You Want to Be a Landlord",
+  "module-3": "Module 3 — Real databases & automation",
 };
 
 /* Stripe signs the raw body as `t=<unix>,v1=<hex>` over "<t>.<body>".
@@ -171,7 +173,8 @@ async function bankEmail(kind: "pending" | "failed", s: any) {
   const first = String(s?.customer_details?.name || "").trim().split(/\s+/)[0] || "there";
   const { offer, lines } = orderLines(s);
   const what = lines.map((l) => nameOf(l.slug) + (l.gift ? " (the gift)" : "")).join(", ");
-  const again = offer === "oct21" ? "https://quintaand.co/oct21.html" : offer === "gift" ? "https://quintaand.co/gift.html" : "https://quintaand.co/choose.html";
+  const again = offer === "oct21" ? "https://quintaand.co/oct21.html" : offer === "gift" ? "https://quintaand.co/gift.html"
+    : offer === "shopsmall" ? "https://quintaand.co/shopsmall/" : "https://quintaand.co/choose.html";
   const wrapMail = (inner: string) => `<div style="font-family:Georgia,serif;color:#2B3A33;line-height:1.6;max-width:520px">${inner}` +
     `<p style="margin:24px 0 0;color:#8A8E83;font-size:13px">Quinta &amp; Co. · Dallas, Texas</p></div>`;
   const msg = kind === "pending"
@@ -252,16 +255,18 @@ serve(async (req) => {
 
     const slugs =String(s?.metadata?.slugs || "")
       .split(",").map((x: string) => x.trim()).filter(Boolean);
-    if (!slugs.length) {
-      console.error(`Session ${s?.id} completed with no slugs in metadata - nothing to grant.`);
-      return json({ error: "no slugs" }, 422);
-    }
-
     /* A gift carries a second class for a second person. Her email is
        optional: the offer is written so the buyer may be handing the voucher
        over herself, and in that case both links go to the payer with the
-       gifted one clearly marked. */
+       gifted one clearly marked. In the Black Friday sale a gift can be the
+       whole order - nothing for the buyer herself - so no slugs is fine
+       when there is a gift. */
     const giftSlug = String(s?.metadata?.gift_slug || "").trim();
+    if (!slugs.length && !giftSlug) {
+      console.error(`Session ${s?.id} completed with no slugs in metadata - nothing to grant.`);
+      return json({ error: "no slugs" }, 422);
+    }
+    const isSale = String(s?.metadata?.offer || "") === "shopsmall";
     // Emails are stored lower-case everywhere: the Cal.com redeem matches them
     // exactly, and "Jane@Gmail.com" must find the row "jane@gmail.com" booked.
     const giftEmail = String(s?.metadata?.gift_email || "").trim().toLowerCase();
@@ -299,8 +304,10 @@ serve(async (req) => {
         eventId: orderId,
         value: paid !== null ? paid / 100 : 0,
         contentIds: ids,
-        contentName: offer === "oct21" ? "October 21 classes" : offer === "gift" ? "Buy one, gift one" : "Choose your own classes",
-        sourceUrl: offer === "oct21" ? "https://quintaand.co/oct21.html" : "https://quintaand.co/bundle/",
+        contentName: offer === "oct21" ? "October 21 classes" : offer === "gift" ? "Buy one, gift one"
+          : offer === "shopsmall" ? "Black Friday sale" : "Choose your own classes",
+        sourceUrl: offer === "oct21" ? "https://quintaand.co/oct21.html"
+          : offer === "shopsmall" ? "https://quintaand.co/shopsmall/" : "https://quintaand.co/bundle/",
         email, name,
         fbp: String(s?.metadata?.fbp || "") || undefined,
         fbc: String(s?.metadata?.fbc || "") || undefined,
@@ -451,14 +458,18 @@ serve(async (req) => {
 
     /* One row per class, all 'owed' - unlike a Cal.com bundle, paying here
        books nothing, so there is no class with a date on it yet. */
+    /* The sale marks its rows in notes, so the sales page and ledger can
+       tell a Black Friday seat from a full-price one. One class on its own
+       is a "single", as it would be on Cal.com. */
+    const SALE_NOTE = isSale ? "Black Friday sale, 15% off (SHOPSMALL15)" : null;
     const rows = slugs.map((slug, i) => row({
       student_name: name || null,
       student_email: email,
       class_slug: slug,
-      source: giftSlug ? "gift" : "multi-discount",
+      source: giftSlug ? "gift" : (isSale && slugs.length === 1) ? "single" : "multi-discount",
       order_ref: orderId,
       amount_cents: share(i),
-      notes: null,
+      notes: SALE_NOTE,
     }));
 
     /* The gifted class belongs to the recipient, not the payer - it is her
@@ -479,9 +490,10 @@ serve(async (req) => {
         source: "gift",
         order_ref: `${orderId}:gift`,
         amount_cents: share(slugs.length),
-        notes: giftEmail
+        notes: (giftEmail
           ? `Gift from ${name || email}`
-          : `Gift bought by ${name || email}, voucher to be handed over`,
+          : `Gift bought by ${name || email}, voucher to be handed over`)
+          + (SALE_NOTE ? ` · ${SALE_NOTE}` : ""),
       }));
     }
 
@@ -630,6 +642,36 @@ serve(async (req) => {
       ? `\nWe've emailed ${giftName || giftEmail} her own link for `
         + `${CLASS_NAMES[giftSlug] || giftSlug} — nothing for you to forward.\n`
       : "";
+
+    /* A gift and nothing for herself (Black Friday sale). "Now pick your
+       date" would be wrong - she isn't coming. Thank her, and either say it
+       has gone to the recipient or give her the link to pass on. */
+    if (!slugs.length) {
+      const gName = esc(CLASS_NAMES[giftSlug] || giftSlug);
+      const gText = CLASS_NAMES[giftSlug] || giftSlug;
+      const okG = await send(email, "Your gift is paid for",
+        wrap(`<p style="margin:0 0 16px">Hi ${esc(first)},</p>
+          <p style="margin:0 0 16px">Thank you — genuinely. <strong>${gName}</strong> is paid for.</p>
+          ${giftEmail
+            ? `<p style="margin:0 0 16px">We've emailed ${esc(giftName || giftEmail)} her own link, and she
+                 picks her own date. Nothing for you to forward.</p>`
+            : `<p style="margin:0 0 16px">Here's the link to pass on. Whoever you give it to picks her own
+                 date, and there's nothing more to pay:</p>
+               <ul style="margin:0 0 20px;padding-left:20px">${bookLine(giftSlug)}</ul>`}
+          ${KEEP_HTML}`),
+        `Hi ${first},\n\nThank you — genuinely. ${gText} is paid for.\n\n`
+          + (giftEmail
+            ? `We've emailed ${giftName || giftEmail} her own link, and she picks her own date. Nothing for you to forward.\n`
+            : `Here's the link to pass on. Whoever you give it to picks her own date, nothing more to pay:\n\n${bookText(giftSlug)}\n`)
+          + `\n${KEEP_TEXT}\n`);
+      (okG ? sentTo : failed).push(email);
+      if (failed.length) {
+        console.error(`Email failed for ${failed.join(", ")} on order ${orderId} - asking Stripe to retry`);
+        return json({ error: "email failed", failed, ledger }, 500);
+      }
+      return json({ ok: true, ledger, emailed: sentTo.length, rows: rows.length,
+        gift: giftEmail ? "sent to recipient" : "voucher to buyer" });
+    }
 
     const many = mine.length > 1;
     const ok2 = await send(email,

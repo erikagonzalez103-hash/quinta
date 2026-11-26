@@ -104,7 +104,26 @@ const PRICES: Record<string, { cents: number; name: string }> = {
   "entity-setup":       { cents: 17500, name: "Entity Building" },
   "taxes":              { cents: 17500, name: "Read Your Own Return" },
   "tax-strategy":       { cents: 29900, name: "Tax Strategy" },
+  // Added for the Black Friday sale (26 Nov) - redeem twins landlord-redeem, module-3-redeem
+  "landlord":           { cents: 17500, name: "Intro to Real Estate Management: So You Want to Be a Landlord" },
+  "module-3":           { cents: 29900, name: "Module 3 — Real databases & automation" },
 };
+
+/* BLACK FRIDAY + SMALL BUSINESS SATURDAY (Erika, 26 Nov 2026)
+   15% off any class in PRICES, bought here and booked later with its $0
+   redeem link - so a class with no date yet CAN be sold, because the policy
+   covers it (good until June 30, 2027, refunded if it never gets a date).
+   Bundles are Cal.com events and never come through here.
+
+   Two locks, either one enough on its own:
+   - this window, in Dallas time (CST is UTC-6 in November)
+   - the promotion code's own expiry in Stripe, so even a request that got
+     past the window cannot be discounted after Saturday.
+   `preview` lets the local preview make a session outside the window. Anyone
+   can send it, and all it buys them is the sale price a few hours early. */
+const SALE_START = Date.parse("2026-11-27T06:00:00Z");   // Fri 27 Nov, 12:00 a.m. Dallas
+const SALE_END   = Date.parse("2026-11-29T06:00:00Z");   // Sun 29 Nov, 12:00 a.m. Dallas
+const SALE_CODE  = "SHOPSMALL15";
 
 /* The codes, and the number of classes each one is for. The minimum order
    amount that actually enforces this lives on the promotion code in Stripe;
@@ -245,6 +264,7 @@ serve(async (req) => {
     const offer = String(body?.offer || "");
     const isGift = offer === "gift";
     const isOct21 = offer === "oct21";
+    const isSale = offer === "shopsmall";
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
@@ -256,7 +276,8 @@ serve(async (req) => {
     /* Back to the page she came from, with her choices lost but her place
        kept - not to the top of the landing page, three scrolls away from
        where she was. */
-    form.set("cancel_url", `${SITE}/${isOct21 ? "oct21" : isGift ? "gift" : "choose"}.html`);
+    form.set("cancel_url", isSale ? `${SITE}/shopsmall/`
+      : `${SITE}/${isOct21 ? "oct21" : isGift ? "gift" : "choose"}.html`);
 
     /* Who sent her. The pages read it from the same localStorage key app.js
        fills when she first lands on a ?ref= link, and hand it over here, so a
@@ -309,7 +330,50 @@ serve(async (req) => {
       return json({ error: "discount_unavailable", code: want }, 409);
     }
 
-    if (isOct21) {
+    if (isSale) {
+      /* THE SALE. Any classes for her, and at most one as a gift for someone
+         else - either part may be empty, not both. One gift per order keeps
+         the webhook's one-recipient email exactly as it already works. */
+      const now = Date.now();
+      const preview = body?.preview === true && req.headers.get("origin") === "http://localhost:8137";
+      if (!preview && (now < SALE_START || now >= SALE_END)) {
+        return json({ error: now < SALE_START ? "not_yet" : "closed" }, 409);
+      }
+
+      const raw: unknown[] = Array.isArray(body?.slugs) ? body.slugs : [];
+      const mine: string[] = Array.from(new Set<string>(raw.map((s) => String(s))));
+      const gift = String(body?.gift || "");
+      if (mine.some((s) => !PRICES[s]) || (gift && !PRICES[gift])) {
+        return json({ error: "unknown_class" }, 400);
+      }
+      if (!mine.length && !gift) return json({ error: "pick_a_class" }, 400);
+
+      lines = mine.map((slug) => ({ slug, cents: PRICES[slug].cents, label: PRICES[slug].name }));
+      if (gift) lines.push({ slug: gift, cents: PRICES[gift].cents, label: `${PRICES[gift].name} — gift` });
+
+      form.set("metadata[offer]", "shopsmall");
+      form.set("metadata[slugs]", mine.join(","));
+      if (gift) {
+        form.set("metadata[gift_slug]", gift);
+        const to = String(body?.to || "").trim().slice(0, 200);
+        const toName = String(body?.toName || "").trim().slice(0, 120);
+        if (to) form.set("metadata[gift_email]", to);
+        if (toName) form.set("metadata[gift_name]", toName);
+      }
+      form.set("success_url", `${SITE}/bundle/?b=${gift ? "gift" : "custom"}&s={CHECKOUT_SESSION_ID}`);
+      form.set("custom_text[submit][message]", "Paying by bank? Your classes are confirmed as soon as the payment clears, usually within a few business days, and we'll email you.");
+
+      /* The page quoted 15% off. If the code can't be attached, refuse
+         rather than send her on to full price - same rule as choose-your-own. */
+      const p = await promo(SALE_CODE);
+      if (!p) {
+        console.error(`PROMOTION CODE ${SALE_CODE} NOT FOUND OR ARCHIVED. Refused rather than overcharge.`);
+        return json({ error: "discount_unavailable", code: SALE_CODE }, 409);
+      }
+      form.set("discounts[0][promotion_code]", p.id);
+      appliedCode = SALE_CODE;
+      form.set("metadata[code]", SALE_CODE);
+    } else if (isOct21) {
       /* WEDNESDAY 21 OCTOBER, booked here rather than in Cal.com. She picks
          sessions, not classes: two teachers can run the same class at
          different times, and each session is its own room of ten.
