@@ -129,7 +129,7 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     <p class="ss-kicker">Black Friday &amp; Small Business Saturday</p>
     <h1 class="ss-h1">15% off every class.</h1>
     <p class="ss-lead">Through Saturday at midnight, every class is 15% off. Pick as many as
-      you like, for yourself or as a gift. The discount comes off on its own, so there's
+      you like, for yourself or as a gift. Code SHOPSMALL15 is applied for you, so there's
       nothing to type. Bundles aren't part of the sale.</p>
     <p class="ss-note">Most spring dates aren't on the calendar yet, and that's fine. Pay the sale
       price now and we'll email you a booking link for each class, to use when the dates go up.
@@ -205,9 +205,9 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
 
   /* Every class with a teacher and a $0 redeem link in Cal.com. Keep in step
      with PRICES in the stripe-checkout function. Not here on purpose:
-     classes with no teacher yet, Robin's second and third classes (Erika,
-     26 Nov), Coffee (free), and anything Books Before Bubbly or a bundle. */
-  var SELLABLE = ["entity-setup", "landlord", "bookkeeping-1", "bookkeeping-2", "taxes",
+     classes with no teacher yet, Coffee (free), and anything Books Before
+     Bubbly or a bundle. Robin's second and third joined 27 Nov. */
+  var SELLABLE = ["entity-setup", "landlord", "rental-management", "rental-growth", "bookkeeping-1", "bookkeeping-2", "taxes",
                   "certification", "financial-planning", "tax-strategy", "trademarks",
                   "brand-101", "module-1", "module-2", "module-3"];
 
@@ -328,7 +328,8 @@ s.parentNode.insertBefore(b, s);})(window.lintrk);
     if (c.mine.length) parts.push(c.mine.length + (c.mine.length === 1 ? " class" : " classes") + " for you");
     if (c.gift) parts.push("1 gift");
     sum.innerHTML = esc(parts.join(" + ")) + " &middot; <s>" + money(c.total) + "</s> <b>" + money(c.after) + "</b>";
-    codeLine.innerHTML = "<strong>15% off</strong> is applied for you. You'll see it on the payment page.";
+    // The carousel says "use code SHOPSMALL15" - tell her it's already on.
+    codeLine.innerHTML = "<strong>Code SHOPSMALL15 is already applied</strong>, so there's nothing to type. You'll see the 15% on the payment page.";
     go.disabled = false;
     go.textContent = "Continue to payment";
   }

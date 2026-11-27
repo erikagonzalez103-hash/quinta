@@ -363,7 +363,7 @@
   var SALE = {
     start: Date.parse("2026-11-27T06:00:00Z"),
     end: Date.parse("2026-11-29T06:00:00Z"),
-    slugs: ["entity-setup", "landlord", "bookkeeping-1", "bookkeeping-2", "taxes",
+    slugs: ["entity-setup", "landlord", "rental-management", "rental-growth", "bookkeeping-1", "bookkeeping-2", "taxes",
             "certification", "financial-planning", "tax-strategy", "trademarks",
             "brand-101", "module-1", "module-2", "module-3"]
   };

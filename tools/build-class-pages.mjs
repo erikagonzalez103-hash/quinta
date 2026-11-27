@@ -262,7 +262,7 @@ ${faqHtml}
 <script src="../config.js?v=8"></script>
 <script src="../classes.js?v=45"></script>
 <script src="../icons.js?v=3"></script>
-<script src="../app.js?v=12" defer></script>
+<script src="../app.js?v=13" defer></script>
 <script src="../js/meta.js?v=6" defer></script>${c.free ? "" : `
 <script>
 /* THE BOOK BUTTON MUST LEAD SOMEWHERE BOOKABLE.

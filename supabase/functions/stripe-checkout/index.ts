@@ -107,6 +107,9 @@ const PRICES: Record<string, { cents: number; name: string }> = {
   // Added for the Black Friday sale (26 Nov) - redeem twins landlord-redeem, module-3-redeem
   "landlord":           { cents: 17500, name: "Intro to Real Estate Management: So You Want to Be a Landlord" },
   "module-3":           { cents: 29900, name: "Module 3 — Real databases & automation" },
+  // Robin's second and third (27 Nov, shown on the sale carousel) - redeem twins made that day
+  "rental-management":  { cents: 25000, name: "Owning it without doing it all" },
+  "rental-growth":      { cents: 29900, name: "Grow it and build your team" },
 };
 
 /* BLACK FRIDAY + SMALL BUSINESS SATURDAY (Erika, 26 Nov 2026)

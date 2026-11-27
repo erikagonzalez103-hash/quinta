@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Small Kit (15% off) · Faculty Portal | Quinta &amp; Co.</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAFAF6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=4">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4d1040aa058d40038ba0cf67b562c42e"}'></script><!-- End Cloudflare Web Analytics -->
+<style>
+/* Same look as kit-week2.html. Built for a phone first. Unlike Week 2, each
+   teacher sees only her own script, reel and caption. */
+.kit-wrap{max-width:760px}
+.kit-meta{font-size:15.5px;line-height:1.7;color:var(--ink);margin:18px 0 0}
+.kit-meta strong{color:var(--moss)}
+.kit-wrap h2{margin-top:44px}
+.kit-wrap h3{font-family:var(--display);font-weight:500;font-size:1.2rem;color:var(--moss);margin:30px 0 8px}
+.kit-wrap p,.kit-wrap li{font-size:15.5px;line-height:1.65;color:var(--ink)}
+.kit-steps{counter-reset:s;list-style:none;padding:0;margin:18px 0 0}
+.kit-steps li{counter-increment:s;position:relative;padding-left:38px;margin-bottom:13px}
+.kit-steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:25px;height:25px;
+  border-radius:50%;background:var(--sage-deep);color:var(--cream);display:grid;place-items:center;
+  font-family:var(--label);font-size:12px;font-weight:600}
+.kit-tip{background:#EEF2EC;border-left:3px solid var(--sage);border-radius:0 8px 8px 0;
+  padding:15px 18px;margin:20px 0 0}
+.posts{display:grid;gap:12px;margin:18px 0 0}
+.post{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:16px 18px}
+.post .n{font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:10.5px;
+  font-weight:600;color:var(--sage-deep);margin:0 0 4px}
+.post p{margin:0}
+/* styles.css has no .btn-sm - portal.html keeps its own copy, so this does too. */
+.btn-sm{display:inline-block;padding:8px 15px;border-radius:999px;font-size:.88rem;line-height:1.3;text-decoration:none;border:1px solid var(--sage-deep);color:var(--sage-deep);background:transparent;cursor:pointer;font-family:inherit}
+.btn-sm.solid{background:var(--sage-deep);color:var(--cream)}
+.btn-sm:hover{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+.acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.cap{border:1px solid var(--line);border-radius:12px;background:var(--cream);padding:18px 20px;margin:16px 0 0}
+.cap pre{white-space:pre-wrap;font-family:inherit;font-size:15.5px;line-height:1.65;color:var(--ink);
+  margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px 16px}
+.cap .lnk{font-size:15px;word-break:break-all;margin:0 0 4px}
+.note{font-size:14.5px;background:#EEF2EC;border-radius:8px;padding:11px 13px;margin:12px 0 0}
+.note.admin{background:#FBF3E4;border:1px solid #E8D6B0}
+/* Her finished reel (kit/week3/reels/week3-reel-<key>.mp4), playing on a
+   loop. When Erika makes her selfie version it replaces the same file -
+   replace its .jpg cover too, and bump REEL_V below so phones don't keep
+   the old one. */
+.reel{display:block;width:100%;max-width:300px;aspect-ratio:9/16;margin:20px auto 0;
+  border:1px solid var(--line);border-radius:14px;background:#FAFAF6;object-fit:cover}
+.reel-meta{text-align:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.13em;
+  font-size:11px;color:var(--sage-deep);margin:10px 0 0}
+.reel-acts{justify-content:center}
+.vids{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 0}
+.vids video{width:100%;border:1px solid var(--line);border-radius:10px;display:block;background:#000}
+.vids p{font-size:13.5px;margin:6px 0 8px;color:var(--sage-deep)}
+.picker{margin:14px 0 0}
+.picker select{font:inherit;font-size:16px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.kit-note{font-size:13.5px;line-height:1.6;color:var(--sage-deep);margin-top:34px}
+@media(max-width:520px){ .vids{grid-template-columns:1fr} }
+.tags{font-size:14.5px;color:var(--sage-deep)}
+/* The carousel: nine slides in posting order, each with its own Save. */
+.slides{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 0}
+.slide{margin:0;text-align:center}
+.slide img{display:block;width:100%;height:auto;aspect-ratio:4/5;border:1px solid var(--line);border-radius:8px;background:#fff}
+.slide figcaption{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:6px 2px 0;
+  font-family:var(--label);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage-deep)}
+.slide figcaption a{font-family:inherit;color:var(--sage-deep)}
+@media(max-width:520px){ .slides{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a href="../index.html" class="wordmark"><img class="logo-img" src="../brand/logo-stacked-sage.svg" alt="Quinta &amp; Co. — home" width="171" height="32"></a>
+    <div class="bar-right"><nav class="top"><a href="portal.html">Back to portal</a></nav></div>
+  </div>
+</header>
+
+<main>
+  <div id="gate" class="wrap">
+    <p class="phase-label">Faculty Portal · Private</p>
+    <h1 id="gate-title">One moment…</h1>
+    <p class="desc" id="gate-text">Checking your sign-in.</p>
+    <p id="gate-action" style="display:none"><a class="btn btn-solid" href="login.html">Go to sign-in</a></p>
+  </div>
+
+  <!-- Black Friday + Small Business Saturday (27-28 Nov 2026). Caption from
+       Erika 27 Nov, the same for every teacher, with two edits: "use code
+       SHOPSMALL15" became "comes off automatically" (there is no code box -
+       the 15% is applied for her), and the **bold** markers came out (social
+       apps show them as asterisks).
+       Each link is /shopsmall?ref=<key>: the sale page keeps the code and
+       sends it to Stripe, so her shares are credited on the sales page.
+       After the sale ends the page says so and hides the caption. -->
+  <section class="detail wrap" id="kit" style="display:none">
+    <div class="kit-wrap">
+      <p class="phase-label">Faculty Portal · Private</p>
+      <h1>Black Friday &amp; Small Business Saturday · 15% off</h1>
+
+      <p class="kit-meta"><strong>Quinta’s post is up:</strong> today, Friday, November 27, on Instagram, LinkedIn and Facebook.<br>
+        <strong>Your part:</strong> repost it on your own accounts with the caption below. Your link is already in it.<br>
+        <strong>The sale:</strong> 15% off every class (not bundles), through Saturday, November 28 at midnight. It comes off automatically. There’s no code to type.</p>
+      <p id="sale-over" class="note admin" style="display:none"><strong>The sale has ended.</strong> Please don’t post this caption any more. Thank you to everyone who shared it!</p>
+
+      <div id="admin-picker" class="picker" style="display:none">
+        <label for="who-select"><strong>Erika only:</strong> see the page as </label>
+        <select id="who-select"></select>
+      </div>
+
+      <div id="mine"></div>
+
+      <h2>The carousel</h2>
+      <p>Quinta’s post is a carousel: nine slides, swiped in this order. Save them to your phone, then post them as your own carousel with your caption. That way your followers see every slide, and your link is in the caption.</p>
+      <div class="acts" style="margin-top:14px">
+        <button class="btn-sm solid" type="button" id="save-all" style="font-size:1rem;padding:11px 20px">Save all 9 slides to my phone</button>
+      </div>
+      <p class="note" id="save-all-note" style="display:none"></p>
+      <p style="font-size:14px;color:var(--sage-deep);margin:10px 0 0">On an iPhone or Android this opens your phone’s share menu. Tap <strong>Save 9 Images</strong> (iPhone) or <strong>Save</strong> / <strong>Photos</strong> (Android) and they’ll be in your photos, in order.</p>
+      <div class="slides" id="slides"></div>
+      <div class="acts" style="margin-top:16px">
+        <a class="btn-sm" href="kit/shopsmall/quinta-shop-small-linkedin.pdf" download data-log="carousel:pdf">LinkedIn PDF (all 9 slides)</a>
+        <a class="btn-sm" href="kit/shopsmall/quinta-shop-small-slides.zip" download data-log="carousel:zip">All slides as a ZIP (for a computer)</a>
+      </div>
+
+      <h2>How to share it</h2>
+      <h3>Instagram</h3>
+      <ol class="kit-steps">
+        <li><strong>Save the slides</strong> with the button above.</li>
+        <li>In Instagram, tap <strong>+</strong>, then <strong>Post</strong>. Tap the <strong>Select multiple</strong> icon (two overlapping squares), then tap the slides <strong>in order, 1 to 9</strong>. The numbers on the photos show the order.</li>
+        <li>Tap <strong>Next</strong> twice, paste your caption (<strong>Copy caption + hashtags</strong>), and tap <strong>Share</strong>.</li>
+        <li>Links in an Instagram caption aren’t clickable, so add your link to your bio for the weekend, or share the post to your Story and add a <strong>Link</strong> sticker with <strong>Copy my link</strong>. (Sharing Quinta’s carousel to your Story only shows the first slide, which is why posting it yourself is better.)</li>
+      </ol>
+      <h3>LinkedIn</h3>
+      <ol class="kit-steps">
+        <li>On LinkedIn a carousel is a <strong>document</strong>. Download the <strong>LinkedIn PDF</strong> above.</li>
+        <li>Tap <strong>Start a post</strong>, then <strong>+</strong> (or <strong>More</strong>), then <strong>Add a document</strong>, and choose the PDF. Give it a title, like <em>15% off every class this weekend</em>.</li>
+        <li>Paste your caption (it includes your link) and tap <strong>Post</strong>. Hashtags are optional on LinkedIn; three or four is plenty.</li>
+      </ol>
+      <h3>Facebook</h3>
+      <ol class="kit-steps">
+        <li><strong>Save the slides</strong> with the button above.</li>
+        <li>Tap <strong>Photo/video</strong>, select all nine in order, paste your caption, and tap <strong>Post</strong>.</li>
+        <li>Short on time? On Quinta’s post, tap <strong>Share</strong>, then <strong>Share to Feed</strong>, and paste your caption above it.</li>
+      </ol>
+      <div class="kit-tip"><strong>How to copy and paste on a phone:</strong> On this page, tap a <strong>Copy</strong> button. Then, in the app, press and hold your finger in the empty text box until a small menu appears, and tap <strong>Paste</strong>.</div>
+
+      <p class="kit-note">If something looks wrong — a price, a date, a class that’s changed — tell Erika before you post rather than editing it yourself. <a href="mailto:hello@quintaand.co">hello@quintaand.co</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><p class="fine copyright">© <span id="year">2026</span> Quinta &amp; Co. · Dallas, Texas</p></div>
+</footer>
+
+<script src="../js/supabase-2.110.1.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* Caption from Erika (27 Nov), the same for every teacher. {LINK} becomes
+     her own link. */
+  var CAPTION = "As a business owner, I know firsthand the value of learning from someone who has already navigated the challenges of entrepreneurship.\n\nThat's one of the reasons I'm proud to be an instructor with Quinta & Co., alongside an incredible group of women who are sharing their real-world expertise to help other business owners succeed.\n\nThis Black Friday and Small Business Saturday, I encourage you to shop small, support your local business community and invest in one more small business \u2014 yours.\n\nIn celebration of the weekend, Quinta & Co. is offering 15% off all classes, including mine!\n\nLearn the business lessons without the costly mistakes.\n\nExplore our upcoming classes at {LINK}. The 15% comes off automatically at checkout, so there's no code to enter.\n\nI look forward to seeing you in class!";
+  var TAGS = "#QuintaAndCo #ShopSmall #SmallBusinessSaturday #BlackFriday #InvestInYourBusiness #WomenInBusiness #WomenSupportingWomen #SmallBusinessEducation #WomenEntrepreneurs #DallasSmallBusiness #DallasEntrepreneurs #BusinessGrowth";
+  var SALE_END = Date.parse("2026-11-29T06:00:00Z");   // Sun 29 Nov, 12 a.m. Dallas
+  var PEOPLE = [{"key": "tara", "name": "Tara", "teaching": true}, {"key": "lupe", "name": "Lupe", "teaching": true}, {"key": "erika", "name": "Erika", "teaching": false}, {"key": "nik", "name": "Nik", "teaching": false}, {"key": "stephanie", "name": "Stephanie", "teaching": false}, {"key": "robin", "name": "Robin", "teaching": false}, {"key": "joshlyn", "name": "Joshlyn", "teaching": false}];
+  var ADMIN = "erika@quintaand.co";
+  function linkOf(p) { return "quintaand.co/shopsmall?ref=" + p.key; }
+  function captionOf(p) { return CAPTION.replace("{LINK}", linkOf(p)); }
+
+  var sb = null;
+  try {
+    if (typeof supabase !== "undefined") {
+      sb = supabase.createClient("https://pmpaslevwimofohirves.supabase.co", "sb_publishable_t7U8S0paeslz99Y600_ixA_PHauIQcf");
+    }
+  } catch (e) { console.error(e); }
+
+  function gate(t, x, action) {
+    document.getElementById("gate").style.display = "block";
+    document.getElementById("kit").style.display = "none";
+    document.getElementById("gate-title").textContent = t;
+    document.getElementById("gate-text").textContent = x;
+    document.getElementById("gate-action").style.display = action ? "block" : "none";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* Copy that still works on iPhones and in the in-app browsers faculty
+     open this in. 13 Oct (Erika: Copy the caption not working): the old
+     order tried navigator.clipboard first and only fell back after it
+     failed - by then the tap had "expired" on iPhone, so the fallback failed
+     too. Now the old-style copy runs first, synchronously inside the tap
+     (clipboard.js's recipe: a readonly textarea at the current scroll spot,
+     so no keyboard and no jump), and navigator.clipboard is the second try,
+     still started inside the same tap. A copy that fails both ways shows
+     the text to press-and-hold, never a false "Copied". */
+  function copyText(text) {
+    var ok = false;
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:absolute;left:-9999px;top:" + (window.pageYOffset || 0) +
+        "px;font-size:16px;border:0;padding:0;margin:0";   // 16px: iPhone won't zoom
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      var sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (e) { ok = false; }
+    if (ok) return Promise.resolve();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try { return navigator.clipboard.writeText(text); } catch (e) {}
+    }
+    return Promise.reject(new Error("copy blocked"));
+  }
+  /* Copying was blocked: put the text right under the button, selected, with
+     how to copy it by hand. Works everywhere, keeps line breaks. */
+  function showToCopy(btn, text) {
+    var holder = btn.closest(".acts, li, div") || btn.parentNode;
+    var old = holder.parentNode.querySelector(".copy-manual[data-for='" + (btn.dataset.copyId || "") + "']");
+    if (old) old.remove();
+    btn.dataset.copyId = btn.dataset.copyId || String(Math.random()).slice(2);
+    var box = document.createElement("div");
+    box.className = "copy-manual"; box.setAttribute("data-for", btn.dataset.copyId);
+    box.style.cssText = "margin:8px 0 4px;width:100%";
+    var note = document.createElement("p");
+    note.style.cssText = "margin:0 0 6px;font-size:.85rem;color:#5A5E55";
+    note.textContent = "Your browser blocked copying. Press and hold the text below, then tap Copy (on a computer: Ctrl+C).";
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.readOnly = true;
+    ta.style.cssText = "width:100%;box-sizing:border-box;min-height:" + (text.length > 80 ? "120px" : "48px") +
+      ";font:inherit;font-size:16px;padding:8px 10px;border:1px solid #C9D3CB;border-radius:8px;background:#fff";
+    box.appendChild(note); box.appendChild(ta);
+    holder.parentNode.insertBefore(box, holder.nextSibling);
+    ta.focus(); ta.select();
+    try { ta.setSelectionRange(0, text.length); } catch (e) {}
+  }
+  /* WHO USED THE KIT - the same kit_events table as the Week 2/3 kits. */
+  var KIT = "shopsmall", signedIn = false;
+  function logKit(action, item) {
+    if (!sb || !signedIn) return;
+    try {
+      sb.from("kit_events").insert({ kit: KIT, action: action, item: item || null })
+        .then(function (r) { if (r && r.error) console.warn("kit_events", r.error.message); });
+    } catch (e) { /* never block the kit */ }
+  }
+
+  window.kitLog = logKit;   // the carousel script below logs its saves here too
+
+  function wireCopy(btn, getText) {
+    btn.addEventListener("click", function () {
+      logKit("copy", btn.getAttribute("data-log") || btn.textContent.trim().slice(0, 60));
+      copyText(getText()).then(function () {
+        var was = btn.textContent;
+        btn.textContent = "Copied ✓";
+        window.setTimeout(function () { btn.textContent = was; }, 1800);
+      }).catch(function () { showToCopy(btn, getText()); });
+    });
+  }
+
+  function render(p, isAdmin) {
+    var box = document.getElementById("mine");
+    if (Date.now() >= SALE_END && !isAdmin) {
+      document.getElementById("sale-over").style.display = "block";
+      box.innerHTML = "";
+      return;
+    }
+    if (Date.now() >= SALE_END) document.getElementById("sale-over").style.display = "block";
+    if (!p) {
+      box.innerHTML = '<h2>Your caption</h2><p class="note">Your caption isn\'t on this page yet. ' +
+        'Email <a href="mailto:hello@quintaand.co">hello@quintaand.co</a> and Erika will send it over.</p>';
+      return;
+    }
+    var cap = captionOf(p);
+    box.innerHTML =
+      '<h2>Your caption</h2>' +
+      '<p>The same caption for everyone, with your own link already in it.</p>' +
+      '<div class="cap"><pre id="bb-caption">' + esc(cap) + '</pre>' +
+        '<p class="lnk">Your link: <strong>' + esc(linkOf(p)) + '</strong></p>' +
+        '<div class="acts">' +
+          '<button class="btn-sm solid" type="button" data-copy-all data-log="' + p.key + ':caption+tags">Copy caption + hashtags</button>' +
+          '<button class="btn-sm" type="button" data-copy-from="bb-caption" data-log="' + p.key + ':caption">Copy caption only</button>' +
+          '<button class="btn-sm" type="button" data-copy-text="https://' + esc(linkOf(p)) + '" data-log="' + p.key + ':link">Copy my link</button>' +
+        '</div>' +
+      '</div>' +
+      '<h2>Hashtags</h2>' +
+      '<div class="cap"><pre id="bb-tags" class="tags">' + esc(TAGS) + '</pre>' +
+        '<div class="acts"><button class="btn-sm" type="button" data-copy-from="bb-tags" data-log="' + p.key + ':tags">Copy the hashtags</button></div>' +
+      '</div>';
+    Array.prototype.forEach.call(box.querySelectorAll("[data-copy-text]"), function (b) {
+      wireCopy(b, function () { return b.getAttribute("data-copy-text"); });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-copy-from]"), function (b) {
+      wireCopy(b, function () { return document.getElementById(b.getAttribute("data-copy-from")).textContent; });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-copy-all]"), function (b) {
+      wireCopy(b, function () { return cap + "\n\n" + TAGS; });
+    });
+  }
+
+  function find(key) {
+    for (var i = 0; i < PEOPLE.length; i++) if (PEOPLE[i].key === key) return PEOPLE[i];
+    return null;
+  }
+
+  if (!sb) { gate("Sign-in isn't loading", "Please refresh, or email hello@quintaand.co."); return; }
+
+  sb.auth.getSession().then(function (res) {
+    var session = res.data ? res.data.session : null;
+    if (!session) { gate("You're not signed in", "Sign in first, then come back for your captions.", true); return; }
+    var email = session.user.email.toLowerCase();
+    sb.from("faculty").select("*").eq("email", email).maybeSingle().then(function (r) {
+      if (r.error || !r.data) {
+        gate("Almost there", "You're signed in as " + email +
+          ", but there's no faculty record under that email yet — email hello@quintaand.co.", true);
+        return;
+      }
+      var first = String(r.data.display_name || r.data.full_name || "").trim().split(/\s+/)[0].toLowerCase();
+      var isAdmin = email === ADMIN;
+      document.getElementById("gate").style.display = "none";
+      document.getElementById("kit").style.display = "block";
+
+      /* Erika can preview any teacher's page (?as=tara works too). Everyone
+         else only ever gets her own. */
+      var start = first;
+      if (isAdmin) {
+        var as = (new URLSearchParams(location.search).get("as") || "").toLowerCase();
+        if (find(as)) start = as;
+        var sel = document.getElementById("who-select");
+        sel.innerHTML = PEOPLE.map(function (p) {
+          return '<option value="' + p.key + '"' + (p.key === start ? " selected" : "") + '>' + esc(p.name) + '</option>';
+        }).join("");
+        sel.addEventListener("change", function () { render(find(sel.value), true); });
+        document.getElementById("admin-picker").style.display = "block";
+      }
+      render(find(start), isAdmin);
+      signedIn = true;
+      logKit("open", first);
+    });
+  });
+})();
+</script>
+<script>
+/* THE CAROUSEL (27 Nov) - the first carousel the faculty have reposted.
+   "Save all 9 slides" hands all nine images to the phone's own share menu
+   (navigator.share with files), whose "Save Images" puts them in Photos in
+   one tap, in order - straight where Instagram and Facebook look. A ZIP
+   would land in Files on an iPhone, out of Instagram's reach, so it's
+   offered for computers only. The images are fetched ahead of time: iPhones
+   only allow the share menu straight from a tap, not after a download. */
+(function () {
+  "use strict";
+  var N = 9, DIR = "kit/shopsmall/", NAME = "quinta-shop-small-";
+  var grid = document.getElementById("slides");
+  var btn = document.getElementById("save-all");
+  var note = document.getElementById("save-all-note");
+  function log(item) { try { if (window.kitLog) window.kitLog("save", item); } catch (e) {} }
+  function say(t) { note.style.display = "block"; note.textContent = t; }
+
+  var html = "";
+  for (var i = 1; i <= N; i++) {
+    html += '<figure class="slide"><img src="' + DIR + NAME + i + '.jpg" width="1080" height="1350" loading="lazy" ' +
+      'alt="Black Friday carousel, slide ' + i + ' of ' + N + '">' +
+      '<figcaption><span>' + i + ' of ' + N + '</span><a href="' + DIR + NAME + i + '.jpg" download data-log="carousel:' + i + '">Save</a></figcaption></figure>';
+  }
+  grid.innerHTML = html;
+  Array.prototype.forEach.call(document.querySelectorAll("a[data-log]"), function (a) {
+    a.addEventListener("click", function () { log(a.getAttribute("data-log")); });
+  });
+
+  var files = null, loading = null;
+  function load() {
+    if (loading) return loading;
+    loading = Promise.all(Array.apply(null, Array(N)).map(function (_, k) {
+      var n = k + 1;
+      return fetch(DIR + NAME + n + ".jpg").then(function (r) {
+        if (!r.ok) throw new Error("slide " + n + " " + r.status);
+        return r.blob();
+      }).then(function (b) { return new File([b], NAME + n + ".jpg", { type: "image/jpeg" }); });
+    })).then(function (f) { files = f; return f; })
+      .catch(function (e) { loading = null; throw e; });
+    return loading;
+  }
+  // Fetch them while she reads the caption, so the tap can open the share menu at once.
+  window.setTimeout(function () { load().catch(function () {}); }, 800);
+
+  function canShareFiles(f) {
+    try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: f })); } catch (e) { return false; }
+  }
+  // A computer, or a browser without file sharing: download them one by one.
+  function downloadEach() {
+    say("Downloading the 9 slides. If your browser asks to allow several downloads, say yes. The ZIP below works too.");
+    for (var i = 1; i <= N; i++) {
+      (function (n) {
+        window.setTimeout(function () {
+          var a = document.createElement("a");
+          a.href = DIR + NAME + n + ".jpg"; a.download = NAME + n + ".jpg";
+          document.body.appendChild(a); a.click(); a.remove();
+        }, (n - 1) * 400);
+      })(i);
+    }
+  }
+
+  btn.addEventListener("click", function () {
+    note.style.display = "none";
+    if (files && canShareFiles(files)) {
+      log("carousel:all-share");
+      // Straight from the tap - no awaiting before this line.
+      navigator.share({ files: files, title: "Quinta & Co. Black Friday carousel" }).catch(function (e) {
+        if (e && e.name === "AbortError") return;   // she closed the menu
+        say("Your phone didn't open the save menu. Use the Save link under each slide instead, in order 1 to 9.");
+      });
+      return;
+    }
+    if (!files) {
+      var mobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+      if (mobile) {
+        say("Getting the slides ready, one moment, then tap the button again.");
+        load().then(function () { say("Ready. Tap “Save all 9 slides” again."); })
+          .catch(function () { say("The slides didn't load. Use the Save link under each one instead."); });
+        return;
+      }
+    }
+    log("carousel:all-download");
+    downloadEach();
+  });
+})();
+</script>
+<script>try { document.getElementById("year").textContent = new Date().getFullYear(); } catch (e) {}</script>
+</body>
+</html>
